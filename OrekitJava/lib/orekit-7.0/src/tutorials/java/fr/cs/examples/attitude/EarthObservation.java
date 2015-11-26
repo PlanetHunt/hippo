@@ -1,0 +1,173 @@
+/* Copyright 2002-2015 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package fr.cs.examples.attitude;
+
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudesSequence;
+import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
+
+import fr.cs.examples.Autoconfiguration;
+
+/** Orekit tutorial for Earth observation attitude sequence.
+ * <p>This tutorial shows how to easily switch between day and night attitude modes.<p>
+ * @author Luc Maisonobe
+ */
+public class EarthObservation {
+
+    /** Program entry point.
+     * @param args program arguments (unused here)
+     */
+    public static void main(String[] args) {
+        try {
+
+            // configure Orekit
+            Autoconfiguration.configureOrekit();
+            final SortedSet<String> output = new TreeSet<String>();
+
+            //  Initial state definition : date, orbit
+            final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
+            final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+            final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+            final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
+                                                          FramesFactory.getEME2000(), initialDate,
+                                                          Constants.EIGEN5C_EARTH_MU);
+
+            // Attitudes sequence definition
+            final AttitudesSequence attitudesSequence = new AttitudesSequence();
+            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+                                                                     RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
+            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+            final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+            final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
+            final EventDetector dayNightEvent =
+                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                withHandler(new EventHandler<EclipseDetector>() {
+                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector detector, final boolean increasing) {
+                        if (!increasing) {
+                            output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
+                        }
+                        return Action.CONTINUE;
+                    }
+                    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+            final EventDetector nightDayEvent =
+                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                withHandler(new EventHandler<EclipseDetector>() {
+                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector detector, final boolean increasing) {
+                        if (increasing) {
+                            output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
+                        }
+                        return Action.CONTINUE;
+                    }
+                    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+            attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
+            attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
+            if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
+                // initial position is in daytime
+                attitudesSequence.resetActiveProvider(dayObservationLaw);
+            } else {
+                // initial position is in nighttime
+                attitudesSequence.resetActiveProvider(nightRestingLaw);
+            }
+
+            // Propagator : consider the analytical Eckstein-Hechler model
+            final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
+                                                                        Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                                        Constants.EIGEN5C_EARTH_MU, Constants.EIGEN5C_EARTH_C20,
+                                                                        Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
+                                                                        Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
+
+            // Register the switching events to the propagator
+            attitudesSequence.registerSwitchEvents(propagator);
+
+            propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
+                public void init(final SpacecraftState s0, final AbsoluteDate t) {
+                }
+                public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
+                    try {
+                    	DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
+                    	angleDegree.setDecimalSeparator('\u00b0');
+                        DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
+                        // the Earth position in spacecraft frame should be along spacecraft Z axis
+                        // during nigthtime and away from it during daytime due to roll and pitch offsets
+                        final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+                        final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
+
+                        // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
+                        // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
+                        final double eclipseAngle = dayNightEvent.g(currentState);
+
+                        output.add(currentState.getDate() +
+                                   " " + ad.format(FastMath.toDegrees(eclipseAngle)) +
+                                   " " + ad.format(FastMath.toDegrees(pointingOffset)));
+                    } catch (OrekitException oe) {
+                        throw new PropagationException(oe);
+                    }
+                }
+            });
+
+            // Propagate from the initial date for the fixed duration
+            SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(12600.));
+
+            // we print the lines according to lexicographic order, which is chronological order here
+            // to make sure out of orders calls between step handler and event handlers don't mess things up
+            for (final String line : output) {
+                System.out.println(line);
+            }
+
+            System.out.println("Propagation ended at " + finalState.getDate());
+
+        } catch (OrekitException oe) {
+            System.err.println(oe.getMessage());
+        }
+    }
+
+}

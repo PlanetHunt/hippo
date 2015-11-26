@@ -1,0 +1,371 @@
+# internal error, contact maintenance at {0}
+INTERNAL_ERROR = internal error, contact maintenance at {0}
+
+# altitude ({0} m) is below the {1} m allowed threshold
+ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitude ({0} m) is below the {1} m allowed threshold
+
+# trajectory inside the Brillouin sphere (r = {0})
+TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = trajectory inside the Brillouin sphere (r = {0})
+
+# almost equatorial orbit (i = {0} degrees)
+ALMOST_EQUATORIAL_ORBIT = almost equatorial orbit (i = {0} degrees)
+
+# almost critically inclined orbit (i = {0} degrees)
+ALMOST_CRITICALLY_INCLINED_ORBIT = almost critically inclined orbit (i = {0} degrees)
+
+# unable to compute Eckstein-Hechler mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = unable to compute Eckstein-Hechler mean parameters after {0} iterations
+
+# null parent for frame {0}
+NULL_PARENT_FOR_FRAME = null parent for frame {0}
+
+# frame {0} is already attached to frame {1}
+FRAME_ALREADY_ATTACHED = frame {0} is already attached to frame {1}
+
+# frame {0} is not attached to the main frames tree
+FRAME_NOT_ATTACHED = frame {0} is not attached to the main frames tree
+
+# frame {0} is an ancestor of both frames {1} and {2}
+FRAME_ANCESTOR_OF_BOTH_FRAMES = frame {0} is an ancestor of both frames {1} and {2}
+
+# frame {0} is an ancestor of neither frame {1} nor {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME = frame {0} is an ancestor of neither frame {1} nor {2}
+
+# frame {0} has depth {1}, it cannot have an ancestor {2} levels above
+FRAME_NO_NTH_ANCESTOR = frame {0} has depth {1}, it cannot have an ancestor {2} levels above
+
+# unsupported local orbital frame, supported types: {0} and {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame, supported types: {0} and {1}
+
+# non pseudo-inertial frame "{0}" is not suitable for defining orbits
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = non pseudo-inertial frame "{0}" is not suitable for defining orbits
+
+# data root directory {0} does not exist
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = data root directory {0} does not exist
+
+# {0} is not a directory
+NOT_A_DIRECTORY = {0} is not a directory
+
+# {0} is neither a directory nor a zip/jar archive file
+NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} is neither a directory nor a zip/jar archive file
+
+# unable to find resource {0} in classpath
+UNABLE_TO_FIND_RESOURCE = unable to find resource {0} in classpath
+
+# no Earth Orientation Parameters loaded
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = no Earth Orientation Parameters loaded
+
+# missing Earth Orientation Parameters between {0} and {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = missing Earth Orientation Parameters between {0} and {1}
+
+# file {0} is not a supported IERS data file
+NOT_A_SUPPORTED_IERS_DATA_FILE = file {0} is not a supported IERS data file
+
+# inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
+INCONSISTENT_DATES_IN_IERS_FILE = inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
+
+# unexpected data after line {0} in file {1}: {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE = unexpected data after line {0} in file {1}: {2}
+
+# non-chronological dates in file {0}, line {1}
+NON_CHRONOLOGICAL_DATES_IN_FILE = non-chronological dates in file {0}, line {1}
+
+# no IERS UTC-TAI history data loaded
+NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = no IERS UTC-TAI history data loaded
+
+# no entries found in IERS UTC-TAI history file {0}
+NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  no entries found in IERS UTC-TAI history file {0}
+
+# missing serie j = {0} in file {1} (line {2})
+MISSING_SERIE_J_IN_FILE = missing serie j = {0} in file {1} (line {2})
+
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = cannot parse both τ and γ from the same Poissons series file
+
+# unexpected end of file {0} (after line {1})
+UNEXPECTED_END_OF_FILE_AFTER_LINE = unexpected end of file {0} (after line {1})
+
+# unable to parse line {0} of file {1}:\n{2}
+UNABLE_TO_PARSE_LINE_IN_FILE = unable to parse line {0} of file {1}:\n{2}
+
+# unable to find file {0}
+UNABLE_TO_FIND_FILE = unable to find file {0}
+
+# spacecraft mass becomes negative: {0} kg
+SPACECRAFT_MASS_BECOMES_NEGATIVE = spacecraft mass becomes negative: {0} kg
+
+# positive flow rate (q: {0})
+POSITIVE_FLOW_RATE = positive flow rate (q: {0})
+
+# no gravity field data loaded
+NO_GRAVITY_FIELD_DATA_LOADED = no gravity field data loaded
+
+# gravity field normalization underflow for degree {0} and order {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = gravity field normalization underflow for degree {0} and order {1}
+
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = no ocean tide data loaded
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = ocean tide data file {0} limited to degree {1} and order {2}
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+
+# polar trajectory (distance to polar axis: {0})
+POLAR_TRAJECTORY = polar trajectory (distance to polar axis: {0})
+
+# unexpected format error for file {0} with loader {1}
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = unexpected format error for file {0} with loader {1}
+
+# duplicated gravity field coefficient {0}({1}, {2}) in file {3}
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = duplicated gravity field coefficient {0}({1}, {2}) in file {3}
+
+# missing gravity field coefficient {0}({1}, {2}) in file {3}
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = missing gravity field coefficient {0}({1}, {2}) in file {3}
+
+# too large degree (n = {0}, potential maximal degree is {1})
+TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = too large degree (n = {0}, potential maximal degree is {1})
+
+# too large order (m = {0}, potential maximal order is {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = too large order (m = {0}, potential maximal order is {1})
+
+# several reference dates ({0} and {1}) found in gravity field file {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = several reference dates ({0} and {1}) found in gravity field file {2}
+
+# no TLE data available for object {0}
+NO_TLE_FOR_OBJECT = no TLE data available for object {0}
+
+# no TLE data available for launch year {0}, launch number {1}, launch piece {2}
+NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = no TLE data available for launch year {0}, launch number {1}, launch piece {2}
+
+# lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES = lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
+
+# expected a second TLE line after line {0}:\n{0}: "{1}"
+MISSING_SECOND_TLE_LINE = expected a second TLE line after line {0}:\n{0}: "{1}"
+
+# TLE lines do not refer to the same object:\n{0}\n{1}
+TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE lines do not refer to the same object:\n{0}\n{1}
+
+# wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
+TLE_CHECKSUM_ERROR = wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
+
+# no TLE data available
+NO_TLE_DATA_AVAILABLE = no TLE data available
+
+# spacecraft mass is not positive: {0} kg
+NOT_POSITIVE_SPACECRAFT_MASS = spacecraft mass is not positive: {0} kg
+
+# too large eccentricity for propagation model: e = {0}
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = too large eccentricity for propagation model: e = {0}
+
+# no solar activity available at {0}, data available only in range [{1}, {2}]
+NO_SOLAR_ACTIVITY_AT_DATE = no solar activity available at {0}, data available only in range [{1}, {2}]
+
+# non-existent month {0}
+NON_EXISTENT_MONTH = non-existent month {0}
+
+# non-existent date {0}-{1}-{2}
+NON_EXISTENT_YEAR_MONTH_DAY = non-existent date {0}-{1}-{2}
+
+# non-existent week date {0}-W{1}-{2}
+NON_EXISTENT_WEEK_DATE = non-existent week date {0}-W{1}-{2}
+
+# non-existent date {0}
+NON_EXISTENT_DATE = non-existent date {0}
+
+# no day number {0} in year {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = no day number {0} in year {1}
+
+# non-existent time {0}:{1}:{2}
+NON_EXISTENT_HMS_TIME = non-existent time {0}:{1}:{2}
+
+# non-existent time {0}
+NON_EXISTENT_TIME = non-existent time {0}
+
+# out of range seconds number: {0}
+OUT_OF_RANGE_SECONDS_NUMBER = out of range seconds number: {0}
+
+# angle type not supported, supported angles: {0}, {1} and {2}
+ANGLE_TYPE_NOT_SUPPORTED = angle type not supported, supported angles: {0}, {1} and {2}
+
+# satellite collided with target
+SATELLITE_COLLIDED_WITH_TARGET = satellite collided with target
+
+# attitude pointing law misses ground
+ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = attitude pointing law misses ground
+
+# orbit date ({0}) does not match attitude date ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH = orbit date ({0}) does not match attitude date ({1})
+
+# frame ({0}) does not match frame ({1})
+FRAMES_MISMATCH = frame {0} does not match frame {1}
+
+# initial state not specified for orbit propagation
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initial state not specified for orbit propagation
+
+# propagator is not in ephemeris generation mode
+PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagator is not in ephemeris generation mode
+
+# event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
+EVENT_DATE_TOO_CLOSE = event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
+
+# unable to read header record from JPL ephemerides binary file {0}
+UNABLE_TO_READ_JPL_HEADER = unable to read header record from JPL ephemerides binary file {0}
+
+# inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
+
+# inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
+
+# no data loaded for celestial body {0}
+NO_DATA_LOADED_FOR_CELESTIAL_BODY = no data loaded for celestial body {0}
+
+# file {0} is not a JPL ephemerides binary file
+NOT_A_JPL_EPHEMERIDES_BINARY_FILE = file {0} is not a JPL ephemerides binary file
+
+# file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
+NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
+
+# no JPL ephemerides binary files found
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = no JPL ephemerides binary files found
+
+# out of range date for {0} ephemerides: {1}
+OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = out of range date for {0} ephemerides: {1}
+
+# out of range date for ephemerides: {0}, [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE = out of range date for ephemerides: {0}, [{1}, {2}]
+
+# unexpected two elevation values: {0} and {1}, for one azimuth: {2}
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = unexpected two elevation values: {0} and {1}, for one azimuth: {2}
+
+# unsupported parameter name {0}, supported names: {1}
+UNSUPPORTED_PARAMETER_NAME = unsupported parameter name {0}, supported names: {1}
+
+# unknown additional state "{0}"
+UNKNOWN_ADDITIONAL_STATE = unknown additional state "{0}"
+
+# unknown month "{0}"
+UNKNOWN_MONTH = unknown month "{0}"
+
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = Jacobian matrix for type {0} is singular with current orbit
+
+# state Jacobian has not been initialized yet
+STATE_JACOBIAN_NOT_INITIALIZED = state Jacobian has not been initialized yet
+
+# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
+STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
+
+# state Jacobian has {0} rows but parameters Jacobian has {1} rows
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = state Jacobian has {0} rows but parameters Jacobian has {1} rows
+
+# finite differences steps for force models derivatives not initialized
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = finite differences steps for force models derivatives not initialized
+
+# initial Jacobian matrix has {0} columns, but {1} parameters have been selected
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = initial Jacobian matrix has {0} columns, but {1} parameters have been selected
+
+# orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
+
+# true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
+
+# hyperbolic orbits cannot be handled as {0} instances
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS = hyperbolic orbits cannot be handled as {0} instances
+
+# invalid preamble field in CCSDS date: {0}
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = invalid preamble field in CCSDS date: {0}
+
+# invalid time field length in CCSDS date: {0}, expected {1}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = invalid time field length in CCSDS date: {0}, expected {1}
+
+# missing agency epoch in CCSDS date
+CCSDS_DATE_MISSING_AGENCY_EPOCH = missing agency epoch in CCSDS date
+
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = the central body gravitational coefficient cannot be retrieved from the ODM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = there is no spacecraft mass associated with this ODM file
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = no IERS conventions have been set before parsing
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = frame {0} is not valid in this ODM file context
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+
+# name "{0}" is already used for an additional state
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = name "{0}" is already used for an additional state
+
+# reset state not allowed
+NON_RESETABLE_STATE = reset state not allowed
+
+# Cannot compute Newcomb operators for sigma > rho ({0} > {1})
+DSST_NEWCOMB_OPERATORS_COMPUTATION = Cannot compute Newcomb operators for sigma > rho ({0} > {1})
+
+# Cannot compute the Vmns coefficient with m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS = Cannot compute the Vmns coefficient with m > n ({0} > {1})
+
+# inconsistent shadow computation: entry = {0} whereas exit = {1}
+DSST_SPR_SHADOW_INCONSISTENT = inconsistent shadow computation: entry = {0} whereas exit = {1}
+
+# The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
+
+# unsupported sp3 file version {0}
+SP3_UNSUPPORTED_VERSION = unsupported sp3 file version {0}
+
+# unsupported time system {0}
+SP3_UNSUPPORTED_TIMESYSTEM = unsupported time system {0}
+
+# unexpected end of file in sp3 file (after line {0})
+SP3_UNEXPECTED_END_OF_FILE = unexpected end of sp3 file (after line {0})
+
+# non-existent geomagnetic model {0} for year {1}
+NON_EXISTENT_GEOMAGNETIC_MODEL = non-existent geomagnetic model {0} for year {1}
+
+# geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
+UNSUPPORTED_TIME_TRANSFORM = geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
+
+# time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
+OUT_OF_RANGE_TIME_TRANSFORM = time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
+
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = not enough data for interpolation (sample size = {0})
+
+# too small number of cached neighbors: {0} (must be at least {1})
+NOT_ENOUGH_CACHED_NEIGHBORS =  too small number of cached neighbors: {0} (must be at least {1})
+
+# no cached entries
+NO_CACHED_ENTRIES = no cached entries
+
+# generated entries not sorted: {0} > {1}
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = generated entries not sorted: {0} > {1}
+
+# no data generated around date: {0}
+NO_DATA_GENERATED = no data generated around date: {0}
+
+# unable to generate new data before {0}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = unable to generate new data before {0}
+
+# unable to generate new data after {0}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = unable to generate new data after {0}
+
+# unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
+UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
+
+# unable to compute mean orbit from osculating orbit after {0} iterations
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = unable to compute mean orbit from osculating orbit after {0} iterations
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

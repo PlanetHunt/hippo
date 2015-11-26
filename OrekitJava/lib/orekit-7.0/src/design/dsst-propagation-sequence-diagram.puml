@@ -1,0 +1,110 @@
+' Copyright 2002-2015 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                                true
+  skinparam NoteBackgroundColor                 #F3EFEB
+  skinparam NoteBorderColor                     #691616
+  skinparam NoteFontColor                       #691616
+  skinparam SequenceActorBorderColor            #6A584B
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
+  skinparam SequenceParticipantBorderColor      #6A584B
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
+  skinparam SequenceLifeLineBorderColor         #6A584B
+  skinparam SequenceArrowColor                  #6A584B
+  skinparam SequenceBorderColor                 #6A584B
+  skinparam SequenceFontSize                    11
+
+  hide footbox
+
+  box "User application" #F3EDF7
+    participant "Main" as M
+  end box
+  participant DSSTPropagator
+  participant Integrator
+  participant MainStateEquations
+  participant StateMapper
+  participant Orbit
+  participant "DSST Force Model 1" as F1
+  participant "DSST Force Model 2" as F2
+
+  activate M
+  M          -> DSSTPropagator : propagate
+    activate DSSTPropagator
+    DSSTPropagator -> MainStateEquations : create
+      activate MainStateEquations
+      deactivate MainStateEquations
+    DSSTPropagator -> StateMapper : create
+      activate StateMapper
+      deactivate StateMapper
+    DSSTPropagator -> Integrator : integrate
+      activate Integrator
+      Integrator -> MainStateEquations : computeDerivatives
+        activate MainStateEquations
+        MainStateEquations -> StateMapper : mapArrayToOrbit(mean only)
+          activate StateMapper
+          StateMapper -> Orbit : create
+            activate Orbit
+            deactivate Orbit
+          deactivate StateMapper
+        MainStateEquations -> F1 : getMeanElementRate
+          activate F1
+          deactivate F1
+        MainStateEquations -> F2 : getMeanElementRate
+          activate F2
+          deactivate F2
+        MainStateEquations -> Orbit : addKeplerContribution
+          activate Orbit
+          deactivate Orbit
+        MainStateEquations --> Integrator : state derivatives
+        deactivate MainStateEquations
+      Integrator -> MainStateEquations : computeDerivatives
+        activate MainStateEquations
+        MainStateEquations -> Orbit : mapArrayToOrbit(mean only)
+          activate Orbit
+          deactivate Orbit
+        MainStateEquations -> F1 : getMeanElementRate
+          activate F1
+          deactivate F1
+        MainStateEquations -> F2 : getMeanElementRate
+          activate F2
+          deactivate F2
+        MainStateEquations -> Orbit : addKeplerContribution
+          activate Orbit
+          deactivate Orbit
+        MainStateEquations --> Integrator : state derivatives
+        deactivate MainStateEquations
+      Integrator --> DSSTPropagator : mean state
+      deactivate Integrator
+      DSSTPropagator -> StateMapper : mapArrayToOrbit(mean only or mean and short periodics)
+        activate StateMapper
+        StateMapper -> F1 : getShortPeriodicVariations
+          activate F1
+          deactivate F1
+        StateMapper -> F2 : getShortPeriodicVariations
+          activate F2
+          deactivate F2
+        StateMapper -> Orbit : create
+          activate Orbit
+          deactivate Orbit
+        StateMapper --> DSSTPropagator : complete state
+        deactivate StateMapper
+    DSSTPropagator --> M : final state
+    deactivate DSSTPropagator
+  deactivate M
+
+@enduml
