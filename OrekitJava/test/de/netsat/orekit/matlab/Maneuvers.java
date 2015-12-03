@@ -69,7 +69,7 @@ public class Maneuvers {
 
     }
 	
-	private static class matlabPushStepHandler implements OrekitFixedStepHandler {
+	public static class matlabPushStepHandler implements OrekitFixedStepHandler {
 		MatlabInterface mi;
 		Vector3D[] position_history;
 		

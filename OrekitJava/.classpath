@@ -8,7 +8,7 @@
 	<classpathentry kind="src" path="lib/orekit-7.0/src/test/resources"/>
 	<classpathentry kind="src" path="lib/orekit-7.0/src/main/java"/>
 	<classpathentry kind="src" path="lib/orekit-7.0/src/tutorials/resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="lib/commons-math3-3.4.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math3-3.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-3.3.jar"/>
