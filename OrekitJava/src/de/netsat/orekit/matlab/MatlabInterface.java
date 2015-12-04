@@ -15,7 +15,7 @@ import matlabcontrol.MatlabProxyFactoryOptions;
  */
 public class MatlabInterface {
 	//public static final String MATLAB_PATH = "F:\\Additional Programs\\MATLAB\\R2013a\\bin\\matlab.exe";
-	public static final String MATLAB_PATH = "/usr/local/bin/matlab";
+	public static final String MATLAB_PATH = "D:\\Programs\\MATLAB\\R2015a\\bin\\matlab.exe";// "/usr/local/bin/matlab";
 	//public static final String MATLAB_PATH = "C:\\Program Files\\MATLAB\\R2015a\\bin\\matlab.exe";
 	protected String matlabPath;
 	protected MatlabProxy proxy;
