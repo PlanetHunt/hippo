@@ -177,7 +177,7 @@ public static SpacecraftState runNumericalPropagatorlocal(MatlabInterface mi, Ke
 			 	mi.eval("tic;");
 	            NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(2, 0);
 	            double mu =  provider.getMu();
-	            proxy.setVariable("mu", mu);	    	      									// set earth gravitational constant in matlab
+	            proxy.setVariable("mu", mu);	    	    									// set earth gravitational constant in matlab
 	            		
 	            // get keplerian elements for both satellites from matlab and create satellite object 
 				KeplerianOrbit uwe_3 = loadScripts.getKeplerOrbit(mi, 3);
