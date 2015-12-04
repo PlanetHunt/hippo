@@ -1,9 +1,11 @@
 package de.netsat.orekit.matlab;
 
-
+import de.netsat.orekit.matlab.SatelliteSensorCalculator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -17,8 +19,8 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	MatlabInterface mi;
 	String[] options;
 	private TimeStampedPVCoordinates tsc;
-	private Vector3D pVec;
-	private Vector3D vVec;
+	private SatelliteSensorCalculator spc;
+	private Constants constants;
 
 	public MatlabPushHandler(MatlabInterface mi, String[] options) {
 		this.mi = mi;
@@ -77,71 +79,22 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 
 	}
 
-	/**
-	 * Sets the timestampCoordinates with the help of spacecraft state.
-	 * 
-	 * @param state
-	 * @throws OrekitException
-	 */
-	public void setTimeStampedPVCoordinates(SpacecraftState state) throws OrekitException {
-		this.tsc = state.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-	}
-
-	/**
-	 * Returns the timeStampedPVCoordinated calculated before.
-	 * 
-	 * @return tsc
-	 * @throws OrekitException
-	 */
-	public TimeStampedPVCoordinates getTimeStampedPVCoordinates() throws OrekitException {
-		return this.tsc;
-	}
-
-	/**
-	 * Sets the Velocity vector for the given step.
-	 * 
-	 * @param tsc
-	 * 
-	 */
-	public void setVelocityVector(TimeStampedPVCoordinates tsc) {
-		this.vVec = tsc.getVelocity();
-	}
-
-	/**
-	 * Sets the position vector for the given step.
-	 * 
-	 * @param tsc
-	 */
-	public void setPostionVector(TimeStampedPVCoordinates tsc) {
-		this.pVec = tsc.getPosition();
-	}
-
-	/**
-	 * 
-	 * @return pVec position vector.
-	 */
-	public Vector3D getPositionVector() {
-		return this.pVec;
-	}
-
-	/**
-	 * 
-	 * @return vVect Velocity vector.
-	 */
-	public Vector3D getVelocityVector() {
-		return this.vVec;
-	}
-
 	public void evaluateOptions(SpacecraftState state) throws OrekitException, MatlabInvocationException {
-		this.setTimeStampedPVCoordinates(state);
-		this.setVelocityVector(this.tsc);
-		this.setPostionVector(this.tsc);
+		this.spc = new SatelliteSensorCalculator(state);
+		this.constants = new Constants();
+		this.spc.setTimeStampedPVCoordinates();
 		for (String opt : this.options) {
+			if (opt.equals("mu")) {
+				this.setMuInMatlab("mu");
+			}
 			if (opt.equals("position")) {
-
+				this.spc.setPostionVector();
+				this.setPXInMatlab("p_x");
+				this.setPYInMatlab("p_y");
+				this.setPZInMatlab("p_z");
 			}
 			if (opt.equals("velocity")) {
-
+				this.spc.setVelocityVector();
 				this.setVXInMatlab("v_x");
 				this.setVYInMatlab("v_y");
 				this.setVZInMatlab("v_z");
@@ -167,7 +120,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setVXInMatlab(String name) throws OrekitException, MatlabInvocationException {
 		this.setIfNull(name, "v_x");
-		this.setVariableInMatlab(name, this.getVelocityVector().getX());
+		this.setVariableInMatlab(name, this.spc.getVelocityVector().getX());
 	}
 
 	/**
@@ -179,7 +132,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setVYInMatlab(String name) throws OrekitException, MatlabInvocationException {
 		this.setIfNull(name, "v_y");
-		this.setVariableInMatlab(name, this.getVelocityVector().getY());
+		this.setVariableInMatlab(name, this.spc.getVelocityVector().getY());
 	}
 
 	/**
@@ -191,7 +144,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setVZInMatlab(String name) throws OrekitException, MatlabInvocationException {
 		this.setIfNull(name, "v_z");
-		this.setVariableInMatlab(name, this.getVelocityVector().getZ());
+		this.setVariableInMatlab(name, this.spc.getVelocityVector().getZ());
 	}
 
 	/**
@@ -203,7 +156,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setPZInMatlab(String name) throws OrekitException, MatlabInvocationException {
 		this.setIfNull(name, "p_z");
-		this.setVariableInMatlab(name, this.getPositionVector().getZ());
+		this.setVariableInMatlab(name, this.spc.getPositionVector().getZ());
 	}
 
 	/**
@@ -215,7 +168,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setPYInMatlab(String name) throws OrekitException, MatlabInvocationException {
 		this.setIfNull(name, "p_y");
-		this.setVariableInMatlab(name, this.getPositionVector().getY());
+		this.setVariableInMatlab(name, this.spc.getPositionVector().getY());
 	}
 
 	/**
@@ -227,7 +180,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setPXInMatlab(String name) throws OrekitException, MatlabInvocationException {
 		this.setIfNull(name, "p_x");
-		this.setVariableInMatlab(name, this.getPositionVector().getX());
+		this.setVariableInMatlab(name, this.spc.getPositionVector().getX());
 	}
 
 	/**
@@ -256,5 +209,19 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		}
 		return var;
 	}
+
+	/**
+	 * Set the Mu in Matlab
+	 * 
+	 * @param name
+	 * @throws MatlabInvocationException
+	 * @throws OrekitException
+	 */
+	public void setMuInMatlab(String name) throws MatlabInvocationException, OrekitException {
+		this.setIfNull(name, "mu");
+		this.setVariableInMatlab(name, this.constants.calculateMu());
+	}
+
+
 
 }

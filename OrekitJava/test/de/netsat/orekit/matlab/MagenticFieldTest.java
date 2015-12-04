@@ -42,7 +42,6 @@ public class MagenticFieldTest {
 			throws MatlabInvocationException, OrekitException
 
 	{
-		String[] options = { "velocity" };
 		NetSatConfiguration.init();
 		int sat_nr = 1;
 		Object[] returningObject;
@@ -68,7 +67,7 @@ public class MagenticFieldTest {
 
 		NumericalPropagator numericPropagator = new NumericalPropagator(integrator);
 		numericPropagator.setInitialState(initialState);
-		// new matlabPushStepHandler(mi);
+		String[] options = { "mu", "velocity", "position"};
 		numericPropagator.setMasterMode(outputStepSize, new MatlabPushHandler(mi, options));
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
 
@@ -88,45 +87,6 @@ public class MagenticFieldTest {
 	public void setVariableInMatlab(MatlabInterface mi, String name, double value) throws MatlabInvocationException {
 
 		mi.getProxy().setVariable(name, value);
-	}
-
-	/**
-	 * Converts the ECI Coordinates (R;V) to Latitude, Longitude, Altitude
-	 * (L;L;A). The point it uses the ITRF (Inertial Terrestrial reference frame
-	 * for the frame.
-	 * 
-	 * @param ECICoordinates
-	 * @param oae
-	 * @param date
-	 * @return
-	 * @throws OrekitException
-	 */
-	public static GeodeticPoint getLLA(Vector3D ECICoordinates, OneAxisEllipsoid oae, AbsoluteDate date)
-			throws OrekitException {
-		return oae.transform(ECICoordinates, FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
-	}
-
-	/**
-	 * Calculates the magnetic field in a given ECI points.
-	 * 
-	 * @param ECICoordinates
-	 * @param oae
-	 * @param date
-	 * @param model
-	 * @return
-	 * @throws OrekitException
-	 */
-	public static Vector3D calculateMagenticField(Vector3D ECICoordinates, OneAxisEllipsoid oae, AbsoluteDate date,
-			GeoMagneticField model) throws OrekitException {
-		GeodeticPoint geop = getLLA(ECICoordinates, oae, date);
-		// The altitude which is delivered by the getLLA function is in m it
-		// should be converted to KM.
-		double altitude = geop.getAltitude() / 1000;
-		double latitude = geop.getLatitude();
-		double longtitude = geop.getLongitude();
-		GeoMagneticElements geome = model.calculateField(Math.toDegrees(latitude), Math.toDegrees(longtitude),
-				altitude);
-		return geome.getFieldVector();
 	}
 
 	public static void main(String[] args)
