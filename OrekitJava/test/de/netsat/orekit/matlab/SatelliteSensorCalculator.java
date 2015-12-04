@@ -3,12 +3,11 @@ package de.netsat.orekit.matlab;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticElements;
 import org.orekit.models.earth.GeoMagneticField;
+import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -21,8 +20,9 @@ public class SatelliteSensorCalculator {
 	private Vector3D pVec;
 	private Vector3D vVec;
 	private Vector3D sunPos;
-	private Frame itrf;
 	private AbsoluteDate date;
+	private GeoMagneticField model;
+	private ConstantValues constants;
 
 	/**
 	 * The Constructor method.
@@ -32,10 +32,13 @@ public class SatelliteSensorCalculator {
 	 */
 	public SatelliteSensorCalculator(SpacecraftState state) throws OrekitException {
 		this.state = state;
+		this.constants = new ConstantValues();
 		this.setTimeStampedPVCoordinates();
+		this.setPostionVector();
+		this.setVelocityVector();
 		this.setDate();
-		this.setITRF();
 		this.setSunPosition();
+		this.setGeoMagneticField();
 	}
 
 	/**
@@ -45,7 +48,7 @@ public class SatelliteSensorCalculator {
 	 * @throws OrekitException
 	 */
 	public void setTimeStampedPVCoordinates() throws OrekitException {
-		this.tsc = this.state.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+		this.tsc = this.state.getPVCoordinates(this.constants.getITRF());
 	}
 
 	/**
@@ -104,32 +107,27 @@ public class SatelliteSensorCalculator {
 	 * @return
 	 * @throws OrekitException
 	 */
-	public static GeodeticPoint getLLA(Vector3D ECICoordinates, OneAxisEllipsoid oae, AbsoluteDate date)
-			throws OrekitException {
-		return oae.transform(ECICoordinates, FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
+	public GeodeticPoint getLLA() throws OrekitException {
+		return this.constants.getBodyEllipsoid().transform(this.getPositionVector(), this.constants.getITRF(),
+				this.getDate());
 	}
 
 	/**
 	 * Calculates the magnetic field in a given ECI points.
-	 * 
-	 * @param ECICoordinates
-	 * @param oae
-	 * @param date
-	 * @param model
+	 *
 	 * @return
 	 * @throws OrekitException
 	 */
-	public Vector3D calculateMagenticField(OneAxisEllipsoid oae, AbsoluteDate date,
-			GeoMagneticField model) throws OrekitException {
-		GeodeticPoint geop = getLLA(this.getPositionVector() , oae, date);
+	public double[] calculateMagenticField() throws OrekitException {
+		GeodeticPoint geop = getLLA();
 		// The altitude which is delivered by the getLLA function is in m it
 		// should be converted to KM.
 		double altitude = geop.getAltitude() / 1000;
 		double latitude = geop.getLatitude();
 		double longtitude = geop.getLongitude();
-		GeoMagneticElements geome = model.calculateField(Math.toDegrees(latitude), Math.toDegrees(longtitude),
-				altitude);
-		return geome.getFieldVector();
+		GeoMagneticElements geome = this.getGeoMagnitcField().calculateField(Math.toDegrees(latitude),
+				Math.toDegrees(longtitude), altitude);
+		return geome.getFieldVector().toArray();
 	}
 
 	/**
@@ -140,7 +138,8 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Get the Absoulte date.
+	 * Get the Absolute date.
+	 * 
 	 * @return Absolute
 	 */
 	public AbsoluteDate getDate() {
@@ -148,28 +147,50 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Set the Frame Type.
-	 * @throws OrekitException
-	 */
-	public void setITRF() throws OrekitException {
-		this.itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-	}
-
-	/**
-	 * Get the frame Type
-	 * @return
-	 */
-	public Frame getITRF() {
-		return this.itrf;
-	}
-
-	/**
 	 * Sets the sun position.
+	 * 
 	 * @throws OrekitException
 	 */
 	public void setSunPosition() throws OrekitException {
-		TimeStampedPVCoordinates sunPos = CelestialBodyFactory.getSun().getPVCoordinates(this.getDate(), this.getITRF());
+		TimeStampedPVCoordinates sunPos = CelestialBodyFactory.getSun().getPVCoordinates(this.getDate(),
+				this.constants.getITRF());
 		this.sunPos = sunPos.getPosition();
 	}
 
+	/**
+	 * Gets the sun position.
+	 * 
+	 * @return
+	 * @return {@link Vector3D}
+	 */
+	public double[] getSunPosition() {
+		return this.sunPos.toArray();
+	}
+
+	/**
+	 * Set the Geo-Magnetic Field Model.
+	 * 
+	 * @throws OrekitException
+	 */
+	public void setGeoMagneticField() throws OrekitException {
+		this.model = GeoMagneticFieldFactory.getWMM(this.getYear());
+	}
+
+	/**
+	 * Gets the geo-magnetic field model.
+	 * 
+	 * @return {@link GeoMagneticField}
+	 */
+	public GeoMagneticField getGeoMagnitcField() {
+		return this.model;
+	}
+
+	/**
+	 * Gets the year from the date which came from the state of the satellite.
+	 * 
+	 * @return {@link Integer}
+	 */
+	public int getYear() {
+		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getYear();
+	}
 }

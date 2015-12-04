@@ -3,6 +3,7 @@ package de.netsat.orekit.matlab;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.junit.experimental.theories.Theories;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -38,13 +39,16 @@ public class MagenticFieldTest {
 	 * @throws MatlabInvocationException
 	 * @throws OrekitException
 	 */
-	public static SpacecraftState runNumericalPropagatorlocal(MatlabInterface mi)
+
+	public static SpacecraftState runNumericalPropagatorlocal(MatlabInterface mi, double mu)
 			throws MatlabInvocationException, OrekitException
 
 	{
-		NetSatConfiguration.init();
 		int sat_nr = 1;
 		Object[] returningObject;
+		String[] options = { "magnetic_field", "timestamp"};
+		MatlabPushHandler mph = new MatlabPushHandler(mi, options);
+		mph.setVariableInMatlab("mu", mu);
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
 		double positionTolerance = ((double[]) returningObject[0])[0];
@@ -67,8 +71,7 @@ public class MagenticFieldTest {
 
 		NumericalPropagator numericPropagator = new NumericalPropagator(integrator);
 		numericPropagator.setInitialState(initialState);
-		String[] options = { "mu", "velocity", "position"};
-		numericPropagator.setMasterMode(outputStepSize, new MatlabPushHandler(mi, options));
+		numericPropagator.setMasterMode(outputStepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
 
 		return finalState;
@@ -84,7 +87,8 @@ public class MagenticFieldTest {
 	 * @param value
 	 * @throws MatlabInvocationException
 	 */
-	public void setVariableInMatlab(MatlabInterface mi, String name, double value) throws MatlabInvocationException {
+	public static void setVariableInMatlab(MatlabInterface mi, String name, double value)
+			throws MatlabInvocationException {
 
 		mi.getProxy().setVariable(name, value);
 	}
@@ -92,9 +96,11 @@ public class MagenticFieldTest {
 	public static void main(String[] args)
 			throws OrekitException, MatlabConnectionException, MatlabInvocationException {
 		// Object[] obj = null;
+		NetSatConfiguration.init();
 		MatlabInterface mi;
+		ConstantValues constants = new ConstantValues();
 		mi = new MatlabInterface(MatlabInterface.MATLAB_PATH, null);
-		SpacecraftState obj = runNumericalPropagatorlocal(mi);
+		SpacecraftState runNumericalPropagatorlocal = runNumericalPropagatorlocal(mi, constants.getMu());
 
 		// System.out.println(((double[]) obj[1])[0]);
 	}

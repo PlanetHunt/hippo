@@ -20,7 +20,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	String[] options;
 	private TimeStampedPVCoordinates tsc;
 	private SatelliteSensorCalculator spc;
-	private Constants constants;
+	private ConstantValues constants;
 
 	public MatlabPushHandler(MatlabInterface mi, String[] options) {
 		this.mi = mi;
@@ -81,7 +81,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 
 	public void evaluateOptions(SpacecraftState state) throws OrekitException, MatlabInvocationException {
 		this.spc = new SatelliteSensorCalculator(state);
-		this.constants = new Constants();
+		this.constants = new ConstantValues();
 		this.spc.setTimeStampedPVCoordinates();
 		for (String opt : this.options) {
 			if (opt.equals("mu")) {
@@ -99,16 +99,29 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 				this.setVYInMatlab("v_y");
 				this.setVZInMatlab("v_z");
 			}
-			if (opt.equals("time")) {
+			if (opt.equals("timestamp")) {
+				this.setDateInMatlab("timestamp");
 
 			}
 			if (opt.equals("magnetic_field")) {
-
+				this.setMagenticFieldInMatlab("magnet_field");
 			}
 			if (opt.equals("sun")) {
-
+				this.setSunPositionInMatlab("sun_position");
 			}
 		}
+	}
+
+	/**
+	 * Sets the Geomagnetic Field in Matlab
+	 * 
+	 * @param name
+	 * @throws MatlabInvocationException
+	 * @throws OrekitException
+	 */
+	private void setMagenticFieldInMatlab(String name) throws MatlabInvocationException, OrekitException {
+		this.setIfNull(name, "mag_field");
+		this.setVariableInMatlab(name, this.spc.calculateMagenticField());
 	}
 
 	/**
@@ -219,9 +232,22 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setMuInMatlab(String name) throws MatlabInvocationException, OrekitException {
 		this.setIfNull(name, "mu");
-		this.setVariableInMatlab(name, this.constants.calculateMu());
+		this.setVariableInMatlab(name, this.constants.getMu());
 	}
 
+	/**
+	 * Set the timestamp of the state Matlab
+	 * 
+	 * @param name
+	 * @throws MatlabInvocationException
+	 */
+	public void setDateInMatlab(String name) throws MatlabInvocationException {
+		this.setIfNull(name, "timestamp");
+		this.setVariableInMatlab(name, this.spc.getDate().toString());
+	}
 
-
+	public void setSunPositionInMatlab(String name) throws MatlabInvocationException {
+		this.setIfNull(name, "sun_position");
+		this.setVariableInMatlab(name, this.spc.getSunPosition());
+	}
 }

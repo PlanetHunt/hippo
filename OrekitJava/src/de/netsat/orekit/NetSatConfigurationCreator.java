@@ -27,6 +27,7 @@ public class NetSatConfigurationCreator {
 	 */
 	public static final String[][] CONFIGS = { // 
 		// DIRECTORY FILTER _OR_ SINGLE FILE									   FILE FILTER
+		{"https://www.orekit.org/forge/attachments/download/284/WMM.COF",		   ""},
 		{"https://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history",			       ""},						// leap seconds introduction history
 		{"ftp://ftp.iers.org/products/eop/rapid/bulletina/.*-volume-.*",	       "bulletina.*[.]txt"},	// weekly Earth Orientation Parameters, IAU-1980 and IAU-2000 rapid service and prediction
 		{"ftp://ftp.iers.org/products/eop/bulletinb/format_2009",        	       "bulletinb-.*[.]txt"},	// monthly Earth Orientation Parameters model IAU 2006/2000A, final values
