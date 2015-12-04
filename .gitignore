@@ -1,3 +1,4 @@
-OrekitJava/src/de/netsat/orekit/matlab
+OrekitJava/src/de/netsat/orekit/matlab/
 OrekitJava/pathdef.m
-.metadata
+.metadata/
+.recommanders
