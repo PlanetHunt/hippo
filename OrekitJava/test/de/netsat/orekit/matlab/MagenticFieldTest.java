@@ -3,32 +3,24 @@ package de.netsat.orekit.matlab;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.experimental.theories.Theories;
 import org.orekit.attitudes.Attitude;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.models.earth.GeoMagneticElements;
-import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 
 import de.netsat.orekit.NetSatConfiguration;
 import de.netsat.orekit.matlab.loadScripts;
 import de.netsat.orekit.matlab.MatlabPushHandler;
+import de.netsat.orekit.matlab.EventCalculator;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 import matlabcontrol.MatlabConnectionException;
 import matlabcontrol.MatlabInvocationException;
-import matlabcontrol.MatlabProxy;
 
 public class MagenticFieldTest {
 
@@ -46,7 +38,7 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 1;
 		Object[] returningObject;
-		String[] options = { "magnetic_field", "timestamp"};
+		String[] options = { "magnetic_field", "timestamp", "sun" };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options);
 		mph.setVariableInMatlab("mu", mu);
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
@@ -70,6 +62,8 @@ public class MagenticFieldTest {
 				1.0);
 
 		NumericalPropagator numericPropagator = new NumericalPropagator(integrator);
+		EventCalculator evenetCal = new EventCalculator();
+		numericPropagator.addEventDetector(evenetCal.getEclipseEventDetecor());
 		numericPropagator.setInitialState(initialState);
 		numericPropagator.setMasterMode(outputStepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
@@ -100,7 +94,7 @@ public class MagenticFieldTest {
 		MatlabInterface mi;
 		ConstantValues constants = new ConstantValues();
 		mi = new MatlabInterface(MatlabInterface.MATLAB_PATH, null);
-		SpacecraftState runNumericalPropagatorlocal = runNumericalPropagatorlocal(mi, constants.getMu());
+		runNumericalPropagatorlocal(mi, constants.getMu());
 
 		// System.out.println(((double[]) obj[1])[0]);
 	}

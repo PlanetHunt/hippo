@@ -4,13 +4,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticElements;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class SatelliteSensorCalculator {
@@ -23,6 +22,7 @@ public class SatelliteSensorCalculator {
 	private AbsoluteDate date;
 	private GeoMagneticField model;
 	private ConstantValues constants;
+	private EventCalculator evecalc;
 
 	/**
 	 * The Constructor method.
@@ -37,6 +37,7 @@ public class SatelliteSensorCalculator {
 		this.setPostionVector();
 		this.setVelocityVector();
 		this.setDate();
+		this.evecalc = new EventCalculator();
 		this.setSunPosition();
 		this.setGeoMagneticField();
 	}
@@ -147,14 +148,22 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Sets the sun position.
+	 * Sets the sun position. It considers the eclipse events when doing the
+	 * calculation.
 	 * 
 	 * @throws OrekitException
 	 */
 	public void setSunPosition() throws OrekitException {
-		TimeStampedPVCoordinates sunPos = CelestialBodyFactory.getSun().getPVCoordinates(this.getDate(),
-				this.constants.getITRF());
-		this.sunPos = sunPos.getPosition();
+		EventDetector eclipseDetector = this.evecalc.getEclipseEventDetecor();
+		if (eclipseDetector.g(this.state) > 0) {
+			TimeStampedPVCoordinates sunPos = CelestialBodyFactory.getSun().getPVCoordinates(this.getDate(),
+					this.constants.getITRF());
+			this.sunPos = sunPos.getPosition();
+
+		} else {
+			this.sunPos = new Vector3D(0, 0, 0);
+			System.out.println(this.sunPos.toString());
+		}
 	}
 
 	/**
@@ -193,4 +202,5 @@ public class SatelliteSensorCalculator {
 	public int getYear() {
 		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getYear();
 	}
+
 }

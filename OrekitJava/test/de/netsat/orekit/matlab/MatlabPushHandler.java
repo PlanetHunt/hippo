@@ -1,24 +1,17 @@
 package de.netsat.orekit.matlab;
 
 import de.netsat.orekit.matlab.SatelliteSensorCalculator;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 import matlabcontrol.MatlabInvocationException;
 
 public class MatlabPushHandler implements OrekitFixedStepHandler {
 	MatlabInterface mi;
 	String[] options;
-	private TimeStampedPVCoordinates tsc;
 	private SatelliteSensorCalculator spc;
 	private ConstantValues constants;
 
