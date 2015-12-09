@@ -1,5 +1,7 @@
 package de.netsat.orekit.matlab;
 
+import java.util.Vector;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -148,6 +150,17 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
+	 * Get the Julian Date
+	 * 
+	 * @return date
+	 */
+	public double getSecondsfromJ() {
+		AbsoluteDate start = new AbsoluteDate(2010, 1, 1, 0, 0, 0.00, this.constants.getTimeScale());
+		System.out.println(start.toString());
+		return this.getDate().offsetFrom(start, this.constants.getTimeScale());
+	}
+
+	/**
 	 * Sets the sun position. It considers the eclipse events when doing the
 	 * calculation.
 	 * 
@@ -201,6 +214,64 @@ public class SatelliteSensorCalculator {
 	 */
 	public int getYear() {
 		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getYear();
+	}
+
+	/**
+	 * Get the month
+	 */
+	public int getMonth() {
+		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getMonth();
+	}
+
+	/**
+	 * get the day
+	 * 
+	 * @return
+	 */
+	public int getDay() {
+		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getDay();
+	}
+
+	/**
+	 * get the hour
+	 * 
+	 * @return
+	 */
+	public int getHour() {
+		return this.getDate().getComponents(this.constants.getTimeScale()).getTime().getHour();
+	}
+
+	/**
+	 * get the minutes
+	 * 
+	 * @return
+	 */
+	public int getMinute() {
+		return this.getDate().getComponents(this.constants.getTimeScale()).getTime().getMinute();
+	}
+
+	/**
+	 * get the Seconds
+	 * 
+	 * @return
+	 */
+	public double getSeconds() {
+		return this.getDate().getComponents(this.constants.getTimeScale()).getTime().getSecond();
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public double[] getGeorgianDateAsArray() {
+		double[] dateArray = new double[6];
+		dateArray[0] = (double) this.getYear();
+		dateArray[1] = (double) this.getMonth();
+		dateArray[2] = (double) this.getDay();
+		dateArray[3] = (double) this.getHour();
+		dateArray[4] = (double) this.getMinute();
+		dateArray[5] = this.getSeconds();
+		return dateArray;
 	}
 
 }

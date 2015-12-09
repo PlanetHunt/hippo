@@ -18,7 +18,7 @@ public class ConstantValues {
 	private double mu;
 	private OneAxisEllipsoid oae;
 	private Frame itrf;
-	private TAIScale timescale;
+	private TimeScale timescale;
 	private PVCoordinatesProvider sun;
 	private PVCoordinatesProvider earth;
 
@@ -90,9 +90,11 @@ public class ConstantValues {
 	/**
 	 * Set the timescale.
 	 * 
+	 * @throws OrekitException
+	 * 
 	 */
-	public void setTimeScale() {
-		this.timescale = TimeScalesFactory.getTAI();
+	public void setTimeScale() throws OrekitException {
+		this.timescale = TimeScalesFactory.getUTC();
 	}
 
 	/**

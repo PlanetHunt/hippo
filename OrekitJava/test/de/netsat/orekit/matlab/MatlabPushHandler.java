@@ -236,7 +236,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setDateInMatlab(String name) throws MatlabInvocationException {
 		this.setIfNull(name, "timestamp");
-		this.setVariableInMatlab(name, this.spc.getDate().toString());
+		this.setVariableInMatlab(name, this.spc.getGeorgianDateAsArray());
 	}
 
 	public void setSunPositionInMatlab(String name) throws MatlabInvocationException {
