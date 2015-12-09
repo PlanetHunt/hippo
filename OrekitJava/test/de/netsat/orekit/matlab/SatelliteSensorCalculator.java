@@ -1,7 +1,5 @@
 package de.netsat.orekit.matlab;
 
-import java.util.Vector;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -9,6 +7,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.models.earth.GeoMagneticElements;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
@@ -25,10 +26,14 @@ public class SatelliteSensorCalculator {
 	private GeoMagneticField model;
 	private ConstantValues constants;
 	private EventCalculator evecalc;
+	private KeplerianOrbit keplerianOrbit;
 
 	/**
-	 * The Constructor method.
+	 * The Constructor method. The order here is important as some are
+	 * Requirements for the others.
 	 * 
+	 * @TODO Make the function work without any order or add dependencies on the
+	 *       fly
 	 * @param state
 	 * @throws OrekitException
 	 */
@@ -42,6 +47,7 @@ public class SatelliteSensorCalculator {
 		this.evecalc = new EventCalculator();
 		this.setSunPosition();
 		this.setGeoMagneticField();
+		this.setOrbitalParameters();
 	}
 
 	/**
@@ -272,6 +278,32 @@ public class SatelliteSensorCalculator {
 		dateArray[4] = (double) this.getMinute();
 		dateArray[5] = this.getSeconds();
 		return dateArray;
+	}
+
+	/**
+	 * sets the keplerianOrbit parameter for the satellite
+	 */
+	public void setOrbitalParameters() {
+		OrbitType ortype = OrbitType.KEPLERIAN;
+		this.keplerianOrbit = (KeplerianOrbit) ortype.convertType(this.state.getOrbit());
+	}
+
+	/**
+	 * * get Keplerian orbit
+	 * 
+	 * @return
+	 */
+	public KeplerianOrbit getKeplerianOrbit() {
+		return this.keplerianOrbit;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public double[] getKeplerianElementsAsArray() {
+		double[] elements = new double[6];
+		return elements;
 	}
 
 }
