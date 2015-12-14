@@ -1,6 +1,12 @@
 package de.netsat.orekit.matlab;
 
+import de.netsat.orekit.actuator.Tools;
 import de.netsat.orekit.matlab.SatelliteSensorCalculator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
@@ -10,14 +16,80 @@ import org.orekit.time.AbsoluteDate;
 import matlabcontrol.MatlabInvocationException;
 
 public class MatlabPushHandler implements OrekitFixedStepHandler {
+
 	MatlabInterface mi;
 	String[] options;
+
+	private Misc misc;
 	private SatelliteSensorCalculator spc;
 	private ConstantValues constants;
+	private boolean atOnce;
+	/*
+	 * This part is used only when atOnce parameter is active. It is also a good
+	 * way to find out how the parameters would look like in Matlab even if they
+	 * are not pushed at once.
+	 */
+	private List<double[]> timeList;
+	private List<double[]> magneticFieldList;
+	private List<double[]> sunPositionList;
+	private List<double[]> positionList;
+	private List<double[]> velocityList;
+	private List<Double> semiMajorAxisList;
+	private List<Double> eccentricityList;
+	private List<Double> inclinationList;
+	private List<Double> argumentOfPerigeeList;
+	private List<Double> raanList;
+	private List<Double> trueAnomalyList;
+	private Map<String, List<?>> listOftheLists;
 
-	public MatlabPushHandler(MatlabInterface mi, String[] options) {
+	/**
+	 * The constructor which needs atOnce set. It is the one that should be used
+	 * If the user wants to have all the propagated data sent to Matlab at once.
+	 * 
+	 * @param mi
+	 * @param options
+	 * @param atOnce
+	 */
+	public MatlabPushHandler(MatlabInterface mi, String[] options, boolean atOnce) {
 		this.mi = mi;
 		this.options = options;
+		this.atOnce = atOnce;
+		this.misc = new Misc();
+		/* Initiate the list only if needed. */
+		if (this.atOnce) {
+			timeList = new ArrayList<double[]>();
+			magneticFieldList = new ArrayList<double[]>();
+			sunPositionList = new ArrayList<double[]>();
+			positionList = new ArrayList<double[]>();
+			velocityList = new ArrayList<double[]>();
+			semiMajorAxisList = new ArrayList<Double>();
+			eccentricityList = new ArrayList<Double>();
+			inclinationList = new ArrayList<Double>();
+			argumentOfPerigeeList = new ArrayList<Double>();
+			raanList = new ArrayList<Double>();
+			trueAnomalyList = new ArrayList<Double>();
+			for (String o : this.options) {
+				switch (o) {
+				case "timestamp":
+					listOftheLists.put(o, timeList);
+					break;
+
+				case "magnetic_field":
+					listOftheLists.put(o, magneticFieldList);
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * The constructor with atOnce parameters not set.
+	 * 
+	 * @param mi
+	 * @param options
+	 */
+	public MatlabPushHandler(MatlabInterface mi, String[] options) {
+		this(mi, options, false);
 	}
 
 	@Override
@@ -34,31 +106,6 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	void matlabInterfacePushPV(SpacecraftState scstate) throws MatlabInvocationException, OrekitException {
 		try {
 			this.evaluateOptions(scstate);
-			// TimeStampedPVCoordinates scCoordinates = scstate
-			// .getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010,
-			// true));
-			// Vector3D pVec = scCoordinates.getPosition();
-			// Vector3D vVec = scCoordinates.getVelocity();
-			// AbsoluteDate date = scCoordinates.getDate();
-			//
-			// mi.getProxy().setVariable("Time",
-			// scCoordinates.getDate().toString());
-			// mi.getProxy().setVariable("Position_x", pVec.getX());
-			// mi.getProxy().setVariable("Position_y", pVec.getY());
-			// mi.getProxy().setVariable("Position_z", pVec.getZ());
-			// mi.getProxy().setVariable("vel_x",
-			// scstate.getPVCoordinates().getVelocity().getX());
-			// mi.getProxy().setVariable("vel_y",
-			// scstate.getPVCoordinates().getVelocity().getY());
-			// mi.getProxy().setVariable("vel_z",
-			// scstate.getPVCoordinates().getVelocity().getZ());
-			// mi.getProxy().setVariable("period",
-			// scstate.getKeplerianPeriod());
-			// TimeStampedPVCoordinates sunPos =
-			// CelestialBodyFactory.getSun().getPVCoordinates(scCoordinates.getDate(),
-			// FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-			// mi.getProxy().setVariable("Sun_Position",
-			// sunPos.getPosition().toArray());
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -85,12 +132,14 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 				this.setPXInMatlab("p_x");
 				this.setPYInMatlab("p_y");
 				this.setPZInMatlab("p_z");
+
 			}
 			if (opt.equals("velocity")) {
 				this.spc.setVelocityVector();
 				this.setVXInMatlab("v_x");
 				this.setVYInMatlab("v_y");
 				this.setVZInMatlab("v_z");
+
 			}
 			if (opt.equals("timestamp")) {
 				this.setDateInMatlab("timestamp");
@@ -103,6 +152,17 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 				this.setSunPositionInMatlab("sun_position");
 			}
 		}
+	}
+
+	/**
+	 * Sets the values in the list, only usable when atOnce option set.
+	 * 
+	 * @TODO Exception handling, but not only this one, the whole codebase.
+	 * @param value
+	 * @param l
+	 */
+	private <T> void setValueInList(T value, List<T> l) {
+		l.add(value);
 	}
 
 	/**
@@ -190,16 +250,34 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	}
 
 	/**
-	 * Set the variable in matltab (the variable should be the type double or
-	 * could be casted to double.
+	 * Set the variable in Matlab.
 	 * 
-	 * @param mi
+	 * @param name
+	 * @param value
+	 * @param l
+	 */
+	private <T> void setVariableInMatlab(String name, T value, List<T> l) throws MatlabInvocationException {
+		if (this.atOnce) {
+			if (l != null) {
+				this.setValueInList(value, l);
+			} else {
+				mi.getProxy().setVariable(name, value);
+			}
+		} else {
+			mi.getProxy().setVariable(name, value);
+		}
+	}
+
+	/**
+	 * Set the variable in the Matlab
+	 * 
 	 * @param name
 	 * @param value
 	 * @throws MatlabInvocationException
 	 */
-	public void setVariableInMatlab(String name, Object value) throws MatlabInvocationException {
-		this.mi.getProxy().setVariable(name, value);
+	public <T> void setVariableInMatlab(String name, T value) throws MatlabInvocationException {
+		List<T> l = null;
+		this.setVariableInMatlab(name, value, l);
 	}
 
 	/**
@@ -239,8 +317,35 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		this.setVariableInMatlab(name, this.spc.getGeorgianDateAsArray());
 	}
 
+	/**
+	 * Sets the sun position of the state in Matlab
+	 * 
+	 * @param name
+	 * @throws MatlabInvocationException
+	 */
 	public void setSunPositionInMatlab(String name) throws MatlabInvocationException {
 		this.setIfNull(name, "sun_position");
 		this.setVariableInMatlab(name, this.spc.getSunPosition());
 	}
+
+	/**
+	 * Returns the position as double vector.
+	 * 
+	 * @return double[]
+	 * @throws MatlabInvocationException
+	 */
+	public void setPositionAsVectorInMatlab(String name) throws MatlabInvocationException {
+		this.setIfNull(name, "position");
+		this.setVariableInMatlab(name, this.spc.getPositionVector().toArray());
+	}
+
+	/**
+	 * Returns the velocity as double vector.
+	 * 
+	 * @return double[]
+	 */
+	public double[] getVelocityAsVector() {
+		return this.spc.getVelocityVector().toArray();
+	}
+
 }
