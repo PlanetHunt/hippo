@@ -8,7 +8,6 @@ import org.orekit.models.earth.GeoMagneticElements;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -22,11 +21,26 @@ public class SatelliteSensorCalculator {
 	private Vector3D pVec;
 	private Vector3D vVec;
 	private Vector3D sunPos;
+	private Vector3D magneticField;
 	private AbsoluteDate date;
 	private GeoMagneticField model;
 	private ConstantValues constants;
 	private EventCalculator evecalc;
 	private KeplerianOrbit keplerianOrbit;
+	private SensorDataType[] options;
+	private double semiMajorAxis;
+	private double eccentericity;
+	private double inclination;
+	private double argumentOfPerigee;
+	private double raan;
+	private double trueAnomaly;
+	private double[] orbitalElements;
+	private double seconds;
+	private int minute;
+	private int hour;
+	private int day;
+	private int month;
+	private int year;
 
 	/**
 	 * The Constructor method. The order here is important as some are
@@ -37,17 +51,116 @@ public class SatelliteSensorCalculator {
 	 * @param state
 	 * @throws OrekitException
 	 */
-	public SatelliteSensorCalculator(SpacecraftState state) throws OrekitException {
+	public SatelliteSensorCalculator(SpacecraftState state, SensorDataType[] options) throws OrekitException {
 		this.state = state;
+		this.options = options;
 		this.constants = new ConstantValues();
-		this.setTimeStampedPVCoordinates();
-		this.setPostionVector();
-		this.setVelocityVector();
-		this.setDate();
 		this.evecalc = new EventCalculator();
-		this.setSunPosition();
-		this.setGeoMagneticField();
-		this.setOrbitalParameters();
+		this.setTimeStampedPVCoordinates();
+		for (SensorDataType s : this.options) {
+			this.setSensorDataType(s.name());
+		}
+	}
+
+	/**
+	 * Maps the Setters with the name of the SensorDataType A very simple
+	 * Dependency Injection.
+	 * 
+	 * @throws OrekitException
+	 */
+	public void setSensorDataType(String name) throws OrekitException {
+		switch (name) {
+		case "SUN":
+			this.setDate();
+			this.evecalc = new EventCalculator();
+			this.setSunPosition();
+			break;
+		case "VELOCITY":
+			this.setTimeStampedPVCoordinates();
+			this.setVelocityVector();
+			break;
+		case "POSITION":
+			this.setTimeStampedPVCoordinates();
+			this.setPostionVector();
+			break;
+		case "MAGNETIC_FIELD":
+			this.setDate();
+			this.setYear();
+			this.setPostionVector();
+			this.setGeoMagneticField();
+			this.setMagneticField();
+			break;
+		case "ORBITAL_ELEMENTS":
+			this.setDate();
+			this.setKeplerianOrbit();
+			this.setSemiMajorAxis();
+			this.setInclination();
+			this.setEccentercity();
+			this.setArgumentOfPerigee();
+			this.setRaan();
+			this.setTrueAnomaly();
+			break;
+		case "TIMESTAMP":
+			this.setDate();
+			this.setYear();
+			this.setMonth();
+			this.setDay();
+			this.setHour();
+			this.setMinute();
+			this.setSeconds();
+			break;
+		case "PX":
+			this.setPostionVector();
+			break;
+		}
+	}
+
+	/**
+	 * Set the seconds.
+	 */
+	private void setSeconds() {
+		this.seconds = this.getDate().getComponents(this.constants.getTimeScale()).getTime().getSecond();
+
+	}
+
+	/**
+	 * Set the minutes
+	 */
+	private void setMinute() {
+		this.minute = getDate().getComponents(this.constants.getTimeScale()).getTime().getMinute();
+
+	}
+
+	/**
+	 * Set the hour
+	 */
+	private void setHour() {
+		this.hour = this.getDate().getComponents(this.constants.getTimeScale()).getTime().getHour();
+
+	}
+
+	/**
+	 * Set the day
+	 */
+	private void setDay() {
+		this.day = this.getDate().getComponents(this.constants.getTimeScale()).getDate().getDay();
+
+	}
+
+	/**
+	 * Set the Month
+	 */
+	private void setMonth() {
+		this.month = this.getDate().getComponents(this.constants.getTimeScale()).getDate().getMonth();
+
+	}
+
+	/**
+	 * Set the Year
+	 */
+	private void setYear() {
+		this.year = this.getDate().getComponents(this.constants.getTimeScale()).getDate().getYear();
+
 	}
 
 	/**
@@ -90,53 +203,39 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
+	 * Returns the Position vector as a Vector3D object.
 	 * 
-	 * @return pVec position vector.
+	 * @return {@link Vector3D}
 	 */
 	public Vector3D getPositionVector() {
 		return this.pVec;
 	}
 
 	/**
+	 * Returns the position vector as an array of three doubles.
 	 * 
-	 * @return vVect Velocity vector.
+	 * @return {@link Double}
+	 */
+	public double[] getPositionVectorAsArray() {
+		return this.pVec.toArray();
+	}
+
+	/**
+	 * Returns the velocity vector as Vector3D
+	 * 
+	 * @return {@link Vector3D}
 	 */
 	public Vector3D getVelocityVector() {
 		return this.vVec;
 	}
 
 	/**
-	 * Converts the ECI Coordinates (R;V) to Latitude, Longitude, Altitude
-	 * (L;L;A). The point it uses the ITRF (Inertial Terrestrial reference frame
-	 * for the frame.
+	 * Returns the velocity vector as an array of three doubles.
 	 * 
-	 * @param ECICoordinates
-	 * @param oae
-	 * @param date
-	 * @return
-	 * @throws OrekitException
+	 * @return {@link Double}
 	 */
-	public GeodeticPoint getLLA() throws OrekitException {
-		return this.constants.getBodyEllipsoid().transform(this.getPositionVector(), this.constants.getITRF(),
-				this.getDate());
-	}
-
-	/**
-	 * Calculates the magnetic field in a given ECI points.
-	 *
-	 * @return
-	 * @throws OrekitException
-	 */
-	public double[] calculateMagenticField() throws OrekitException {
-		GeodeticPoint geop = getLLA();
-		// The altitude which is delivered by the getLLA function is in m it
-		// should be converted to KM.
-		double altitude = geop.getAltitude() / 1000;
-		double latitude = geop.getLatitude();
-		double longtitude = geop.getLongitude();
-		GeoMagneticElements geome = this.getGeoMagnitcField().calculateField(Math.toDegrees(latitude),
-				Math.toDegrees(longtitude), altitude);
-		return geome.getFieldVector().toArray();
+	public double[] getVelocityVectorAsArray() {
+		return this.vVec.toArray();
 	}
 
 	/**
@@ -156,7 +255,75 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Get the Julian Date
+	 * Gets the year from the date which came from the state of the satellite.
+	 * 
+	 * @return {@link Integer}
+	 */
+	public int getYear() {
+		return this.year;
+	}
+
+	/**
+	 * Get the month
+	 */
+	public int getMonth() {
+		return this.month;
+	}
+
+	/**
+	 * get the day
+	 * 
+	 * @return
+	 */
+	public int getDay() {
+		return this.day;
+	}
+
+	/**
+	 * get the hour
+	 * 
+	 * @return
+	 */
+	public int getHour() {
+		return this.hour;
+	}
+
+	/**
+	 * get the minutes
+	 * 
+	 * @return
+	 */
+	public int getMinute() {
+		return this.minute;
+	}
+
+	/**
+	 * get the Seconds
+	 * 
+	 * @return
+	 */
+	public double getSeconds() {
+		return this.seconds;
+	}
+
+	/**
+	 * Returns the timestamp as an array of [y,m,d,h,m,s] all as doubles
+	 * 
+	 * @return
+	 */
+	public double[] getTimeStampAsArray() {
+		double[] dateArray = new double[6];
+		dateArray[0] = (double) this.getYear();
+		dateArray[1] = (double) this.getMonth();
+		dateArray[2] = (double) this.getDay();
+		dateArray[3] = (double) this.getHour();
+		dateArray[4] = (double) this.getMinute();
+		dateArray[5] = this.getSeconds();
+		return dateArray;
+	}
+
+	/**
+	 * Get the seconds from the Absolute date of 2010,1,1,00:00:00
 	 * 
 	 * @return date
 	 */
@@ -181,17 +348,25 @@ public class SatelliteSensorCalculator {
 
 		} else {
 			this.sunPos = new Vector3D(0, 0, 0);
-			System.out.println(this.sunPos.toString());
 		}
 	}
 
 	/**
-	 * Gets the sun position.
+	 * Returns the Sun position as a Vector3D.
 	 * 
-	 * @return
 	 * @return {@link Vector3D}
 	 */
-	public double[] getSunPosition() {
+	public Vector3D getSunPosition() {
+		return this.sunPos;
+	}
+
+	/**
+	 * Returns the Sun position as a an array of three doubles. 1:x, 2:y, 3:z
+	 * 
+	 * @return
+	 * 
+	 */
+	public double[] getSunPositionAsArray() {
 		return this.sunPos.toArray();
 	}
 
@@ -214,76 +389,61 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Gets the year from the date which came from the state of the satellite.
+	 * Converts the ECI Coordinates (R;V) to Latitude, Longitude, Altitude
+	 * (L;L;A). The point it uses the ITRF (Inertial Terrestrial reference frame
+	 * for the frame.
 	 * 
-	 * @return {@link Integer}
-	 */
-	public int getYear() {
-		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getYear();
-	}
-
-	/**
-	 * Get the month
-	 */
-	public int getMonth() {
-		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getMonth();
-	}
-
-	/**
-	 * get the day
-	 * 
+	 * @param ECICoordinates
+	 * @param oae
+	 * @param date
 	 * @return
+	 * @throws OrekitException
 	 */
-	public int getDay() {
-		return this.getDate().getComponents(this.constants.getTimeScale()).getDate().getDay();
+	public GeodeticPoint getLLA() throws OrekitException {
+		return this.constants.getBodyEllipsoid().transform(this.getPositionVector(), this.constants.getITRF(),
+				this.getDate());
 	}
 
 	/**
-	 * get the hour
-	 * 
+	 * Calculates the magnetic field in a given ECI points.
+	 *
 	 * @return
+	 * @throws OrekitException
 	 */
-	public int getHour() {
-		return this.getDate().getComponents(this.constants.getTimeScale()).getTime().getHour();
+	public void setMagneticField() throws OrekitException {
+		GeodeticPoint geop = this.getLLA();
+		// The altitude which is delivered by the getLLA function is in m it
+		// should be converted to KM.
+		double altitude = geop.getAltitude() / 1000;
+		double latitude = geop.getLatitude();
+		double longtitude = geop.getLongitude();
+		GeoMagneticElements geome = this.getGeoMagnitcField().calculateField(Math.toDegrees(latitude),
+				Math.toDegrees(longtitude), altitude);
+		this.magneticField = geome.getFieldVector();
 	}
 
 	/**
-	 * get the minutes
+	 * Returns the magnetic field as a Vector3D.
 	 * 
-	 * @return
+	 * @return {@link Vector3D}
 	 */
-	public int getMinute() {
-		return this.getDate().getComponents(this.constants.getTimeScale()).getTime().getMinute();
+	public Vector3D getMagneticField() {
+		return this.magneticField;
 	}
 
 	/**
-	 * get the Seconds
+	 * Returns the magnetic field as an array of three doubles in nT.
 	 * 
-	 * @return
+	 * @return {@link Double}
 	 */
-	public double getSeconds() {
-		return this.getDate().getComponents(this.constants.getTimeScale()).getTime().getSecond();
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public double[] getGeorgianDateAsArray() {
-		double[] dateArray = new double[6];
-		dateArray[0] = (double) this.getYear();
-		dateArray[1] = (double) this.getMonth();
-		dateArray[2] = (double) this.getDay();
-		dateArray[3] = (double) this.getHour();
-		dateArray[4] = (double) this.getMinute();
-		dateArray[5] = this.getSeconds();
-		return dateArray;
+	public double[] getMagneticFieldAsArray() {
+		return this.magneticField.toArray();
 	}
 
 	/**
 	 * sets the keplerianOrbit parameter for the satellite
 	 */
-	public void setOrbitalParameters() {
+	public void setKeplerianOrbit() {
 		OrbitType ortype = OrbitType.KEPLERIAN;
 		this.keplerianOrbit = (KeplerianOrbit) ortype.convertType(this.state.getOrbit());
 	}
@@ -298,12 +458,114 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
+	 * Returns the Orbital elements as an array of 6 elements.
+	 * sma,ecc,inc,arg,raa,tra <= 0, 1, 2, 3, 4, 5
 	 * 
-	 * @return
+	 * @return {@link Double}
 	 */
-	public double[] getKeplerianElementsAsArray() {
-		double[] elements = new double[6];
-		return elements;
+	public double[] getOrbitalElements() {
+		return this.orbitalElements;
+	}
+
+	/**
+	 * Sets the orbital Element Array with the help of existing set Orbital
+	 * element in the SensorCalc.
+	 */
+	public void setOrbitalElements() {
+		this.orbitalElements = new double[6];
+		this.orbitalElements[0] = this.getSemiMajorAxis();
+		this.orbitalElements[1] = this.getEccentericity();
+		this.orbitalElements[2] = this.getInclination();
+		this.orbitalElements[3] = this.getArgumentOfPerigee();
+		this.orbitalElements[4] = this.getRaan();
+		this.orbitalElements[5] = this.getTrueAnomaly();
+	}
+
+	/**
+	 * Returns the arguments of Perigee in Rads.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getArgumentOfPerigee() {
+		return this.argumentOfPerigee;
+	}
+
+	/**
+	 * Returns the Raan in Rads.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getRaan() {
+		return this.raan;
+	}
+
+	/**
+	 * Returns the true anomaly in Rads.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getTrueAnomaly() {
+		return this.trueAnomaly;
+	}
+
+	/**
+	 * Returns the inclination in Rads.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getInclination() {
+		return this.inclination;
+	}
+
+	/**
+	 * Set the semi Major Axis.
+	 */
+	public void setSemiMajorAxis() {
+		this.semiMajorAxis = this.getKeplerianOrbit().getA();
+	}
+
+	/**
+	 * Returns the Semi-Major Axis in m.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getSemiMajorAxis() {
+		return this.semiMajorAxis;
+	}
+
+	public void setEccentercity() {
+		this.eccentericity = this.getKeplerianOrbit().getE();
+
+	}
+
+	public double getEccentericity() {
+		return this.eccentericity;
+	}
+
+	public void setInclination() {
+		this.inclination = this.getKeplerianOrbit().getI();
+
+	}
+
+	public void setArgumentOfPerigee() {
+		this.argumentOfPerigee = this.getKeplerianOrbit().getPerigeeArgument();
+	}
+
+	public void setRaan() {
+		this.raan = this.getKeplerianOrbit().getRightAscensionOfAscendingNode();
+	}
+
+	public void setTrueAnomaly() {
+		this.trueAnomaly = this.getKeplerianOrbit().getTrueAnomaly();
+	}
+
+	/**
+	 * Get the X axis value of the Position Vector
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getPx() {
+		return this.getPositionVector().getX();
 	}
 
 }

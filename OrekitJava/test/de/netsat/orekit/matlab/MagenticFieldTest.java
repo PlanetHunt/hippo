@@ -38,8 +38,8 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 1;
 		Object[] returningObject;
-		String[] options = { "magnetic_field", "timestamp", "sun" };
-		MatlabPushHandler mph = new MatlabPushHandler(mi, options);
+		SensorDataType[] options = { SensorDataType.MAGNETIC_FIELD, SensorDataType.TIMESTAMP, SensorDataType.SUN, SensorDataType.PX};
+		MatlabPushHandler mph = new MatlabPushHandler(mi, options, true);
 		mph.setVariableInMatlab("mu", mu);
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
