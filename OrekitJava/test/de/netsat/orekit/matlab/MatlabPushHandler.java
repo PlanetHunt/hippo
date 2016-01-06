@@ -54,7 +54,6 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
 		if (!isLast) {
 			try {
-				System.out.println("THE STEP is being calculated");
 				this.evaluateOptions(currentState);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -62,7 +61,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			}
 		} else {
 			try {
-				System.out.println("The Step Caculation finished");
+				System.out.println("We are in the Last Step.");
 				this.PushAllDataToMatlab();
 			} catch (MatlabInvocationException e) {
 				e.printStackTrace();
@@ -78,7 +77,8 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	}
 
 	/**
-	 * Evaluate the function name given and run it to set the desired values.
+	 * Evaluate the function name given and run it to set the desired values. It
+	 * uses reflect and invoke options.
 	 * 
 	 * @param functionName
 	 * @return
@@ -95,7 +95,8 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	}
 
 	/**
-	 * Evaluate the Options that should be sent to Matlab.
+	 * The objects that have been chosen to be synchronized with Matlab are
+	 * handled here.
 	 * 
 	 * @param state
 	 * @throws OrekitException
