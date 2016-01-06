@@ -29,7 +29,7 @@ public class SatelliteSensorCalculator {
 	private KeplerianOrbit keplerianOrbit;
 	private SensorDataType[] options;
 	private double semiMajorAxis;
-	private double eccentericity;
+	private double eccentricity;
 	private double inclination;
 	private double argumentOfPerigee;
 	private double raan;
@@ -95,9 +95,40 @@ public class SatelliteSensorCalculator {
 			this.setKeplerianOrbit();
 			this.setSemiMajorAxis();
 			this.setInclination();
-			this.setEccentercity();
+			this.setEccentrcity();
 			this.setArgumentOfPerigee();
 			this.setRaan();
+			this.setTrueAnomaly();
+			this.setOrbitalElements();
+			break;
+		case "SMA":
+			this.setDate();
+			this.setKeplerianOrbit();
+			this.setSemiMajorAxis();
+			break;
+		case "ECC":
+			this.setDate();
+			this.setKeplerianOrbit();
+			this.setEccentrcity();
+			break;
+		case "INC":
+			this.setDate();
+			this.setKeplerianOrbit();
+			this.setInclination();
+			break;
+		case "RAA":
+			this.setDate();
+			this.setKeplerianOrbit();
+			this.setRaan();
+			break;
+		case "ARG":
+			this.setDate();
+			this.setKeplerianOrbit();
+			this.setArgumentOfPerigee();
+			break;
+		case "TRU":
+			this.setDate();
+			this.setKeplerianOrbit();
 			this.setTrueAnomaly();
 			break;
 		case "TIMESTAMP":
@@ -371,7 +402,7 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Set the Geo-Magnetic Field Model.
+	 * Set the GeoMagnetic Field Model.
 	 * 
 	 * @throws OrekitException
 	 */
@@ -380,7 +411,7 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
-	 * Gets the geo-magnetic field model.
+	 * Gets the Geomagnetic field model.
 	 * 
 	 * @return {@link GeoMagneticField}
 	 */
@@ -412,8 +443,10 @@ public class SatelliteSensorCalculator {
 	 */
 	public void setMagneticField() throws OrekitException {
 		GeodeticPoint geop = this.getLLA();
-		// The altitude which is delivered by the getLLA function is in m it
-		// should be converted to KM.
+		/*
+		 * The altitude which is delivered by the getLLA function is in m it
+		 * should be converted to KM.
+		 */
 		double altitude = geop.getAltitude() / 1000;
 		double latitude = geop.getLatitude();
 		double longtitude = geop.getLongitude();
@@ -474,7 +507,7 @@ public class SatelliteSensorCalculator {
 	public void setOrbitalElements() {
 		this.orbitalElements = new double[6];
 		this.orbitalElements[0] = this.getSemiMajorAxis();
-		this.orbitalElements[1] = this.getEccentericity();
+		this.orbitalElements[1] = this.getEccentricity();
 		this.orbitalElements[2] = this.getInclination();
 		this.orbitalElements[3] = this.getArgumentOfPerigee();
 		this.orbitalElements[4] = this.getRaan();
@@ -533,28 +566,48 @@ public class SatelliteSensorCalculator {
 		return this.semiMajorAxis;
 	}
 
-	public void setEccentercity() {
-		this.eccentericity = this.getKeplerianOrbit().getE();
+	/**
+	 * Sets the eccentricity for the step.
+	 */
+	public void setEccentrcity() {
+		this.eccentricity = this.getKeplerianOrbit().getE();
 
 	}
 
-	public double getEccentericity() {
-		return this.eccentericity;
+	/**
+	 * Returns the eccentricity for the given step.
+	 * 
+	 * @return
+	 */
+	public double getEccentricity() {
+		return this.eccentricity;
 	}
 
+	/**
+	 * Sets the inclination for the given step. (in Rads)
+	 */
 	public void setInclination() {
 		this.inclination = this.getKeplerianOrbit().getI();
 
 	}
 
+	/**
+	 * Sets the Argument of Perigee for the given step. (in Rads)
+	 */
 	public void setArgumentOfPerigee() {
 		this.argumentOfPerigee = this.getKeplerianOrbit().getPerigeeArgument();
 	}
 
+	/**
+	 * Sets the Raan for the given step. (in Rads)
+	 */
 	public void setRaan() {
 		this.raan = this.getKeplerianOrbit().getRightAscensionOfAscendingNode();
 	}
 
+	/**
+	 * Sets the True Anomaly for the step. (in Rads)
+	 */
 	public void setTrueAnomaly() {
 		this.trueAnomaly = this.getKeplerianOrbit().getTrueAnomaly();
 	}

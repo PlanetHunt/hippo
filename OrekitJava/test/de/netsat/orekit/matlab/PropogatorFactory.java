@@ -14,6 +14,8 @@ public class PropogatorFactory {
 	private double positionTolerance;
 	private AbstractIntegrator integrator;
 	private String integratorType;
+	private String propgationType;
+	private MatlabPushHandler mlp;
 
 	/**
 	 * Propagator's Constructor Method
@@ -24,74 +26,6 @@ public class PropogatorFactory {
 	public PropogatorFactory(String type, String integratorType) {
 		this.type = type;
 		this.integratorType = integratorType;
-	}
-
-	/**
-	 * Propagator's Constructor Method without integrator.
-	 */
-	public PropogatorFactory(String type) {
-		this(type, null);
-	}
-
-	/**
-	 * Sets the adaptive integrator for the Propagator
-	 * 
-	 * @param integrator
-	 */
-	public void setAdaptiveStepIntegrator(AdaptiveStepsizeIntegrator integrator) {
-		this.integrator = integrator;
-	}
-
-	/**
-	 * Sets the RungeKutta integrator for the Propagator
-	 * 
-	 * @param integrator
-	 */
-	public void setRungeKuttaIntegrator(RungeKuttaIntegrator integrator) {
-		this.integrator = integrator;
-	}
-
-	/**
-	 * Sets the duration of the propagation in seconds.
-	 * 
-	 * @param duration
-	 */
-	public void setDuration(int duration) {
-		this.duration = duration;
-	}
-
-	/**
-	 * Sets the maximum step size in seconds
-	 * 
-	 * @param maxSteps
-	 */
-	public void setMaxStep(int maxStep) {
-		this.maxStep = maxStep;
-	}
-
-	/**
-	 * Sets the minimum step size in seconds
-	 * 
-	 * @param minStep
-	 */
-	public void setMinStep(int minStep) {
-		this.minStep = minStep;
-	}
-
-	/**
-	 * Sets the step size of the integrator.
-	 */
-	public void setStepSize(int stepSize) {
-		this.stepSize = stepSize;
-	}
-
-	/**
-	 * Sets the position tolerance for the propagator integrator.
-	 * 
-	 * @param positionTolerance
-	 */
-	public void setPositionTolerance(double positionTolerance) {
-		this.positionTolerance = positionTolerance;
 	}
 
 	/**

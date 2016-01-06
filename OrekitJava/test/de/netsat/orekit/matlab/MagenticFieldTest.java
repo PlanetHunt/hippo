@@ -38,8 +38,11 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 1;
 		Object[] returningObject;
-		SensorDataType[] options = { SensorDataType.MAGNETIC_FIELD, SensorDataType.TIMESTAMP, SensorDataType.SUN, SensorDataType.PX};
-		MatlabPushHandler mph = new MatlabPushHandler(mi, options, true);
+		SensorDataType[] options = { SensorDataType.MAGNETIC_FIELD, SensorDataType.TIMESTAMP, SensorDataType.SUN,
+				SensorDataType.SMA, SensorDataType.ECC, SensorDataType.INC, SensorDataType.RAA, SensorDataType.ARG,
+				SensorDataType.TRU };
+		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Plot };
+		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions, true);
 		mph.setVariableInMatlab("mu", mu);
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
@@ -73,7 +76,7 @@ public class MagenticFieldTest {
 	}
 
 	/**
-	 * Set the variable in matltab (the variable should be the type double or
+	 * Set the variable in Matl ab (the variable should be the type double or
 	 * could be casted to double.
 	 * 
 	 * @param mi

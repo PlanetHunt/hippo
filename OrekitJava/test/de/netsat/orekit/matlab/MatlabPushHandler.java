@@ -17,8 +17,9 @@ import matlabcontrol.MatlabInvocationException;
 
 public class MatlabPushHandler implements OrekitFixedStepHandler {
 
-	MatlabInterface mi;
-	SensorDataType[] options;
+	private MatlabInterface mi;
+	private SensorDataType[] options;
+	private MatlabFunctionType[] matlabFunctions;
 	private SatelliteSensorCalculator spc;
 	private boolean atOnce;
 	private Set<MatlabData> dataList;
@@ -32,10 +33,12 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param options
 	 * @param atOnce
 	 */
-	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, boolean atOnce) {
+	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions,
+			boolean atOnce) {
 		this.mi = mi;
 		this.options = options;
 		this.atOnce = atOnce;
+		this.matlabFunctions = matlabFunctions;
 		this.dataList = new HashSet<MatlabData>();
 
 	}
@@ -46,8 +49,8 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param mi
 	 * @param options
 	 */
-	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options) {
-		this(mi, options, false);
+	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions) {
+		this(mi, options, matlabFunctions, false);
 	}
 
 	@Override
@@ -63,6 +66,12 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			try {
 				System.out.println("We are in the Last Step.");
 				this.PushAllDataToMatlab();
+				/* Run the Matlab functions at the end of the propagation */
+				for (MatlabFunctionType ft : this.matlabFunctions) {
+					if (ft.getAtOnce()) {
+						this.runMatlabFunction(ft.getFunctionName());
+					}
+				}
 			} catch (MatlabInvocationException e) {
 				e.printStackTrace();
 				System.err.println(e.getMessage());
@@ -134,6 +143,12 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			this.PushAllDataToMatlab();
 			this.dataList.clear();
 		}
+		/* Run the Matlab function at every step. */
+		for (MatlabFunctionType ft : this.matlabFunctions) {
+			if (!ft.getAtOnce()) {
+				this.runMatlabFunction(ft.getFunctionName());
+			}
+		}
 	}
 
 	/**
@@ -176,6 +191,17 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 */
 	public void setVariableInMatlab(String name, Object value) throws MatlabInvocationException {
 		this.mi.getProxy().setVariable(name, value);
+	}
+
+	/**
+	 * Run a Matlab Function
+	 * 
+	 * @param name
+	 * @return Object: should be casted.
+	 * @throws MatlabInvocationException
+	 */
+	public void runMatlabFunction(String name) throws MatlabInvocationException {
+		this.mi.getProxy().returningEval(name, 1);
 	}
 
 	/**

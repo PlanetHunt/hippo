@@ -20,7 +20,7 @@ public enum SensorDataType {
 	INC("inc", "d", "getInclination"), 
 	ARG("arg","d", "getArgumentOfPerigee"), 
 	RAA("raa", "d", "getRaan"), 
-	MAN("MAN", "d", "getMeanAnomaly");
+	TRU("tru", "d", "getTrueAnomaly");
 
 	private String name_in_matlab;
 	private String type;
