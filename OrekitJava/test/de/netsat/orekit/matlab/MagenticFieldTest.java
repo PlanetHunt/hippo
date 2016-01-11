@@ -49,7 +49,7 @@ public class MagenticFieldTest {
 		double maxstep = ((double[]) returningObject[2])[0];
 		double duration = ((double[]) returningObject[3])[0];
 		double outputStepSize = ((double[]) returningObject[4])[0];
-		NetsatPropogatorFactory NumericalPropagatorFactory = new NetsatPropogatorFactory(np, maxstep, minStep, duration,
+		NetsatPropagatorFactory NumericalPropagatorFactory = new NetsatPropagatorFactory(np, maxstep, minStep, duration,
 				outputStepSize, positionTolerance, keplerOrbit);
 		NumericalPropagator numericPropagator = NumericalPropagatorFactory.getNumericalPropagator();
 		SpacecraftState initialState = new SpacecraftState(keplerOrbit,

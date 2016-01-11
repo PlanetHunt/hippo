@@ -143,6 +143,21 @@ public class SatelliteSensorCalculator {
 		case "PX":
 			this.setPostionVector();
 			break;
+		case "PY":
+			this.setPostionVector();
+			break;
+		case "PZ":
+			this.setPostionVector();
+			break;
+		case "VX":
+			this.setVelocityVector();
+			break;
+		case "VY":
+			this.setVelocityVector();
+			break;
+		case "VZ":
+			this.setVelocityVector();
+			break;
 		}
 	}
 

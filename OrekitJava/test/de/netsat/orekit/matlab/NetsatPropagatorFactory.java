@@ -5,7 +5,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
-public class NetsatPropogatorFactory {
+public class NetsatPropagatorFactory {
 
 	private PropagatorDataType propagatorType;
 
@@ -15,7 +15,7 @@ public class NetsatPropogatorFactory {
 	 * @param propagatorType
 	 * @throws PropagationException
 	 */
-	public NetsatPropogatorFactory(PropagatorDataType propagatorType, double maxStep, double minStep, double duration,
+	public NetsatPropagatorFactory(PropagatorDataType propagatorType, double maxStep, double minStep, double duration,
 			double stepSize, double positionTolerance, Orbit orbit) throws PropagationException {
 		this.propagatorType = propagatorType;
 		this.propagatorType.setDuration(duration);
