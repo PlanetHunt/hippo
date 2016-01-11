@@ -1,13 +1,10 @@
 package de.netsat.orekit.matlab;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
 
 import de.netsat.orekit.NetSatConfiguration;
 import de.netsat.orekit.matlab.loadScripts;
@@ -42,6 +39,7 @@ public class MagenticFieldTest {
 				SensorDataType.SMA, SensorDataType.ECC, SensorDataType.INC, SensorDataType.RAA, SensorDataType.ARG,
 				SensorDataType.TRU };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Plot };
+		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions, true);
 		mph.setVariableInMatlab("mu", mu);
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
@@ -51,12 +49,9 @@ public class MagenticFieldTest {
 		double maxstep = ((double[]) returningObject[2])[0];
 		double duration = ((double[]) returningObject[3])[0];
 		double outputStepSize = ((double[]) returningObject[4])[0];
-
-		final OrbitType propagationType = OrbitType.KEPLERIAN;
-		final double[][] tolerances = NumericalPropagator.tolerances(positionTolerance, keplerOrbit, propagationType);
-		AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, tolerances[0],
-				tolerances[1]);
-
+		NetsatPropogatorFactory NumericalPropagatorFactory = new NetsatPropogatorFactory(np, maxstep, minStep, duration,
+				outputStepSize, positionTolerance, keplerOrbit);
+		NumericalPropagator numericPropagator = NumericalPropagatorFactory.getNumericalPropagator();
 		SpacecraftState initialState = new SpacecraftState(keplerOrbit,
 				new Attitude(FramesFactory.getEME2000(),
 						new TimeStampedAngularCoordinates(keplerOrbit.getDate(),
@@ -64,13 +59,11 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				1.0);
 
-		NumericalPropagator numericPropagator = new NumericalPropagator(integrator);
 		EventCalculator evenetCal = new EventCalculator();
 		numericPropagator.addEventDetector(evenetCal.getEclipseEventDetecor());
 		numericPropagator.setInitialState(initialState);
 		numericPropagator.setMasterMode(outputStepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
-
 		return finalState;
 
 	}

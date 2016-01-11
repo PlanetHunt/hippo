@@ -1,7 +1,8 @@
 package de.netsat.orekit.matlab;
 
 public enum MatlabFunctionType {
-	Plot("Plots the data in matlab", "plotOrbitElements(timestamp, orbital_elements)", true);
+	Plot("Plots the data in matlab", "plotOrbitElements(timestamp, orbital_elements)", true),
+	Calc("Calculates the distance", "calculateDistance(a,b)", false);
 
 	private String help;
 	private String functionName;
