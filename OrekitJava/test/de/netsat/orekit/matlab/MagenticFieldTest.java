@@ -35,9 +35,7 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 1;
 		Object[] returningObject;
-		SensorDataType[] options = { SensorDataType.MAGNETIC_FIELD, SensorDataType.TIMESTAMP, SensorDataType.SUN,
-				SensorDataType.SMA, SensorDataType.ECC, SensorDataType.INC, SensorDataType.RAA, SensorDataType.ARG,
-				SensorDataType.TRU };
+		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP, };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Plot };
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions, true);
