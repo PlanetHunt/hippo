@@ -16,9 +16,9 @@ oe = cell2mat(orbital_elements');
 %convert detections into flags at the appropriate time index
 %
 latArgZero_detection_flags = (latArgZero_detections ~= datetime([0,0,0,0,0,0]));
-latArgNinety_detection_flags = (latArgNinety_detections ~= datetime([0,0,0,0,0,0]));
-apogee_detection_flags = (apogee_detections(7) ~= 0);
-perigee_detection_flags = (perigee_detections(7) ~= datetime([0,0,0,0,0,0]));
+latArgNinety_detection_flags = (latArgZero_detections ~= datetime([0,0,0,0,0,0]));
+apogee_detection_flags = (apogee_detections ~= datetime([0,0,0,0,0,0]));
+perigee_detection_flags = (perigee_detections ~= datetime([0,0,0,0,0,0]));
 
 
 %% plotting
