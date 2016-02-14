@@ -23,6 +23,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	private SatelliteSensorCalculator spc;
 	private boolean atOnce;
 	private Set<MatlabData> dataList;
+	private EventCalculator eventCal;
 	Method method;
 
 	/**
@@ -34,10 +35,11 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param atOnce
 	 */
 	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions,
-			boolean atOnce) {
+			boolean atOnce, EventCalculator eventCal) {
 		this.mi = mi;
 		this.options = options;
 		this.atOnce = atOnce;
+		this.eventCal = eventCal;
 		this.matlabFunctions = matlabFunctions;
 		this.dataList = new HashSet<MatlabData>();
 
@@ -50,7 +52,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param options
 	 */
 	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions) {
-		this(mi, options, matlabFunctions, false);
+		this(mi, options, matlabFunctions, false, null);
 	}
 
 	@Override
@@ -120,7 +122,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	public void evaluateOptions(SpacecraftState state)
 			throws OrekitException, MatlabInvocationException, NoSuchMethodException, SecurityException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		this.spc = new SatelliteSensorCalculator(state, this.options);
+		this.spc = new SatelliteSensorCalculator(state, this.options, this.eventCal);
 		this.spc.setTimeStampedPVCoordinates();
 		for (SensorDataType s : this.options) {
 			MatlabData mld = null;

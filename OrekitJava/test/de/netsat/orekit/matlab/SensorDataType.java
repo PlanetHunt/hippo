@@ -20,7 +20,12 @@ public enum SensorDataType {
 	INC("inc", "d", "getInclination"), 
 	ARG("arg","d", "getArgumentOfPerigee"), 
 	RAA("raa", "d", "getRaan"), 
-	TRU("tru", "d", "getTrueAnomaly");
+	TRU("tru", "d", "getTrueAnomaly"),
+	MEA("mea", "d", "getMeanAnomaly"),
+	DETECT_PERIGEE("perigee_detections", "dd", "getPerigeeDetetions"),
+	DETECT_APOGEE("apogee_detections", "dd", "getApogeeDetections"),
+	DETECT_LATARG_ZERO("latitude_arg_zero_detections", "dd", "getLatitudeArgumentZeroDetections"),
+	DETECT_LATARG_NINETY("latitude_arg_ninety_detections", "dd", "getLatitudeArgumentNinetyDetections");
 
 	private String name_in_matlab;
 	private String type;

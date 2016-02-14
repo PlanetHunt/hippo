@@ -35,11 +35,13 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 1;
 		Object[] returningObject;
-		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP, };
+		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
+				SensorDataType.DETECT_LATARG_NINETY, SensorDataType.DETECT_APOGEE, SensorDataType.DETECT_PERIGEE,
+				SensorDataType.DETECT_LATARG_ZERO };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Plot };
-		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
-		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions, true);
+		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("mu", mu);
+		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
 		double positionTolerance = ((double[]) returningObject[0])[0];
@@ -56,8 +58,9 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(10, 10), new Vector3D(1, 2)),
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				1.0);
-
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
+		mph = new MatlabPushHandler(mi, options, matlabFunctions, true, eventCal);
+		mph.setVariableInMatlab("mu", mu);
 		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
 		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
 		numericPropagator.addEventDetector(eventCal.getLatArg(0));
