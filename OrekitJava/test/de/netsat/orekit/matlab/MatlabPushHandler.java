@@ -58,6 +58,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		if (!isLast) {
 			try {
 				this.evaluateOptions(currentState);
+				System.out.println("Still propagating..." + currentState.getDate());
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.err.println(e.getMessage());

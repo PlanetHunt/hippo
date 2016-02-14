@@ -57,8 +57,11 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				1.0);
 
-		EventCalculator evenetCal = new EventCalculator();
-		numericPropagator.addEventDetector(evenetCal.getEclipseEventDetecor());
+		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
+		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
+		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
+		numericPropagator.addEventDetector(eventCal.getLatArg(0));
+		numericPropagator.addEventDetector(eventCal.getLatArg(90));
 		numericPropagator.setInitialState(initialState);
 		numericPropagator.setMasterMode(outputStepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
@@ -67,7 +70,7 @@ public class MagenticFieldTest {
 	}
 
 	/**
-	 * Set the variable in Matl ab (the variable should be the type double or
+	 * Set the variable in Matlab (the variable should be the type double or
 	 * could be casted to double.
 	 * 
 	 * @param mi
