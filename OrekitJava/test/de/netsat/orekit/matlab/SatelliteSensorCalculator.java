@@ -507,7 +507,7 @@ public class SatelliteSensorCalculator {
 
 	/**
 	 * Returns the Orbital elements as an array of 6 elements.
-	 * sma,ecc,inc,arg,raa,tra <= 0, 1, 2, 3, 4, 5
+	 * sma,ecc,inc,arg,raa,tru <= 0, 1, 2, 3, 4, 5
 	 * 
 	 * @return {@link Double}
 	 */

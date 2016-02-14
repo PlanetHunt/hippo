@@ -44,13 +44,6 @@ public class EventCalculator {
 	}
 
 	/**
-	 * Sets the position angle detector.
-	 */
-	// public void setPositionAngleDetector(){
-	// positionAngleDetector posAngleEvent = new Pos
-	// }
-
-	/**
 	 * Sets the eclipse event detector
 	 */
 	public void setEclipseEvenetDetector() {
@@ -81,11 +74,12 @@ public class EventCalculator {
 	}
 
 	/**
-	 * Sets the positionAngle event for the eventCalculator
-	 * Use the increasing only
+	 * Sets the positionAngle event for the eventCalculator Use the increasing
+	 * only
+	 * 
 	 * @return {@link NetSatLatitudeArgumentDetector}
 	 */
-	public NetSatLatitudeArgumentDetector setNetSatLatitudeArgumentDetectorEvent(final double angle) {
+	public NetSatLatitudeArgumentDetector createNetSatLatitudeArgumentDetectorEvent(final double angle) {
 		EventHandler<NetSatLatitudeArgumentDetector> netSatEventHandler = new EventHandler<NetSatLatitudeArgumentDetector>() {
 
 			@Override
@@ -98,14 +92,10 @@ public class EventCalculator {
 			@Override
 			public Action eventOccurred(SpacecraftState s, NetSatLatitudeArgumentDetector detector, boolean increasing)
 					throws OrekitException {
-				System.out.println(angle + "\n");
-				System.out.println(s.getDate() + "\n");
-				if (increasing) {
-					System.out.println("Latitude is increasing...");
-					return Action.CONTINUE;
-				} else {
-					return Action.CONTINUE;
-				}
+				System.out.println(angle);
+				System.out.println(s.getDate());
+				System.out.println("Argument of Laitude crosssing detected!");
+				return Action.CONTINUE;
 			}
 		};
 		NetSatLatitudeArgumentDetector posAngDet = new NetSatLatitudeArgumentDetector(this.startOrbit.getType(),
@@ -117,14 +107,14 @@ public class EventCalculator {
 	 * Sets the Event of Latitude Argument detector equal Zero.
 	 */
 	public void setNetSatLatitudeArgumentDetectorZero() {
-		this.latArgZero = this.setNetSatLatitudeArgumentDetectorEvent(0);
+		this.latArgZero = this.createNetSatLatitudeArgumentDetectorEvent(0);
 	}
 
 	/**
 	 * Setst the Event of Latitude Argument detector equal to Ninety degrees.
 	 */
 	public void setNetSatLatitudeArgumentDetectorNinety() {
-		this.latArgNinety = this.setNetSatLatitudeArgumentDetectorEvent(Math.PI / 2);
+		this.latArgNinety = this.createNetSatLatitudeArgumentDetectorEvent(Math.PI / 2);
 	}
 
 	public EventHandler<ApsideDetector> getApogeeEventHandler() {
