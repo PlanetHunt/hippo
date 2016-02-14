@@ -1,11 +1,13 @@
-package de.netsat.orekit.matlab;
+package de.netsat.orekit.matlab.eventhandler;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
-public class LatitudeArgumentDetectionHandler implements EventHandler<NetSatLatitudeArgumentDetector> {
+import de.netsat.orekit.matlab.LatitudeArgumentDetector;
+
+public class LatitudeArgumentDetectionHandler implements EventHandler<LatitudeArgumentDetector> {
 
 	private AbsoluteDate latitudeArgumentEventDate;
 	private final double angle;
@@ -15,7 +17,7 @@ public class LatitudeArgumentDetectionHandler implements EventHandler<NetSatLati
 	}
 
 	@Override
-	public Action eventOccurred(SpacecraftState s, NetSatLatitudeArgumentDetector detector, boolean increasing)
+	public Action eventOccurred(SpacecraftState s, LatitudeArgumentDetector detector, boolean increasing)
 			throws OrekitException {
 		this.latitudeArgumentEventDate = new AbsoluteDate();
 		System.out.println(this.angle);
@@ -26,7 +28,7 @@ public class LatitudeArgumentDetectionHandler implements EventHandler<NetSatLati
 	}
 
 	@Override
-	public SpacecraftState resetState(NetSatLatitudeArgumentDetector detector, SpacecraftState oldState)
+	public SpacecraftState resetState(LatitudeArgumentDetector detector, SpacecraftState oldState)
 			throws OrekitException {
 		return oldState;
 	}

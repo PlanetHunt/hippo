@@ -15,6 +15,9 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import de.netsat.orekit.matlab.eventhandler.ApsideDetectionHandler;
+import de.netsat.orekit.matlab.eventhandler.LatitudeArgumentDetectionHandler;
+
 public class SatelliteSensorCalculator {
 
 	private SpacecraftState state;
@@ -190,7 +193,7 @@ public class SatelliteSensorCalculator {
 	 * @throws OrekitException
 	 */
 	private void setLatitudeArgumentNinetyDetections() throws OrekitException {
-		NetSatLatitudeArgumentDetector ninetyDet = this.eventCal.getLatArg(90);
+		LatitudeArgumentDetector ninetyDet = this.eventCal.getLatArg(90);
 		LatitudeArgumentDetectionHandler ninetyHandler = (LatitudeArgumentDetectionHandler) ninetyDet.getHandler();
 		if (ninetyHandler.getLatitudeArgumentEventDate() != null) {
 			this.latitudeArgumentNinetyDetections = this
@@ -217,7 +220,7 @@ public class SatelliteSensorCalculator {
 	 * in placeholder.
 	 */
 	private void setLatitudeArgumentZeroDetections() {
-		NetSatLatitudeArgumentDetector zeroDet = this.eventCal.getLatArg(0);
+		LatitudeArgumentDetector zeroDet = this.eventCal.getLatArg(0);
 		LatitudeArgumentDetectionHandler zeroHandler = (LatitudeArgumentDetectionHandler) zeroDet.getHandler();
 		if (zeroHandler.getLatitudeArgumentEventDate() != null) {
 			this.latitudeArgumentZeroDetections = this

@@ -1,4 +1,4 @@
-package de.netsat.orekit.matlab;
+package de.netsat.orekit.matlab.eventhandler;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;

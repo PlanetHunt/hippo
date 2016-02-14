@@ -29,7 +29,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  *      /entry/src/main/java/org/orekit/propagation/events/PositionAngleDetector
  *      .java
  */
-public class NetSatLatitudeArgumentDetector extends AbstractDetector<NetSatLatitudeArgumentDetector> {
+public class LatitudeArgumentDetector extends AbstractDetector<LatitudeArgumentDetector> {
 
 	/**
 	 * 
@@ -60,7 +60,7 @@ public class NetSatLatitudeArgumentDetector extends AbstractDetector<NetSatLatit
 	 * @param positionAngle
 	 * @param angle
 	 */
-	public NetSatLatitudeArgumentDetector(final OrbitType orbitType, final PositionAngle positionAngle,
+	public LatitudeArgumentDetector(final OrbitType orbitType, final PositionAngle positionAngle,
 			final double angle) {
 		this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, orbitType, positionAngle, angle);
 	}
@@ -75,9 +75,9 @@ public class NetSatLatitudeArgumentDetector extends AbstractDetector<NetSatLatit
 	 * @param positionAngle
 	 * @param angle
 	 */
-	public NetSatLatitudeArgumentDetector(final double maxCheck, final double threshold, final OrbitType orbitType,
+	public LatitudeArgumentDetector(final double maxCheck, final double threshold, final OrbitType orbitType,
 			final PositionAngle positionAngle, final double angle) {
-		this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<NetSatLatitudeArgumentDetector>(), orbitType,
+		this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeArgumentDetector>(), orbitType,
 				positionAngle, angle);
 	}
 
@@ -93,8 +93,8 @@ public class NetSatLatitudeArgumentDetector extends AbstractDetector<NetSatLatit
 	 * @param positionAngle
 	 * @param angle
 	 */
-	private NetSatLatitudeArgumentDetector(final double maxCheck, final double threshold, final int maxIter,
-			final EventHandler<NetSatLatitudeArgumentDetector> handler, final OrbitType orbitType,
+	private LatitudeArgumentDetector(final double maxCheck, final double threshold, final int maxIter,
+			final EventHandler<LatitudeArgumentDetector> handler, final OrbitType orbitType,
 			final PositionAngle positionAngle, final double angle) {
 		super(maxCheck, threshold, maxIter, handler);
 		this.orbitType = orbitType;
@@ -105,9 +105,9 @@ public class NetSatLatitudeArgumentDetector extends AbstractDetector<NetSatLatit
 	}
 
 	@Override
-	protected NetSatLatitudeArgumentDetector create(final double newMaxCheck, final double newThreshold,
-			final int newMaxIter, final EventHandler<NetSatLatitudeArgumentDetector> newHandler) {
-		return new NetSatLatitudeArgumentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, orbitType,
+	protected LatitudeArgumentDetector create(final double newMaxCheck, final double newThreshold,
+			final int newMaxIter, final EventHandler<LatitudeArgumentDetector> newHandler) {
+		return new LatitudeArgumentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, orbitType,
 				positionAngle, angle);
 	}
 

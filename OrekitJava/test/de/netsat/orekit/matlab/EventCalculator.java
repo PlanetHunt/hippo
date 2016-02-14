@@ -11,6 +11,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 import de.netsat.orekit.matlab.ConstantValues;
+import de.netsat.orekit.matlab.eventhandler.ApsideDetectionHandler;
+import de.netsat.orekit.matlab.eventhandler.LatitudeArgumentDetectionHandler;
 
 import org.orekit.utils.Constants;
 
@@ -23,8 +25,8 @@ public class EventCalculator {
 	private KeplerianOrbit startOrbit;
 	private AbsoluteDate startDate;
 	private SpacecraftState startState;
-	private NetSatLatitudeArgumentDetector latArgZero;
-	private NetSatLatitudeArgumentDetector latArgNinety;
+	private LatitudeArgumentDetector latArgZero;
+	private LatitudeArgumentDetector latArgNinety;
 
 	public EventCalculator(SpacecraftState state, AbsoluteDate startDate, KeplerianOrbit startOrbit)
 			throws OrekitException {
@@ -77,11 +79,11 @@ public class EventCalculator {
 	 * Sets the positionAngle event for the eventCalculator Use the increasing
 	 * only
 	 * 
-	 * @return {@link NetSatLatitudeArgumentDetector}
+	 * @return {@link LatitudeArgumentDetector}
 	 */
-	public NetSatLatitudeArgumentDetector createNetSatLatitudeArgumentDetectorEvent(final double angle) {
+	public LatitudeArgumentDetector createNetSatLatitudeArgumentDetectorEvent(final double angle) {
 		LatitudeArgumentDetectionHandler latArgDetHandler = new LatitudeArgumentDetectionHandler(angle);
-		NetSatLatitudeArgumentDetector posAngDet = new NetSatLatitudeArgumentDetector(this.startOrbit.getType(),
+		LatitudeArgumentDetector posAngDet = new LatitudeArgumentDetector(this.startOrbit.getType(),
 				PositionAngle.TRUE, angle).withHandler(latArgDetHandler);
 		return posAngDet;
 	}
@@ -133,7 +135,7 @@ public class EventCalculator {
 	 *            (in Degrees !!!)
 	 * @return
 	 */
-	public NetSatLatitudeArgumentDetector getLatArg(double angle) {
+	public LatitudeArgumentDetector getLatArg(double angle) {
 		if (angle == 0) {
 			return this.latArgZero;
 		} else {
