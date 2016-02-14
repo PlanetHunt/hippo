@@ -10,6 +10,7 @@ import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -25,8 +26,8 @@ public class SatelliteSensorCalculator {
 	private AbsoluteDate date;
 	private GeoMagneticField model;
 	private ConstantValues constants;
-	private EventCalculator evecalc;
 	private KeplerianOrbit keplerianOrbit;
+	private double[] latitudeArgumentNinetyDetections;
 	private SensorDataType[] options;
 	private double semiMajorAxis;
 	private double eccentricity;
@@ -41,6 +42,11 @@ public class SatelliteSensorCalculator {
 	private int day;
 	private int month;
 	private int year;
+	private EventCalculator eventCal;
+	private double[] latitudeArgumentZeroDetections;
+	private double[] apogeeDetections;
+	private double[] perigeeDetections;
+	private double meanAnomaly;
 
 	/**
 	 * The Constructor method. The order here is important as some are
@@ -49,13 +55,17 @@ public class SatelliteSensorCalculator {
 	 * @TODO Make the function work without any order or add dependencies on the
 	 *       fly
 	 * @param state
+	 * @param eventCal
 	 * @throws OrekitException
 	 */
-	public SatelliteSensorCalculator(SpacecraftState state, SensorDataType[] options) throws OrekitException {
+	public SatelliteSensorCalculator(SpacecraftState state, SensorDataType[] options, EventCalculator eventCal)
+			throws OrekitException {
 		this.state = state;
 		this.options = options;
+		this.eventCal = eventCal;
 		this.constants = new ConstantValues();
-		this.evecalc = new EventCalculator();
+		this.apogeeDetections = null;
+		this.perigeeDetections = null;
 		this.setTimeStampedPVCoordinates();
 		for (SensorDataType s : this.options) {
 			this.setSensorDataType(s.name());
@@ -72,7 +82,6 @@ public class SatelliteSensorCalculator {
 		switch (name) {
 		case "SUN":
 			this.setDate();
-			this.evecalc = new EventCalculator();
 			this.setSunPosition();
 			break;
 		case "VELOCITY":
@@ -98,6 +107,7 @@ public class SatelliteSensorCalculator {
 			this.setEccentrcity();
 			this.setArgumentOfPerigee();
 			this.setRaan();
+			this.setMeanAnomly();
 			this.setTrueAnomaly();
 			this.setOrbitalElements();
 			break;
@@ -158,7 +168,130 @@ public class SatelliteSensorCalculator {
 		case "VZ":
 			this.setVelocityVector();
 			break;
+		case "DETECT_PERIGEE":
+			this.setApsideDetections();
+			break;
+		case "DETECT_APOGEE":
+			this.setApsideDetections();
+			break;
+		case "DETECT_LATARG_ZERO":
+			this.setLatitudeArgumentZeroDetections();
+			break;
+		case "DETECT_LATARG_NINETY":
+			this.setLatitudeArgumentNinetyDetections();
+			break;
 		}
+	}
+
+	/**
+	 * Sets the Latitude Argument crossing with 90 degrees event detections in
+	 * placeholder.
+	 * 
+	 * @throws OrekitException
+	 */
+	private void setLatitudeArgumentNinetyDetections() throws OrekitException {
+		NetSatLatitudeArgumentDetector ninetyDet = this.eventCal.getLatArg(90);
+		LatitudeArgumentDetectionHandler ninetyHandler = (LatitudeArgumentDetectionHandler) ninetyDet.getHandler();
+		if (ninetyHandler.getLatitudeArgumentEventDate() != null) {
+			this.latitudeArgumentNinetyDetections = this
+					.getGenericTimeStampAsArray(ninetyHandler.getLatitudeArgumentEventDate());
+			ninetyHandler.setLatitudeArgumentEventDate(null);
+		} else {
+			this.latitudeArgumentNinetyDetections = new double[6];
+		}
+
+	}
+
+	/**
+	 * Returns the Latitude Argument crossing with 90 degrees event detections
+	 * for Matlab,
+	 * 
+	 * @return {@link Double} array
+	 */
+	public double[] getLatitudeArgumentNinetyDetections() {
+		return this.latitudeArgumentNinetyDetections;
+	}
+
+	/**
+	 * Sets the Latitude Argument crossing with zeros degrees detections event
+	 * in placeholder.
+	 */
+	private void setLatitudeArgumentZeroDetections() {
+		NetSatLatitudeArgumentDetector zeroDet = this.eventCal.getLatArg(0);
+		LatitudeArgumentDetectionHandler zeroHandler = (LatitudeArgumentDetectionHandler) zeroDet.getHandler();
+		if (zeroHandler.getLatitudeArgumentEventDate() != null) {
+			this.latitudeArgumentZeroDetections = this
+					.getGenericTimeStampAsArray(zeroHandler.getLatitudeArgumentEventDate());
+			zeroHandler.setLatitudeArgumentEventDate(null);
+		} else {
+			this.latitudeArgumentZeroDetections = new double[6];
+		}
+
+	}
+
+	/**
+	 * Returns the Latitude Argument crossing detections with 0 degrees event
+	 * for Matlab.
+	 * 
+	 * @return {@link Double} array
+	 */
+	public double[] getLatitudeArgumentZeroDetections() {
+		return this.latitudeArgumentZeroDetections;
+	}
+
+	/**
+	 * Sets the date and the radius of the apogee and perigee in the time of
+	 * detection. The first six index of the array are datetime the last one is
+	 * the Radius in m.
+	 */
+	private void setApsideDetections() {
+		ApsideDetector apogeeDet = this.eventCal.getApogeeEventDetector();
+		ApsideDetectionHandler apogeeHandler = (ApsideDetectionHandler) apogeeDet.getHandler();
+		if (apogeeHandler.getApsideCrossingDetectionDate() != null) {
+			double[] results = new double[7];
+			double[] datetime = this.getGenericTimeStampAsArray(apogeeHandler.getApsideCrossingDetectionDate());
+			for (int i = 0; i < datetime.length; i++) {
+				results[i] = datetime[i];
+			}
+			results[6] = apogeeHandler.getRadius();
+			if (apogeeHandler.getIsApogee()) {
+				this.apogeeDetections = results;
+			} else {
+				this.perigeeDetections = results;
+			}
+			apogeeHandler.setRadius(0);
+			apogeeHandler.setApsideCrossingDetectionDate(null);
+		} else {
+			if (apogeeDetections == null) {
+				this.apogeeDetections = new double[7];
+			}
+			if (perigeeDetections == null) {
+				this.perigeeDetections = new double[7];
+			}
+		}
+
+	}
+
+	/**
+	 * Returns the date and the radius of the apogee in the time of detection.
+	 * The first six index of the array are datetime the last one is the Radius
+	 * in m.
+	 * 
+	 * @return {@link Double} array
+	 */
+	public double[] getPerigeeDetetions() {
+		return this.perigeeDetections;
+	}
+
+	/**
+	 * Returns the date and the radius of the perigee in the time of detection.
+	 * The first six index of the array are datetime the last one is the Radius
+	 * in m.
+	 * 
+	 * @return {@link Double} array
+	 */
+	public double[] getApogeeDetections() {
+		return this.apogeeDetections;
 	}
 
 	/**
@@ -369,6 +502,23 @@ public class SatelliteSensorCalculator {
 	}
 
 	/**
+	 * Converts the AbsoluteDate date to date Array for Matlab.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public double[] getGenericTimeStampAsArray(AbsoluteDate date) {
+		double[] dateArray = new double[6];
+		dateArray[0] = (double) date.getComponents(this.constants.getTimeScale()).getDate().getYear();
+		dateArray[1] = (double) date.getComponents(this.constants.getTimeScale()).getDate().getMonth();
+		dateArray[2] = (double) date.getComponents(this.constants.getTimeScale()).getDate().getDay();
+		dateArray[3] = (double) date.getComponents(this.constants.getTimeScale()).getTime().getHour();
+		dateArray[4] = (double) date.getComponents(this.constants.getTimeScale()).getTime().getMinute();
+		dateArray[5] = (double) date.getComponents(this.constants.getTimeScale()).getTime().getSecond();
+		return dateArray;
+	}
+
+	/**
 	 * Get the seconds from the Absolute date of 2010,1,1,00:00:00
 	 * 
 	 * @return date
@@ -386,7 +536,7 @@ public class SatelliteSensorCalculator {
 	 * @throws OrekitException
 	 */
 	public void setSunPosition() throws OrekitException {
-		EventDetector eclipseDetector = this.evecalc.getEclipseEventDetecor();
+		EventDetector eclipseDetector = this.eventCal.getEclipseEventDetecor();
 		if (eclipseDetector.g(this.state) > 0) {
 			TimeStampedPVCoordinates sunPos = CelestialBodyFactory.getSun().getPVCoordinates(this.getDate(),
 					this.constants.getITRF());
@@ -507,7 +657,7 @@ public class SatelliteSensorCalculator {
 
 	/**
 	 * Returns the Orbital elements as an array of 6 elements.
-	 * sma,ecc,inc,arg,raa,tru <= 0, 1, 2, 3, 4, 5
+	 * sma,ecc,inc,arg,raa,mea,tru <= 0, 1, 2, 3, 4, 5, 6
 	 * 
 	 * @return {@link Double}
 	 */
@@ -520,13 +670,14 @@ public class SatelliteSensorCalculator {
 	 * element in the SensorCalc.
 	 */
 	public void setOrbitalElements() {
-		this.orbitalElements = new double[6];
+		this.orbitalElements = new double[7];
 		this.orbitalElements[0] = this.getSemiMajorAxis();
 		this.orbitalElements[1] = this.getEccentricity();
 		this.orbitalElements[2] = this.getInclination();
 		this.orbitalElements[3] = this.getArgumentOfPerigee();
 		this.orbitalElements[4] = this.getRaan();
-		this.orbitalElements[5] = this.getTrueAnomaly();
+		this.orbitalElements[5] = this.getMeanAnomaly();
+		this.orbitalElements[6] = this.getTrueAnomaly();
 	}
 
 	/**
@@ -625,6 +776,22 @@ public class SatelliteSensorCalculator {
 	 */
 	public void setTrueAnomaly() {
 		this.trueAnomaly = this.getKeplerianOrbit().getTrueAnomaly();
+	}
+
+	/**
+	 * Sets the Mean Anomaly for the given steps (in Rads)
+	 */
+	public void setMeanAnomly() {
+		this.meanAnomaly = this.getKeplerianOrbit().getMeanAnomaly();
+	}
+
+	/**
+	 * Returns the mean anomaly for the given step. (in Rads)
+	 * 
+	 * @return {@link Double}
+	 */
+	public double getMeanAnomaly() {
+		return this.meanAnomaly;
 	}
 
 	/**

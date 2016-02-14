@@ -80,26 +80,9 @@ public class EventCalculator {
 	 * @return {@link NetSatLatitudeArgumentDetector}
 	 */
 	public NetSatLatitudeArgumentDetector createNetSatLatitudeArgumentDetectorEvent(final double angle) {
-		EventHandler<NetSatLatitudeArgumentDetector> netSatEventHandler = new EventHandler<NetSatLatitudeArgumentDetector>() {
-
-			@Override
-			public SpacecraftState resetState(NetSatLatitudeArgumentDetector detector, SpacecraftState oldState)
-					throws OrekitException {
-				// TODO Auto-generated method stub
-				return oldState;
-			}
-
-			@Override
-			public Action eventOccurred(SpacecraftState s, NetSatLatitudeArgumentDetector detector, boolean increasing)
-					throws OrekitException {
-				System.out.println(angle);
-				System.out.println(s.getDate());
-				System.out.println("Argument of Laitude crosssing detected!");
-				return Action.CONTINUE;
-			}
-		};
+		LatitudeArgumentDetectionHandler latArgDetHandler = new LatitudeArgumentDetectionHandler(angle);
 		NetSatLatitudeArgumentDetector posAngDet = new NetSatLatitudeArgumentDetector(this.startOrbit.getType(),
-				PositionAngle.TRUE, angle).withHandler(netSatEventHandler);
+				PositionAngle.TRUE, angle).withHandler(latArgDetHandler);
 		return posAngDet;
 	}
 
@@ -111,48 +94,18 @@ public class EventCalculator {
 	}
 
 	/**
-	 * Setst the Event of Latitude Argument detector equal to Ninety degrees.
+	 * Sets the Event of Latitude Argument detector equal to Ninety degrees.
 	 */
 	public void setNetSatLatitudeArgumentDetectorNinety() {
 		this.latArgNinety = this.createNetSatLatitudeArgumentDetectorEvent(Math.PI / 2);
-	}
-
-	public EventHandler<ApsideDetector> getApogeeEventHandler() {
-		EventHandler<ApsideDetector> ApogeeEventHandler = new EventHandler<ApsideDetector>() {
-
-			@Override
-			public SpacecraftState resetState(ApsideDetector detector, SpacecraftState oldState)
-					throws OrekitException {
-				// TODO Auto-generated method stub
-				return oldState;
-			}
-
-			@Override
-			public Action eventOccurred(SpacecraftState s, ApsideDetector detector, boolean increasing)
-					throws OrekitException {
-				if (increasing) {
-					System.out.println("Increasing \n");
-					System.out.println(s.getDate() + "\n");
-					System.out.println(s.getPVCoordinates().getPosition().getNorm() + "\n");
-					return Action.CONTINUE;
-
-				} else {
-					System.out.println("Decreasing or 0 \n");
-					System.out.println(s.getDate() + "\n");
-					System.out.println(s.getPVCoordinates().getPosition().getNorm() + "\n");
-					return Action.CONTINUE;
-
-				}
-			}
-		};
-		return ApogeeEventHandler;
 	}
 
 	/**
 	 * Sets Apogee event detector for the Orbit.
 	 */
 	public void setApogeeEventDetector() {
-		ApsideDetector apogee = new ApsideDetector(1.e-6, this.startOrbit).withHandler(this.getApogeeEventHandler());
+		ApsideDetectionHandler apsideDetectionHandler = new ApsideDetectionHandler();
+		ApsideDetector apogee = new ApsideDetector(1.e-6, this.startOrbit).withHandler(apsideDetectionHandler);
 		apogee.init(this.startState, this.startDate);
 		this.apogee = apogee;
 	}
@@ -169,7 +122,7 @@ public class EventCalculator {
 	/**
 	 * Returns the apogee detector.
 	 */
-	public EventDetector getApogeeEventDetector() {
+	public ApsideDetector getApogeeEventDetector() {
 		return this.apogee;
 	}
 

@@ -4,6 +4,6 @@ position_tolerance = 100; %m
 min_step = 0.001;
 max_step = 1000;
 step_size = 60;
-duration = 10000;
+duration = 4500;
 choiceofProp = 0;
 % duration = 24525000*2;
