@@ -18,7 +18,7 @@ function [ thrust_vector ] = fourThrustController( orbital_elements_deputy, true
 %from the deputy relative to the chief satellite" - is this cheif-deupty or
 %the other way?
 error = orbital_elements_deputy - orbital_elements_chief;
-%error = [d_a; d_e; d_i; d_RAAN; d_AoP; d_M]
+%error = [d_a; d_e; d_i; d_RAAN; d_AoP; d_M; df]
 
 %calculate sensitivities a'' and e'' and add to mean orbital element
 %tracking errors above to improve the convergence rate of the controller

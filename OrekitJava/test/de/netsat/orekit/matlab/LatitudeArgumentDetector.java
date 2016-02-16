@@ -60,8 +60,7 @@ public class LatitudeArgumentDetector extends AbstractDetector<LatitudeArgumentD
 	 * @param positionAngle
 	 * @param angle
 	 */
-	public LatitudeArgumentDetector(final OrbitType orbitType, final PositionAngle positionAngle,
-			final double angle) {
+	public LatitudeArgumentDetector(final OrbitType orbitType, final PositionAngle positionAngle, final double angle) {
 		this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, orbitType, positionAngle, angle);
 	}
 
@@ -77,8 +76,8 @@ public class LatitudeArgumentDetector extends AbstractDetector<LatitudeArgumentD
 	 */
 	public LatitudeArgumentDetector(final double maxCheck, final double threshold, final OrbitType orbitType,
 			final PositionAngle positionAngle, final double angle) {
-		this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeArgumentDetector>(), orbitType,
-				positionAngle, angle);
+		this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeArgumentDetector>(), orbitType, positionAngle,
+				angle);
 	}
 
 	/**
@@ -105,10 +104,10 @@ public class LatitudeArgumentDetector extends AbstractDetector<LatitudeArgumentD
 	}
 
 	@Override
-	protected LatitudeArgumentDetector create(final double newMaxCheck, final double newThreshold,
-			final int newMaxIter, final EventHandler<LatitudeArgumentDetector> newHandler) {
-		return new LatitudeArgumentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, orbitType,
-				positionAngle, angle);
+	protected LatitudeArgumentDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+			final EventHandler<LatitudeArgumentDetector> newHandler) {
+		return new LatitudeArgumentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, orbitType, positionAngle,
+				angle);
 	}
 
 	@Override
@@ -124,8 +123,13 @@ public class LatitudeArgumentDetector extends AbstractDetector<LatitudeArgumentD
 		}
 		// TrueAnomaly = TrueLatitude - ArgOfPerigee
 		// f = theta - omega
-		double delta = MathUtils.normalizeAngle(sign
-				* (currentAngle - angle + ((KeplerianOrbit) orbitType.convertType(s.getOrbit())).getPerigeeArgument()),
+	    double argOfPerigee = ((KeplerianOrbit) orbitType.convertType(s.getOrbit())).getPerigeeArgument();
+		
+	    
+	    
+	    
+	    double delta = MathUtils.normalizeAngle(sign
+				* (currentAngle - angle + argOfPerigee),
 				0.0);
 		if (FastMath.abs(delta - previousDelta) > FastMath.PI) {
 			sign = -sign;
@@ -133,7 +137,7 @@ public class LatitudeArgumentDetector extends AbstractDetector<LatitudeArgumentD
 			delta = MathUtils
 					.normalizeAngle(
 							sign * (currentAngle - angle
-									+ ((KeplerianOrbit) orbitType.convertType(s.getOrbit())).getPerigeeArgument()),
+									+ argOfPerigee),
 							0.0);
 		}
 		previousDelta = delta;
