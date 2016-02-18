@@ -149,7 +149,9 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		/* Run the Matlab function at every step. */
 		for (MatlabFunctionType ft : this.matlabFunctions) {
 			if (!ft.getAtOnce()) {
-				this.runMatlabFunction(ft.getFunctionName());
+				Object[] a =  this.runMatlabFunction(ft.getFunctionName(), 1);
+				double c = ((double[])a[0])[0];
+				System.out.println(c);
 			}
 		}
 	}
@@ -204,7 +206,18 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @throws MatlabInvocationException
 	 */
 	public void runMatlabFunction(String name) throws MatlabInvocationException {
-		this.mi.getProxy().returningEval(name, 1);
+		this.runMatlabFunction(name, 1);
+	}
+	
+	/**
+	 * Runs the matlab function complete
+	 * @param name
+	 * @param params
+	 * @return
+	 * @throws MatlabInvocationException
+	 */
+	public Object[] runMatlabFunction(String name, int params) throws MatlabInvocationException{
+		return mi.getProxy().returningEval(name, params);
 	}
 
 	/**

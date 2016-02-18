@@ -28,6 +28,7 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	private double thrust;
 	private double constantMassLoss;
 	private ConstantValues constants;
+	private double[] velocityVector;
 
 	public NetSatThrustEquations(String name, String type, boolean fire, int thrusterNum, double thrust) {
 		this.name = name;
@@ -135,6 +136,15 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		return this.name;
 	}
 
+	public double[] calculteThrustEffects(SpacecraftState s, double[] velocityVector) {
+		double[] mainStates = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		mainStates[3] = velocityVector[0];
+		mainStates[4] = velocityVector[1];
+		mainStates[5] = velocityVector[2];
+		return mainStates;
+
+	}
+
 	/**
 	 * Calculate the Thrust effect on the {@link SpacecraftState}. At this only
 	 * homogeneous thruster are supported. Not homogeneous thrusters setting
@@ -173,6 +183,12 @@ public class NetSatThrustEquations implements AdditionalEquations {
 
 	/** {@inheritDoc} */
 	public double[] computeDerivatives(SpacecraftState s, double[] pDot) throws OrekitException {
+		if (this.type.equals("unlimited")) {
+			if (this.fire) {
+				this.fire = false;
+				return this.calculteThrustEffects(s, this.getVeloctiyVector());
+			}
+		}
 		if (this.type.equals("feep")) {
 			/** Implementing the nanoFEEP thruster happens here. **/
 			NanoFEEP nanoFeep = new NanoFEEP(new Vector3D(0, 0), new Vector3D(0, 0));
@@ -186,6 +202,14 @@ public class NetSatThrustEquations implements AdditionalEquations {
 			}
 		}
 		return null;
+	}
+
+	public double[] getVeloctiyVector() {
+		return this.velocityVector;
+	}
+
+	public void setVelocityVector(double[] velocityVector) {
+		this.velocityVector = velocityVector;
 	}
 
 }
