@@ -37,8 +37,8 @@ public class MagenticFieldTest {
 		Object[] returningObject;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
 				SensorDataType.DETECT_LATARG_NINETY, SensorDataType.DETECT_APOGEE, SensorDataType.DETECT_PERIGEE,
-				SensorDataType.DETECT_LATARG_ZERO };
-		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Plot };
+				SensorDataType.DETECT_LATARG_ZERO, SensorDataType.SMA, SensorDataType.ECC };
+		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Calc };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("mu", mu);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
@@ -59,7 +59,7 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				1.0);
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
-		mph = new MatlabPushHandler(mi, options, matlabFunctions, true, eventCal);
+		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal);
 		mph.setVariableInMatlab("mu", mu);
 		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
 		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());

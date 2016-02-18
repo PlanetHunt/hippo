@@ -1,12 +1,17 @@
 package de.netsat.orekit.matlab;
 
 public enum MatlabFunctionType {
-	Plot("Plots the data in matlab", "plotOrbitElements(timestamp, orbital_elements, apogee_detections, perigee_detections, latitude_arg_ninety_detections, latitude_arg_zero_detections)", true),
-	Calc("Calculates the distance", "calculateDistance(a,b)", false);
+	Plot("Plots the data in matlab", "plotOrbitElements(timestamp, orbital_elements)", true, false),
+	FTC_CALC_APOGEE("Calculate the delta V in apogee", "FTCCalcApogeeDv(orbital_elements)", false, true),
+	FTC_CALC_PERIGEE("Caculate the delta V in perigee", "FTCCalcPerigeeDv(orbital_elements)", false, true),
+	FTC_CALC_TRUE_LAT_90("Calculate the delta v for true latitude of Nighty", "FTCCalcLatArgNinetyDv(orbital_elements)", false, true),
+	FTC_CALC_TRUE_LAT_0("Calculate the delta v for true latitude of Zero", "FTCCalcLatArgZeroDv(orbital_elements)", false, true),
+	Calc("Calculates the distance", "calculateDistance(sma,ecc)", false, false);
 
 	private String help;
 	private String functionName;
 	private boolean atOnce;
+	private boolean atEvent;
 
 	/**
 	 * The MatlabFunctionType is the functions that are called in each step in
@@ -16,10 +21,11 @@ public enum MatlabFunctionType {
 	 * @param functionName
 	 * @param atOnce
 	 */
-	MatlabFunctionType(String help, String functionName, boolean atOnce) {
+	MatlabFunctionType(String help, String functionName, boolean atOnce, boolean atEvent) {
 		this.help = help;
 		this.functionName = functionName;
 		this.atOnce = atOnce;
+		this.atEvent = atEvent;
 	}
 
 	/**
