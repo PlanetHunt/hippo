@@ -1,16 +1,16 @@
-function [ dV_vector ] = FTC_calc_LatArgZero_thrust( orbital_elements_deputy, orbital_elements_chief )
+function [ dV_vector ] = FTCCalcLatArgZeroDv( orbital_elements )
 %FTC_calc_LatArgZero_thrust Summary of this function goes here
 %   Detailed explanation goes here
 
-a = orbital_elements_deputy(1);
-e = orbital_elements_deputy(2);
-i = orbital_elements_deputy(3);
-RAAN = orbital_elements_deputy(4);
-AoP = orbital_elements_deputy(5);
-M = orbital_elements_deputy(6);
-true_anomaly = orbital_elements_deputy(7);
+a = orbital_elements(1);
+e = orbital_elements(2);
+i = orbital_elements(3);
+AoP = orbital_elements(4);
+RAAN = orbital_elements(5);
+M = orbital_elements(6);
+f = orbital_elements(7);
 
-error = orbital_elements_deputy - orbital_elements_chief;
+error = orbital_elements - orbital_elements_chief;
 d_a = error(1);
 d_e = error(2);
 d_i = error(3);

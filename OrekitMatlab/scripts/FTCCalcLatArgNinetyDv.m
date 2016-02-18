@@ -1,4 +1,4 @@
-function [ dV_vector ] = FTC_calc_LatArgNinety_thrust( orbital_elements_deputy, orbital_elements_chief )
+function [ dV_vector ] = FTCCalcLatArgNinetyDv( orbital_elements )
 %FTC_calc_LatArgNinety_thrust Summary of this function goes here
 %   Detailed explanation goes here
 

@@ -1,4 +1,4 @@
-function [ dV_vector ] = FTC_calc_perigee_thrust( orbital_elements_deputy, orbital_elements_chief )
+function [ dV_vector ] = FTCCalcPerigeeDv( orbital_elements )
 %FTC_CALC_PERIGEE_THRUST Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -32,7 +32,7 @@ r = a*(1-e^2)/(1+e*cos(true_anomaly)); %scalar orbit radius
 %radial impulse delta_v_r_p 
 delta_v_x = -(n*a/4)*(((1+e)^2/eta)*(d_aop + d_RAAN*cos(i))+d_M); %(16)
 %along track impulse delta_v_AT_p
-delta_v_y = (n*a*eta)*(d_a/a+d_e/(1+e)); %(24)
+delta_v_y = (n*a*eta/4)*(d_a/a+d_e/(1+e)); %(24)
 
 dV_vector = [delta_v_x; delta_v_y; 0];
 end
