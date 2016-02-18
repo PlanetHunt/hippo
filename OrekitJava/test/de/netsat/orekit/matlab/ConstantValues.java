@@ -74,7 +74,8 @@ public class ConstantValues {
 	 * @throws OrekitException
 	 */
 	public void setITRF() throws OrekitException {
-		this.itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+		//this.itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+		this.itrf = FramesFactory.getEME2000();
 	}
 
 	/**

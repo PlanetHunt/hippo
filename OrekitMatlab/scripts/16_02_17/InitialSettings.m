@@ -7,7 +7,6 @@
     omega = 71.994/180*pi;
     raan = 76.949/180*pi;
     true_anomaly = 339.841/180*pi;
-    mean_anomaly = 340.151/180*pi; %%%%%%%%%%%%%%
     start_date = [2014, 01, 01, 00, 00, 00.000];
     date = start_date;
     

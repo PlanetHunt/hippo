@@ -229,10 +229,11 @@ public class PropagatorsForMatlabControl {
 		List<Double> Velocity_z = new ArrayList<Double>();
 		List<Double> a = new ArrayList<Double>();
 		List<Double> e = new ArrayList<Double>();
-		List<Double> i = new ArrayList<Double>();
+		List<Double> in = new ArrayList<Double>();
 		List<Double> omega = new ArrayList<Double>();
 		List<Double> raan = new ArrayList<Double>();
 		List<Double> M_a = new ArrayList<Double>();
+		List<Double> T_a = new ArrayList<Double>();
 
 
 		List<Double> Power_Consumption = new ArrayList<Double>();
@@ -283,11 +284,11 @@ public class PropagatorsForMatlabControl {
 			Velocity_z.add(scCoordinates.getVelocity().getZ());
 			a.add(currentState.getA());
 			e.add(currentState.getE());
-			i.add(currentState.getI());
+			in.add(currentState.getI());
 			omega.add(((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(currentState.getOrbit())).getPerigeeArgument());
 			raan.add(((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(currentState.getOrbit())).getRightAscensionOfAscendingNode());
 			M_a.add(((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(currentState.getOrbit())).getMeanAnomaly());
-
+			T_a.add(((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(currentState.getOrbit())).getTrueAnomaly());
 			Mass.add(currentState.getMass());
 			if(fire){
 			Power_Consumption.add(myNanoFEEP1.getPowerConsumption_mW(thrust)*num_thrusters);
@@ -307,11 +308,11 @@ public class PropagatorsForMatlabControl {
 				mi.getProxy().setVariable("Velocity_z", Tools.ListToDoubleArray(Velocity_z));
 				mi.getProxy().setVariable("a", Tools.ListToDoubleArray(a));
 				mi.getProxy().setVariable("e", Tools.ListToDoubleArray(e));
-				mi.getProxy().setVariable("i", Tools.ListToDoubleArray(i));
+				mi.getProxy().setVariable("in", Tools.ListToDoubleArray(in));
 				mi.getProxy().setVariable("omega", Tools.ListToDoubleArray(omega));
 				mi.getProxy().setVariable("raan", Tools.ListToDoubleArray(raan));
 				mi.getProxy().setVariable("M_a", Tools.ListToDoubleArray(M_a));
-
+				mi.getProxy().setVariable("T_a", Tools.ListToDoubleArray(T_a));
 				mi.getProxy().setVariable("Mass", Tools.ListToDoubleArray(Mass));
 				mi.getProxy().setVariable("Power_Consumption", Tools.ListToDoubleArray(Power_Consumption));
 
