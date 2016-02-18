@@ -6,6 +6,8 @@ function [ output_args ] = matlabStepHandler( orbital_elements, time )
 %   event_D     theta = 90 deg
 mu = 3.986004415000000e+14;
 oe = cell2mat(orbital_elements');
+%convert oscilating oe to mean oe
+meanOE = osc2mean(oe);
 
 a = oe(1);
 e = oe(2);

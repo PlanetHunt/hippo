@@ -8,7 +8,6 @@ public enum MatlabFunctionType {
 	FTC_CALC_TRUE_LAT_0("Calculate the delta v for true latitude of Zero", "FTCCalcLatArgZeroDv(orbital_elements)", false, true),
 	Calc("Calculates the distance", "calculateDistance(sma,ecc)", false, false);
 
-
 	private String help;
 	private String functionName;
 	private boolean atOnce;
