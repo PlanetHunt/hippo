@@ -1,3 +1,6 @@
+%this was not used in the end, we detect events according to the time rather than
+%with the true anomaly
+
 %calc the tolerance that should be used for perigee and apogeee detection (in radians)
 mu = 3.986004415000000e+14;
 

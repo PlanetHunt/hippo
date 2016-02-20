@@ -1,5 +1,0 @@
-%calc tolerance of perigee and apogeee detection
-a = 7.019120190999998e+06;
-e = 0.007879000000000;
-dt = 60;
-perigeeTolerance = solvef(a,e,dt/2)

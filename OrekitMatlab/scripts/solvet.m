@@ -1,5 +1,5 @@
 function [ t ] = solvet( a, e, f)
-%SOLVEF solves the time given the true anomaly
+%SOLVEF solves the time ellapsed from perigee, given the true anomaly
 %   a 	semi-major axis (m)
 %   e   eccentricity
 %   dt  time from perigee (s)
