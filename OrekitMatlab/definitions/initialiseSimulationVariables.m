@@ -28,7 +28,7 @@ dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0];
 %chief
 %hincubeOE on 4/12/2013
 oec = [7017102.334; 0.006535; 97.858*pi/180; 145.60397*pi/180; 50.48597*pi/180; 67.871*pi/180; 67.17897*pi/180];
-oec = repmat(oec,1,ceil(duration/step_size)); %orbital elements of chief, each column is a new time step
+oec = repmat(oec,1,ceil(duration/step_size)+1); %orbital elements of chief, each column is a new time step
 oecm = oec; %just assume this for now - later this hsould be changed to get the actual mean cheif orbital elements
 
 % a = orbital_elements_chief(1);
@@ -38,7 +38,7 @@ oecm = oec; %just assume this for now - later this hsould be changed to get the 
 % RAAN = orbital_elements_chief(5);
 % f = orbital_elements_chief(6);
 % M = orbital_elements_chief(7);
-oed = zeros(7, ceil(duration/step_size));
+oed = zeros(7,1);
 oedm = oed;
 %thruster operating point
 Isp = 2000;%s

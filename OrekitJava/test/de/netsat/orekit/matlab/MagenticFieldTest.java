@@ -2,7 +2,16 @@ package de.netsat.orekit.matlab;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.ForceModel;
+import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 
@@ -13,6 +22,8 @@ import de.netsat.orekit.matlab.EventCalculator;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -33,16 +44,27 @@ public class MagenticFieldTest {
 			throws MatlabInvocationException, OrekitException
 
 	{
-		int sat_nr = 1;
+		int sat_nr = 4;
 		Object[] returningObject;
-		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP, SensorDataType.CURRENT_MASS};
+		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
+				SensorDataType.CURRENT_MASS };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("mu", mu);
 		mph.runMatlabFunction("initialiseSimulationVariables(mu)");
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
+
+		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
+		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
+				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
 		
+	    ForceModel atmosphericDrag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+	            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+	                    Constants.WGS84_EARTH_FLATTENING,
+	                    FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+	                    new SphericalSpacecraft(0.01, 2.2, 0, 0));
+
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
 		double positionTolerance = ((double[]) returningObject[0])[0];
 		double minStep = ((double[]) returningObject[1])[0];
@@ -65,6 +87,9 @@ public class MagenticFieldTest {
 		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
 		numericPropagator.addEventDetector(eventCal.getLatArg(0));
 		numericPropagator.addEventDetector(eventCal.getLatArg(90));
+		numericPropagator.addForceModel(holmesFeatherstone);
+		numericPropagator.addForceModel(atmosphericDrag);
+
 		numericPropagator.setInitialState(initialState);
 		numericPropagator.setMasterMode(outputStepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
