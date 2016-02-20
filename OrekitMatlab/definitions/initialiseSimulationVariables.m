@@ -1,14 +1,16 @@
-clear all; clc;
+function [returnValue] = initialiseSimulationVariables(mu)
 %% global variables
+returnValue = 1;
 global timeVector
 global Isp thrust mass
-global step_size duration req j2 g mu thrustDurationLimit;
+global step_size duration req j2 g thrustDurationLimit;
 global ii %loop variable
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
 global fireA fireB fireC fireD fireThruster thrustVector;
 global dVA dVB dVC dVD;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
+setMu(mu);
 oeError = [0; 0; 0; 0; 0; 0; 0]; %maybe should calculate this properly for the starting conditions, dont forget to use mean elements
 tABoostStartCommand = datetime(0001,01,01,000,00,00);
 tBBoostStartCommand = datetime(0001,01,01,000,00,00);
@@ -42,10 +44,10 @@ oedm = oed;
 Isp = 2000;%s
 thrust = 5e-6; %N
 thrustDurationLimit = 180; %seconds
-mu = 3.986004415000000e+14;
+%mu = 3.986004415000000e+14;
 req = 6378.14; %
 j2 = 1.08262668355e-3;
 g = 9.80665; %m/s^2
-mass = 1+0.00025; %assume initial mass of sc is 1kg + the fuel of one thruster
+%mass = 1+0.00025; %assume initial mass of sc is 1kg + the fuel of one thruster
 
 timeVector = datetime(0001,01,01,000,00,00);

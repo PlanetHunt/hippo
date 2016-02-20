@@ -6,7 +6,7 @@ public enum MatlabFunctionType {
 	FTC_CALC_PERIGEE("Caculate the delta V in perigee", "FTCCalcPerigeeDv(orbital_elements)", false, true),
 	FTC_CALC_TRUE_LAT_90("Calculate the delta v for true latitude of Nighty", "FTCCalcLatArgNinetyDv(orbital_elements)", false, true),
 	FTC_CALC_TRUE_LAT_0("Calculate the delta v for true latitude of Zero", "FTCCalcLatArgZeroDv(orbital_elements)", false, true),
-	Calc("Calculates the distance", "calculateDistance(sma,ecc)", false, false);
+	MATLAB_STEP_HANDLER("Does the steps handling in Matlab, without usage of events.", "matlabStepHandler(orbital_elements, timestamp, current_mass)",false, false);
 
 	private String help;
 	private String functionName;
@@ -83,5 +83,19 @@ public enum MatlabFunctionType {
 	public boolean getAtOnce() {
 		return this.atOnce;
 	}
-
+	
+	/**
+	 * Sets the atEvent variable.
+	 */
+	public void setAtEvent(boolean atEvent){
+		this.atEvent = atEvent;
+	}
+	
+	/**
+	 * Returns the atEvent variable.
+	 */
+	public boolean getAtEvent(){
+		return this.atEvent;
+	}
+	
 }

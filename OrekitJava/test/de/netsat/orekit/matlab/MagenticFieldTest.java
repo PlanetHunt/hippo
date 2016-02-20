@@ -35,14 +35,14 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 1;
 		Object[] returningObject;
-		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
-				SensorDataType.DETECT_LATARG_NINETY, SensorDataType.DETECT_APOGEE, SensorDataType.DETECT_PERIGEE,
-				SensorDataType.DETECT_LATARG_ZERO, SensorDataType.SMA, SensorDataType.ECC };
-		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.Calc };
+		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP, SensorDataType.CURRENT_MASS};
+		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("mu", mu);
+		mph.runMatlabFunction("initialiseSimulationVariables(mu)");
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
+		
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
 		double positionTolerance = ((double[]) returningObject[0])[0];
 		double minStep = ((double[]) returningObject[1])[0];

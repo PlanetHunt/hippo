@@ -17,7 +17,7 @@ global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartC
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 global Isp thrust;
 
-current_time = datetime(timestamp);
+current_time = datetime(time_stamp);
 timeVector(ii) = current_time;
 oed(:,ii) = (orbital_elements');
 
@@ -55,7 +55,7 @@ if(isbetween(current_time,tABoostStartCommand(ii-1),tABoostEndCommand(ii-1)))
     % times constant
     dVA(:,ii) = dVA(:,ii-1); %=last value
     tABoostStartCommand(ii) = tABoostStartCommand(ii-1);
-    tABoostEndCommand(ii) = tABoostEndCommand(ii-1);
+    tABoostEndCommand(ii) = tABoostEndCommand(ii-1)
     
     fireA(ii) = 1;
     AThrustVector(:,ii) = dVA(:,ii);
@@ -71,7 +71,7 @@ else
         % times constant
         dVB(:,ii) = dVB(:,ii-1); %=last value
         tBBoostStartCommand(ii) = tBBoostStartCommand(ii-1);
-        tBBoostEndCommand(ii) = tBBoostEndCommand(ii-1);
+        tBBoostEndCommand(ii) = tBBoostEndCommand(ii-1)
 
         fireB(ii) = 1;
         BThrustVector(:,ii) = dVB(:,ii);
@@ -90,7 +90,7 @@ if(isbetween(current_time,tCBoostStartCommand(ii-1),tCBoostEndCommand(ii-1)))
     % times constant
     dVC(:,ii) = dVC(:,ii-1); %=last value
     tCBoostStartCommand(ii) = tCBoostStartCommand(ii-1);
-    tCBoostEndCommand(ii) = tCBoostEndCommand(ii-1);
+    tCBoostEndCommand(ii) = tCBoostEndCommand(ii-1)
     
     fireC(ii) = 1;
     CThrustVector(:,ii) = dVC(:,ii);
@@ -106,7 +106,7 @@ else
         % times constant
         dVD(:,ii) = dVD(:,ii-1); %=last value
         tDBoostStartCommand(ii) = tDBoostStartCommand(ii-1);
-        tDBoostEndCommand(ii) = tDBoostEndCommand(ii-1);
+        tDBoostEndCommand(ii) = tDBoostEndCommand(ii-1)
 
         fireD(ii) = 1;
         DThrustVector(:,ii) = dVD(:,ii);

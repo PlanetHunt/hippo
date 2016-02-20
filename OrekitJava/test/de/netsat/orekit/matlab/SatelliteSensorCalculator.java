@@ -50,6 +50,7 @@ public class SatelliteSensorCalculator {
 	private double[] apogeeDetections;
 	private double[] perigeeDetections;
 	private double meanAnomaly;
+	private double mass;
 
 	/**
 	 * The Constructor method. The order here is important as some are
@@ -183,7 +184,24 @@ public class SatelliteSensorCalculator {
 		case "DETECT_LATARG_NINETY":
 			this.setLatitudeArgumentNinetyDetections();
 			break;
+		case "CURRENT_MASS":
+			this.setCurrentMass();
+			break;
 		}
+	}
+
+	/**
+	 * Sets the mass for that timestep.
+	 */
+	private void setCurrentMass() {
+		this.mass = this.state.getMass();
+	}
+	
+	/**
+	 * Returns the mass for that timestep.
+	 */
+	public double getCurrentMass(){
+		return this.mass;
 	}
 
 	/**
@@ -660,7 +678,7 @@ public class SatelliteSensorCalculator {
 
 	/**
 	 * Returns the Orbital elements as an array of 6 elements.
-	 * sma,ecc,inc,arg,raa,mea,tru <= 0, 1, 2, 3, 4, 5, 6
+	 * sma,ecc,inc,arg,raa,tru,mea <= 0, 1, 2, 3, 4, 5, 6
 	 * 
 	 * @return {@link Double}
 	 */
@@ -679,8 +697,8 @@ public class SatelliteSensorCalculator {
 		this.orbitalElements[2] = this.getInclination();
 		this.orbitalElements[3] = this.getArgumentOfPerigee();
 		this.orbitalElements[4] = this.getRaan();
-		this.orbitalElements[5] = this.getMeanAnomaly();
 		this.orbitalElements[6] = this.getTrueAnomaly();
+		this.orbitalElements[5] = this.getMeanAnomaly();
 	}
 
 	/**
