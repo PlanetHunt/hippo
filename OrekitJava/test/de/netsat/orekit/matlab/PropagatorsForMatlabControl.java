@@ -192,6 +192,58 @@ public class PropagatorsForMatlabControl {
     								new PVCoordinates(new Vector3D(10,10), new Vector3D(1, 2)), 
     								new PVCoordinates(new Vector3D(15,3),  new Vector3D(1, 2)))),1.0);
             
+            
+			initialState = initialState.addAdditionalState("Thrust", 0,0,0);
+			
+			// Define ThrustManeuver:
+			AdditionalEquations ThrustEq =  new AdditionalEquations() {
+				
+				@Override
+				public double[] computeDerivatives(SpacecraftState s, double[] pDot)
+						throws OrekitException {
+						//double[] velocity_norm = s.getPVCoordinates().getVelocity().normalize().toArray();
+						/*Vector3D velocity_change = s.getPVCoordinates().getVelocity().normalize();
+						velocity_change = velocity_change.scalarMultiply(0.00002);
+						OrbitType type = s.getOrbit().getType();
+						CartesianOrbit cart_temp = (CartesianOrbit) type.convertType(s.getOrbit());
+						cart_temp.getPVCoordinates().getVelocity().normalize().add(velocity_change);
+						EquinoctialOrbit equinoc_dott = (EquinoctialOrbit) type.convertType(cart_temp);
+						equinoc_dott.getJacobianWrtCartesian(type, jacobian);*/
+						
+					
+					//double[] equinoc_dot = {cart_temp.getA()-s.getA(),cart_temp.getEquinoctialEx()-s.getEquinoctialEx(),cart_temp.getEquinoctialEy()-s.getEquinoctialEy(),cart_temp.getHx()-s.getHx(),cart_temp.getHy()-s.getHy(),cart_temp.getLv()-s.getLv(),0.0};
+					//if (fire){
+						//thrust[6] = -0.000000002;
+						//thrust[0] = 1;
+						//System.out.println(s.getLv());
+						//fire = false;
+					//}
+					//System.out.println("Mass: " + s.getMass());
+					
+					// rv_dot is in cartesian orbital elements {r_x,r_y,r_z,v_x,v_y,v_z,m} and mass m! 
+					double[] rv_dot = {0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+					if (fire){
+						// get velocity direction:
+						Vector3D velocity_norm = s.getPVCoordinates(FramesFactory.getEME2000()).getVelocity().normalize();
+						// create vector in opposite direction of velocity with magnitude of instantaneous acceleration of thrusters:
+						velocity_norm = velocity_norm.scalarMultiply(-4e-6);
+						//rv_dot = {0.0,0.0,0.0,velocity_norm.getX(),velocity_norm.getY(), velocity_norm.getZ(),0.0};
+						rv_dot[3] = velocity_norm.getX();
+						rv_dot[4] = velocity_norm.getY();
+						rv_dot[5] = velocity_norm.getZ();
+						rv_dot[6] = -7.7e-11;
+					}
+					//return null;
+					return rv_dot;
+					//return thrust_vector.toArray();
+				}
+				
+				@Override
+				public String getName() {
+					return "Thrust";
+				}
+			};
+            numProp.addAdditionalEquations(ThrustEq);
             numProp.setMasterMode(setupSimulation.getOutputStepSize(), new matlabPushFinalHandler(mi));
             numProp.setInitialState(initialState);
             SpacecraftState finalState = numProp.propagate(orbit.getDate().shiftedBy(setupSimulation.getduration()));

@@ -3,8 +3,11 @@ package de.netsat.orekit.matlab;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.LOFType;
+import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.utils.PVCoordinates;
 
 import de.netsat.orekit.actuator.NanoFEEP;
 
@@ -29,13 +32,18 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	private double constantMassLoss;
 	private ConstantValues constants;
 	private double[] velocityVector;
+	private double[] thrustDirection;
+	private double massLoss;
 
-	public NetSatThrustEquations(String name, String type, boolean fire, int thrusterNum, double thrust) {
+	public NetSatThrustEquations(String name, String type, boolean fire, int thrusterNum, double thrust,
+			double[] thrustDirection, double massLoss) {
 		this.name = name;
 		this.type = type;
 		this.fire = fire;
 		this.thrusterNum = thrusterNum;
 		this.thrust = thrust;
+		this.thrustDirection = thrustDirection;
+		this.massLoss = massLoss;
 	}
 
 	/**
@@ -132,7 +140,6 @@ public class NetSatThrustEquations implements AdditionalEquations {
 
 	/** {@inheritDoc} */
 	public String getName() {
-		// TODO Auto-generated method stub
 		return this.name;
 	}
 
@@ -171,6 +178,36 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	}
 
 	/**
+	 * Calculates the effect of the thrust on the spacecraft.
+	 * 
+	 * @param s
+	 * @param thrust
+	 * @param thursterNumber
+	 * @param massLoss
+	 * @param thrustDirection
+	 * @return
+	 * @throws OrekitException
+	 */
+	public double[] calculateThrustEffects(SpacecraftState s, double thrust, int thrusterNumber, double massLoss,
+			double[] thrustDirection) throws OrekitException {
+		double[] mainStates = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		Vector3D thrustDirectionVector = new Vector3D(thrustDirection);
+		LocalOrbitalFrame localLVLH = new LocalOrbitalFrame(s.getFrame(), LOFType.LVLH, s.getOrbit(), "LVLH");
+		PVCoordinates pVSatLVLH = s.getFrame().getTransformTo(localLVLH, s.getDate())
+				.transformPVCoordinates(s.getPVCoordinates());
+		PVCoordinates thrustDirectionLVLH = new PVCoordinates(pVSatLVLH.getPosition(), thrustDirectionVector);
+		PVCoordinates thrustDirectionInertial = localLVLH.getTransformTo(s.getFrame(), s.getDate())
+				.transformPVCoordinates(thrustDirectionLVLH);
+		Vector3D velocityNormal = thrustDirectionInertial.getAngularVelocity().normalize();
+		velocityNormal = velocityNormal.scalarMultiply(thrusterNumber * thrust);
+		mainStates[3] = velocityNormal.getX();
+		mainStates[4] = velocityNormal.getY();
+		mainStates[5] = velocityNormal.getZ();
+		mainStates[6] = thrusterNumber * massLoss;
+		return mainStates;
+	}
+
+	/**
 	 * Sets the name for the additional equations. To have the additional state
 	 * parameters also working the name should be the same as the additional
 	 * state.
@@ -183,9 +220,18 @@ public class NetSatThrustEquations implements AdditionalEquations {
 
 	/** {@inheritDoc} */
 	public double[] computeDerivatives(SpacecraftState s, double[] pDot) throws OrekitException {
+		if (this.type.equals("experimental")) {
+			if (this.fire) {
+				System.out.println("We are fireing");
+				this.setFire(false);
+				//return this.calculateThrustEffects(s, getThrust(), getThrustNum(), this.massLoss, getThrustDirection());
+				return null;
+			}
+		}
 		if (this.type.equals("unlimited")) {
 			if (this.fire) {
 				this.fire = false;
+				this.setFire(false);
 				return this.calculteThrustEffects(s, this.getVeloctiyVector());
 			}
 		}
@@ -193,15 +239,25 @@ public class NetSatThrustEquations implements AdditionalEquations {
 			/** Implementing the nanoFEEP thruster happens here. **/
 			NanoFEEP nanoFeep = new NanoFEEP(new Vector3D(0, 0), new Vector3D(0, 0));
 			if (s.getMass() > 0.99800 & this.fire) {
+				this.setFire(false);
 				return this.calculateThrustEffects(s, this.thrust, this.thrusterNum,
 						this.thrusterNum * nanoFeep.getFlowRate(this.thrust));
 			}
 		} else if (this.type.equals("constant")) {
 			if (this.fire) {
+				this.setFire(false);
 				return this.calculateThrustEffects(s, this.thrust, thrusterNum, this.constantMassLoss);
 			}
 		}
 		return null;
+	}
+
+	private double[] getThrustDirection() {
+		return this.thrustDirection;
+	}
+
+	public void setThrustDirection(double[] thrustDirection) {
+		this.thrustDirection = thrustDirection;
 	}
 
 	public double[] getVeloctiyVector() {
