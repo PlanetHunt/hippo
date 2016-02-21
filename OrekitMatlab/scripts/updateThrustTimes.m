@@ -20,10 +20,10 @@ switch eventID
         true_anomalyNode = pi;
     case 3 %C
         dV = FTCCalcLatArgZeroDv([am, em, inm, omegam, raanm, true_anomalym, mean_anomalym], orbitElementsError);
-        true_anomalyNode = 0-omegam;
+        true_anomalyNode = wrapTo2Pi(0-omegam);
     case 4 %D
         dV = FTCCalcLatArgNinetyDv([am, em, inm, omegam, raanm, true_anomalym, mean_anomalym], orbitElementsError);
-        true_anomalyNode = pi/2-omegam;
+        true_anomalyNode = wrapTo2Pi(pi/2-omegam);
 end
     %calc Burn duration for this node (s)
     burnDuration = calcBurnTime(dV, currentMass, Isp, thrust, burnTimeLimit ); % burn duration
@@ -39,6 +39,10 @@ end
     end
     %time remaining from now until boost  start (call this durationCountDownBoost)
     durationCountDownBoost = durationPeriToBoostStart - durationPeriToNow; % a time duration in seconds
+    if(durationCountDownBoost<0) %wrap around the long way
+        T = 2*pi*sqrt(am^3/mu);%period
+        durationCountDownBoost = T + durationCountDownBoost;
+    end
     %absolute time of boost  start (dd mm yyyy hh mm ss)
     tBoostStart = time + seconds(durationCountDownBoost); %a matlab datetime object
     %the signal needs to be generated one step ahead, so orekit applies the
