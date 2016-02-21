@@ -4,69 +4,69 @@
 %plot thrust direcitons
 
 %% plotting
-% figure; clf;
-% %subplot(6,1,1);
-% hold on
-% plot(timeVector(2:end),oedm(1,2:end));
-% plot(timeVector(2:end),oecm(1,2:end));
-% title('semimajor axis (a) vs Time');
-% ylabel('a (m)');
-% legend('deputy','chief')
-% 
-% figure; clf;
-% %subplot(6,1,1);
-% hold on
-% plot(timeVector(2:end),oedm(2,2:end));
-% plot(timeVector(2:end),oecm(2,2:end));
-% title('eccentricity (e) vs Time');
-% ylabel('e');
-% legend('deputy','chief')
-% 
-% figure; clf;
-% %subplot(6,1,1);
-% hold on
-% plot(timeVector(2:end),oedm(3,2:end));
-% plot(timeVector(2:end),oecm(3,2:end));
-% 
-% title('inclination(i) vs Time');
-% ylabel('i (radians)');
-% 
-% legend('deputy','chief')
-% 
-% 
-% figure; clf;
-% %subplot(6,1,1);
-% hold on
-% plot(timeVector(2:end),oedm(4,2:end));
-% plot(timeVector(2:end),oecm(4,2:end));
-% title('Argument of Perigee (\omega) vs Time');
-% ylabel('\omega (radians)');
-% legend('deputy','chief')
-% 
-% 
-% figure; clf;
-% %subplot(6,1,1);
-% hold on
-% plot(timeVector(2:end),oedm(5,2:end));
-% plot(timeVector(2:end),oecm(5,2:end));
-% title('RAAN (\Omega) vs Time');
-% ylabel('\Omega (radians)')
-% legend('deputy','chief')
+figure; clf;
+%subplot(6,1,1);
+hold on
+plot(timeVector(2:end),oedm(1,2:end));
+plot(timeVector(2:end),oecm(1,2:end));
+title('semimajor axis (a) vs Time');
+ylabel('a (m)');
+legend('deputy','chief')
 
-% 
-% figure; clf;
-% %subplot(6,1,1);
-% hold on
-% plot(timeVector(2:end),oedm(6,2:end));
-% plot(timeVector(2:end),oecm(6,2:end));
-% plot(timeVector(2:end),fireA(2:end),'r*');
-% plot(timeVector(2:end),fireB(2:end).*2,'k*');
-% plot(tABoostStartCommand(2:end),ones(length(tABoostStartCommand)-1),'bx');
-% plot(tABoostEndCommand(2:end),ones(length(tABoostEndCommand)-1),'bo');
-% 
-% title('True anomaly (f) vs Time');
-% xlabel('time (s)'); ylabel('true anomaly (radians)');
-% legend('deputy','chief','fireA','fireB','tABoostStartCommand','tABoostEndCommand')
+figure; clf;
+%subplot(6,1,1);
+hold on
+plot(timeVector(2:end),oedm(2,2:end));
+plot(timeVector(2:end),oecm(2,2:end));
+title('eccentricity (e) vs Time');
+ylabel('e');
+legend('deputy','chief')
+
+figure; clf;
+%subplot(6,1,1);
+hold on
+plot(timeVector(2:end),oedm(3,2:end));
+plot(timeVector(2:end),oecm(3,2:end));
+
+title('inclination(i) vs Time');
+ylabel('i (radians)');
+
+legend('deputy','chief')
+
+
+figure; clf;
+%subplot(6,1,1);
+hold on
+plot(timeVector(2:end),oedm(4,2:end));
+plot(timeVector(2:end),oecm(4,2:end));
+title('Argument of Perigee (\omega) vs Time');
+ylabel('\omega (radians)');
+legend('deputy','chief')
+
+
+figure; clf;
+%subplot(6,1,1);
+hold on
+plot(timeVector(2:end),oedm(5,2:end));
+plot(timeVector(2:end),oecm(5,2:end));
+title('RAAN (\Omega) vs Time');
+ylabel('\Omega (radians)')
+legend('deputy','chief')
+
+
+figure; clf;
+%subplot(6,1,1);
+hold on
+plot(timeVector(2:end),oedm(6,2:end));
+plot(timeVector(2:end),oecm(6,2:end));
+plot(timeVector(2:end),fireA(2:end),'r*');
+plot(timeVector(2:end),fireB(2:end).*2,'k*');
+plot(tABoostStartCommand(2:end),ones(length(tABoostStartCommand)-1),'bx');
+plot(tABoostEndCommand(2:end),ones(length(tABoostEndCommand)-1),'bo');
+
+title('True anomaly (f) vs Time');
+xlabel('time (s)'); ylabel('true anomaly (radians)');
+legend('deputy','chief','fireA','fireB','tABoostStartCommand','tABoostEndCommand')
 
 %%
 figure; clf;
@@ -194,7 +194,14 @@ ylabel(ax(2),'fire') % label right y-axis
 
 legend('THETA','fireC','fireD');
 %%
-
+figure
+plot(timeVector(2:end),vel(:,2:end));
+title('velocity');
+ylabel('V');
+figure
+plot(timeVector(2:end),pos(:,2:end));
+title('Position');
+ylabel('Pos');
 %%
 % latitudeArgument = wrapTo2Pi(oedm(4,2:end)+oedm(6,2:end));
 % figure

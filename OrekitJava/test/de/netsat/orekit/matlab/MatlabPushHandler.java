@@ -148,7 +148,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			this.PushAllDataToMatlab();
 			this.dataList.clear();
 		}
-		double[] thrustDirection = {0,0,0};
+		double[] thrustDirection = { 0, 0, 0 };
 		/* Run the Matlab function at every step. */
 		for (MatlabFunctionType ft : this.matlabFunctions) {
 			if (!ft.getAtOnce()) {
@@ -162,16 +162,16 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 						this.thrustEquation.setFire(true);
 						this.thrustEquation.setThrustDirection(thrustDirection);
 					} else {
-						thrustDirection[0]=0;
-						thrustDirection[1]=0;
-						thrustDirection[2]=0;
+						thrustDirection[0] = 0;
+						thrustDirection[1] = 0;
+						thrustDirection[2] = 0;
 						this.thrustEquation.setFire(false);
 						this.thrustEquation.setThrustDirection(thrustDirection);
 					}
+				} else {
+					Object[] a = this.runMatlabFunction(ft.getFunctionName(), 1);
+					double c = ((double[]) a[0])[0];
 				}
-				Object[] a = this.runMatlabFunction(ft.getFunctionName(), 1);
-				double c = ((double[]) a[0])[0];
-
 			}
 		}
 	}

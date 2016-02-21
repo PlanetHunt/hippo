@@ -28,6 +28,10 @@ dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0];
 %chief
 %hincubeOE on 4/12/2013
 oec = [7017102.334; 0.006535; 97.858*pi/180; 145.60397*pi/180; 50.48597*pi/180; 67.871*pi/180; 67.17897*pi/180];
+
+%Chief OE from Schaubs paper
+%oec = [7555000; 0.05; 48*pi/180; 20*pi/180; 10*pi/180; 0; 120*pi/180];
+
 oec = repmat(oec,1,ceil(duration/step_size)+1); %orbital elements of chief, each column is a new time step
 oecm = oec; %just assume this for now - later this hsould be changed to get the actual mean cheif orbital elements
 
@@ -42,12 +46,14 @@ oed = zeros(7,1);
 oedm = oed;
 %thruster operating point
 Isp = 2000;%s
-thrust = 0.05; %N
+thrust = 0.00005; %N
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
 req = 6378.14; %
 j2 = 1.08262668355e-3;
 g = 9.80665; %m/s^2
 %mass = 1+0.00025; %assume initial mass of sc is 1kg + the fuel of one thruster
-
+global pos vel;
+pos = [0;0;0];
+vel = [0;0;0];
 timeVector = datetime(0001,01,01,000,00,00);

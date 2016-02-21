@@ -47,17 +47,18 @@ public class MagenticFieldTest {
 		int sat_nr = 4;
 		boolean fire = false;
 		int thrusterNum = 1;
-		double thrust = 0.05;
+		double thrust = 2222;
 		double[] thrustDirection = { 0, 0, 0 };
-		double massLoss = 0.0001;
+		double massLoss = -0.01;
 		Object[] returningObject;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
-				SensorDataType.CURRENT_MASS };
+				SensorDataType.CURRENT_MASS , SensorDataType.VELOCITY, SensorDataType.POSITION};
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("mu", mu);
 		mph.runMatlabFunction("initialiseSimulationVariables(mu)");
-		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);

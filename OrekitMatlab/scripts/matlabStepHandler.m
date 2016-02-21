@@ -1,4 +1,4 @@
-function [ thrustFlag, currentThrustDirecton ] = matlabStepHandler( orbital_elements, timestamp, current_mass )
+function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_elements, position, velocity, timestamp, current_mass )
 %MATLABSTEPHANDLER function to be called at every time step
 %   event_A     perigee
 %   event_B     apogee
@@ -16,7 +16,9 @@ global dVA dVB dVC dVD;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 global Isp thrust;
-
+global pos vel;
+pos = [pos, position' ];
+vel = [vel, velocity' ];
 current_time = datetime(timestamp);
 timeVector(ii) = current_time;
 oed(:,ii) = (orbital_elements');
@@ -39,8 +41,11 @@ omegam = deputyMeanElements(4);
 raanm = deputyMeanElements(5);
 true_anomalym = deputyMeanElements(6);
 
-eccentric_anomalym = acos((cos(true_anomalym) + em)/(1 + em*cos(true_anomalym)));
+%eccentric_anomalym = acos((cos(true_anomalym) + em)/(1 + em*cos(true_anomalym)));
+eccentric_anomalym=atan2(sqrt((1-em^2))*sin(true_anomalym),em+cos(true_anomalym));
+eccentric_anomalym=wrapTo2Pi(eccentric_anomalym);
 mean_anomalym = eccentric_anomalym - em*sin(eccentric_anomalym);
+mean_anomalym=wrapTo2Pi(mean_anomalym);
 
 mass(ii) = current_mass;
 
@@ -142,8 +147,8 @@ if(norm(thrustVector(:,ii)) ~= 0)%avoid dividing by zero
 end
 %need this for the output arguments, matlab wont allow it directly
 thrustFlag = fireThruster(ii);
-currentThrustDirecton = thrustVector(:,ii);
-
+%currentThrustDirection = thrustVector(:,ii);
+currentThrustDirection = [0; 1; 0];
 %if in last step plot everything
 if(ii == ceil(duration/step_size)+1)
     plotEverything;

@@ -198,7 +198,11 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		PVCoordinates thrustDirectionLVLH = new PVCoordinates(pVSatLVLH.getPosition(), thrustDirectionVector);
 		PVCoordinates thrustDirectionInertial = localLVLH.getTransformTo(s.getFrame(), s.getDate())
 				.transformPVCoordinates(thrustDirectionLVLH);
+
 		Vector3D velocityNormal = thrustDirectionInertial.getAngularVelocity().normalize();
+		PVCoordinates test = s.getFrame().getTransformTo(localLVLH, s.getDate())
+				.transformPVCoordinates(thrustDirectionInertial);
+		System.out.println(test.getVelocity().toString());
 		velocityNormal = velocityNormal.scalarMultiply(thrusterNumber * thrust);
 		mainStates[3] = velocityNormal.getX();
 		mainStates[4] = velocityNormal.getY();
@@ -224,8 +228,8 @@ public class NetSatThrustEquations implements AdditionalEquations {
 			if (this.fire) {
 				System.out.println("We are fireing");
 				this.setFire(false);
-				//return this.calculateThrustEffects(s, getThrust(), getThrustNum(), this.massLoss, getThrustDirection());
-				return null;
+				return this.calculateThrustEffects(s, getThrust(), getThrustNum(), this.massLoss, getThrustDirection());
+				// return null;
 			}
 		}
 		if (this.type.equals("unlimited")) {
