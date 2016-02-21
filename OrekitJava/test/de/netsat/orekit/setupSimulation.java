@@ -2,6 +2,7 @@ package de.netsat.orekit;
 
 import matlabcontrol.MatlabInvocationException;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -20,6 +21,8 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -87,6 +90,7 @@ public class setupSimulation {
 			                    Constants.WGS84_EARTH_FLATTENING,
 			                    FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
 			                    new SphericalSpacecraft(0.01, 2.2, 0, 0));
+			    
 			    
 			    numericPropagator.addForceModel(holmesFeatherstone);
 			    numericPropagator.addForceModel(atmosphericDrag);

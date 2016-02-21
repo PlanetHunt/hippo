@@ -45,6 +45,11 @@ public class MagenticFieldTest {
 
 	{
 		int sat_nr = 4;
+		boolean fire = false;
+		int thrusterNum = 1;
+		double thrust = 0.05;
+		double[] thrustDirection = { 0, 0, 0 };
+		double massLoss = 0.0001;
 		Object[] returningObject;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
 				SensorDataType.CURRENT_MASS };
@@ -58,12 +63,12 @@ public class MagenticFieldTest {
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
 		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
 				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
-		
-	    ForceModel atmosphericDrag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
-	            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-	                    Constants.WGS84_EARTH_FLATTENING,
-	                    FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-	                    new SphericalSpacecraft(0.01, 2.2, 0, 0));
+
+		ForceModel atmosphericDrag = new DragForce(
+				new HarrisPriester(CelestialBodyFactory.getSun(),
+						new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+								FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+				new SphericalSpacecraft(0.01, 2.2, 0, 0));
 
 		KeplerianOrbit keplerOrbit = loadScripts.getKeplerOrbit(mi, sat_nr);
 		double positionTolerance = ((double[]) returningObject[0])[0];
@@ -71,6 +76,7 @@ public class MagenticFieldTest {
 		double maxstep = ((double[]) returningObject[2])[0];
 		double duration = ((double[]) returningObject[3])[0];
 		double outputStepSize = ((double[]) returningObject[4])[0];
+
 		NetsatPropagatorFactory NumericalPropagatorFactory = new NetsatPropagatorFactory(np, maxstep, minStep, duration,
 				outputStepSize, positionTolerance, keplerOrbit);
 		NumericalPropagator numericPropagator = NumericalPropagatorFactory.getNumericalPropagator();
@@ -81,8 +87,12 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				1.0);
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
-		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal);
+		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, thrusterNum, thrust,
+				thrustDirection, massLoss);
+		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
 		mph.setVariableInMatlab("mu", mu);
+		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
+		numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
 		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
 		numericPropagator.addEventDetector(eventCal.getLatArg(0));

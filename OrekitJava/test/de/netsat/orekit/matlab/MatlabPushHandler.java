@@ -25,6 +25,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	private Set<MatlabData> dataList;
 	private EventCalculator eventCal;
 	Method method;
+	private NetSatThrustEquations thrustEquation;
 
 	/**
 	 * The constructor which needs atOnce set. It is the one that should be used
@@ -35,12 +36,13 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param atOnce
 	 */
 	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions,
-			boolean atOnce, EventCalculator eventCal) {
+			boolean atOnce, EventCalculator eventCal, NetSatThrustEquations thrustEquation) {
 		this.mi = mi;
 		this.options = options;
 		this.atOnce = atOnce;
 		this.eventCal = eventCal;
 		this.matlabFunctions = matlabFunctions;
+		this.thrustEquation = thrustEquation;
 		this.dataList = new HashSet<MatlabData>();
 
 	}
@@ -52,7 +54,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param options
 	 */
 	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions) {
-		this(mi, options, matlabFunctions, false, null);
+		this(mi, options, matlabFunctions, false, null, null);
 	}
 
 	@Override
@@ -146,12 +148,30 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			this.PushAllDataToMatlab();
 			this.dataList.clear();
 		}
+		double[] thrustDirection = {0,0,0};
 		/* Run the Matlab function at every step. */
 		for (MatlabFunctionType ft : this.matlabFunctions) {
 			if (!ft.getAtOnce()) {
-				Object[] a =  this.runMatlabFunction(ft.getFunctionName(), 1);
-				double c = ((double[])a[0])[0];
-				//System.out.println(c);
+				if (ft == MatlabFunctionType.MATLAB_STEP_HANDLER) {
+					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 2);
+					double matlabFire = (((double[]) result[0])[0]);
+					if (matlabFire == 1.0) {
+						thrustDirection[0] = ((double[]) result[1])[0];
+						thrustDirection[1] = ((double[]) result[1])[1];
+						thrustDirection[2] = ((double[]) result[1])[2];
+						this.thrustEquation.setFire(true);
+						this.thrustEquation.setThrustDirection(thrustDirection);
+					} else {
+						thrustDirection[0]=0;
+						thrustDirection[1]=0;
+						thrustDirection[2]=0;
+						this.thrustEquation.setFire(false);
+						this.thrustEquation.setThrustDirection(thrustDirection);
+					}
+				}
+				Object[] a = this.runMatlabFunction(ft.getFunctionName(), 1);
+				double c = ((double[]) a[0])[0];
+
 			}
 		}
 	}
@@ -208,15 +228,16 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	public void runMatlabFunction(String name) throws MatlabInvocationException {
 		this.runMatlabFunction(name, 1);
 	}
-	
+
 	/**
 	 * Runs the matlab function complete
+	 * 
 	 * @param name
 	 * @param params
 	 * @return
 	 * @throws MatlabInvocationException
 	 */
-	public Object[] runMatlabFunction(String name, int params) throws MatlabInvocationException{
+	public Object[] runMatlabFunction(String name, int params) throws MatlabInvocationException {
 		return mi.getProxy().returningEval(name, params);
 	}
 
