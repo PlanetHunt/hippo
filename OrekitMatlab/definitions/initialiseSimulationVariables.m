@@ -30,13 +30,13 @@ dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0];
 oec = [7017102.334; 0.006535; 97.858*pi/180; 145.60397*pi/180; 50.48597*pi/180; 67.871*pi/180; 67.17897*pi/180];
 
 %Chief OE from Schaubs paper
-oec = [7555000; 0.05; 48*pi/180; 20*pi/180; 10*pi/180; 120*pi/180; 0];
-%calc true anomaly since shaub didnt provide it
-eccentric_anomaly_chief=atan2(sqrt((1-oec(2)^2))*sin(oec(6)),oec(2)+cos(oec(6)));
-eccentric_anomaly_chief=wrapTo2Pi(eccentric_anomaly_chief);
-mean_anomaly_chief = eccentric_anomaly_chief - oec(2)*sin(eccentric_anomaly_chief);
-mean_anomaly_chief=wrapTo2Pi(mean_anomaly_chief);
-oec(7) = mean_anomaly_chief;
+% oec = [7555000; 0.05; 48*pi/180; 20*pi/180; 10*pi/180; 120*pi/180; 0];
+% %calc true anomaly since shaub didnt provide it
+% eccentric_anomaly_chief=atan2(sqrt((1-oec(2)^2))*sin(oec(6)),oec(2)+cos(oec(6)));
+% eccentric_anomaly_chief=wrapTo2Pi(eccentric_anomaly_chief);
+% mean_anomaly_chief = eccentric_anomaly_chief - oec(2)*sin(eccentric_anomaly_chief);
+% mean_anomaly_chief=wrapTo2Pi(mean_anomaly_chief);
+% oec(7) = mean_anomaly_chief;
 
 oec = repmat(oec,1,ceil(duration/step_size)+1); %orbital elements of chief, each column is a new time step
 oecm = oec; %just assume this for now - later this hsould be changed to get the actual mean cheif orbital elements
@@ -52,7 +52,7 @@ oed = zeros(7,1);
 oedm = oed;
 %thruster operating point
 Isp = 2000;%s
-thrust = 0.00005; %N
+thrust = 0.04; %N
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
 req = 6378.137; %WGS84_EARTH_EQUATORIAL_RADIUS

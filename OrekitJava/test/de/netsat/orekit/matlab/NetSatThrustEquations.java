@@ -34,9 +34,10 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	private double[] velocityVector;
 	private double[] thrustDirection;
 	private double massLoss;
+	private double outputStepSize;
 
 	public NetSatThrustEquations(String name, String type, boolean fire, int thrusterNum, double thrust,
-			double[] thrustDirection, double massLoss) {
+			double[] thrustDirection, double massLoss, double outputStepSize) {
 		this.name = name;
 		this.type = type;
 		this.fire = fire;
@@ -44,6 +45,7 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		this.thrust = thrust;
 		this.thrustDirection = thrustDirection;
 		this.massLoss = massLoss;
+		this.outputStepSize = outputStepSize;
 	}
 
 	/**
@@ -204,10 +206,10 @@ public class NetSatThrustEquations implements AdditionalEquations {
 				.transformPVCoordinates(thrustDirectionInertial);
 		System.out.println(test.getVelocity().toString());
 		velocityNormal = velocityNormal.scalarMultiply(thrusterNumber * thrust);
-		mainStates[3] = velocityNormal.getX();
-		mainStates[4] = velocityNormal.getY();
-		mainStates[5] = velocityNormal.getZ();
-		mainStates[6] = thrusterNumber * massLoss;
+		mainStates[3] = velocityNormal.getX() / (this.outputStepSize / 6);
+		mainStates[4] = velocityNormal.getY() / (this.outputStepSize / 6);
+		mainStates[5] = velocityNormal.getZ() / (this.outputStepSize / 6);
+		mainStates[6] = thrusterNumber * massLoss / (this.outputStepSize / 6);
 		return mainStates;
 	}
 

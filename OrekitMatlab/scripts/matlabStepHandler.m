@@ -147,8 +147,8 @@ if(norm(thrustVector(:,ii)) ~= 0)%avoid dividing by zero
 end
 %need this for the output arguments, matlab wont allow it directly
 thrustFlag = fireThruster(ii);
-%currentThrustDirection = thrustVector(:,ii);
-currentThrustDirection = [0; 1; 0];
+currentThrustDirection = thrustVector(:,ii);
+%currentThrustDirection = [0; 1; 0];
 %if in last step plot everything
 if(ii == ceil(duration/step_size)+1)
     plotEverything;

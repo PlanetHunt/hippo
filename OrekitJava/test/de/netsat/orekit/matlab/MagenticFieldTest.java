@@ -46,10 +46,10 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 4;
 		boolean fire = false;
-		int thrusterNum = 1;
-		double thrust = 2222;
+		int thrusterNum = 4;
+		double thrust = -0.01;
 		double[] thrustDirection = { 0, 0, 0 };
-		double massLoss = -0.01;
+		double massLoss = -0.0001;
 		Object[] returningObject;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
 				SensorDataType.CURRENT_MASS , SensorDataType.VELOCITY, SensorDataType.POSITION};
@@ -57,8 +57,8 @@ public class MagenticFieldTest {
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("mu", mu);
 		mph.runMatlabFunction("initialiseSimulationVariables(mu)");
-		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
-		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
+		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
@@ -89,7 +89,7 @@ public class MagenticFieldTest {
 				1.0);
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
 		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, thrusterNum, thrust,
-				thrustDirection, massLoss);
+				thrustDirection, massLoss, outputStepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
 		mph.setVariableInMatlab("mu", mu);
 		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
