@@ -37,7 +37,17 @@ switch i
         %ta=68.643*pi/180; 
         mean_anomaly = 67.959*pi/180;
         date = [2013, 12, 04, 11, 00, 00.000];
-
+    case 5 % Shaubs deputy - from his paper
+        chief = [7555000;0.0500000000000000;0.837758040957278;0.349065850398866;0.174532925199433;2.00616895449115];
+        delta = [-100; 0; 0.05*pi/180; 0; -0.01*pi/180; 0];
+        deputy = chief+delta;
+        a = deputy(1);
+        e = deputy(2);
+        in = deputy(3);
+        omega = deputy(4);
+        raan = deputy(5);
+        mean_anomaly = deputy(6);
+        date = [2014, 01, 01, 00, 00, 00.000];
 end
 %% Simulator settings:
 % date = [2014, 01, 01, 00, 00, 00.000];
