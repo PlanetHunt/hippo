@@ -51,7 +51,7 @@ mass(ii) = current_mass;
 
 %orbital elements deputy (mean)
 oedm(:,ii) = [am; em; inm; omegam; raanm; true_anomalym; mean_anomalym];
-oeError(:,ii) = oedm(:,ii)-oecm(:,ii); %%% check this - should it be position of chief rel to deputy or pos deputy rel to chief?
+oeError(:,ii) = oecm(:,ii)-oedm(:,ii); %%% check this - should it be position of chief rel to deputy or pos deputy rel to chief?
 
 %%
 %Initialize variables for Fire

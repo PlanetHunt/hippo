@@ -52,7 +52,7 @@ oed = zeros(7,1);
 oedm = oed;
 %thruster operating point
 Isp = 2000;%s
-thrust = 0.04; %N
+thrust = 0.019; %N
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
 req = 6378.137; %WGS84_EARTH_EQUATORIAL_RADIUS
