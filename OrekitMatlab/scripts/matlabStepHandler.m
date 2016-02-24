@@ -1,4 +1,4 @@
-function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_elements, position, velocity, timestamp, current_mass )
+function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_elements, position, velocity, timestamp, current_mass, last_step_flag )
 %MATLABSTEPHANDLER function to be called at every time step
 %   event_A     perigee
 %   event_B     apogee
@@ -6,154 +6,131 @@ function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_ele
 %   event_D     theta = 90 deg
 %   currentThrustDirecton = a unit vector in thrust direction
 %   thrustFlag = fire thruster command 1 or 0
+%   orbital_elements = [a;e;i;omega;raan;tru Anom; mean anom]
 global timeVector;
 global mass;
-global step_size duration req j2 g thrustDurationLimit;
-global ii %loop variable
+global step_size duration req j2 g thrustDurationLimit; %ie the limit so that it is still an 'impulse'
+
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
 global fireA fireB fireC fireD fireThruster thrustVector;
 global dVA dVB dVC dVD;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
+global AThrustVector BThrustVector CThrustVector DThrustVector;
 global Isp thrust;
 global pos vel;
+
+current_time = datetime(timestamp);
+timeVector=[timeVector;current_time];
+mass = [mass; current_mass];
 pos = [pos, position' ];
 vel = [vel, velocity' ];
-current_time = datetime(timestamp);
-timeVector(ii) = current_time;
-oed(:,ii) = (orbital_elements');
-oed(4,ii) = wrapTo2Pi(oed(4,ii));
-%convert oscilating oe to mean oe
-a = oed(1,ii);
-e = oed(2,ii);
-in = oed(3,ii);
-omega = oed(4,ii);
-raan = oed(5,ii);
-true_anomaly = oed(6,ii);
-mean_anomaly = oed(7,ii);
+oecm(:,end+1) = oecm(:,end); %we are using a fixed chief orbit to formate on so it wont change time step to time step
+oed = [oed, orbital_elements'];
 
-%deputyMeanElements = [a; e; in; omega; raan; true_anomaly; mean_anomaly];
-deputyMeanElements = osc2mean([a*10^-3,e,wrapToPi(in),wrapTo2Pi(omega),wrapTo2Pi(raan),wrapTo2Pi(true_anomaly)]);
-am = deputyMeanElements(1)*10^3; %convert back to meters; 
-em = deputyMeanElements(2);
-inm = deputyMeanElements(3);
-omegam = deputyMeanElements(4);
-raanm = deputyMeanElements(5);
-true_anomalym = deputyMeanElements(6);
+%convert oscilating orbital elements to mean orbital elements
+meanOE = convertOscOeToMeanOe( orbital_elements );
+oedm = [oedm, meanOE];
 
-%eccentric_anomalym = acos((cos(true_anomalym) + em)/(1 + em*cos(true_anomalym)));
-eccentric_anomalym=atan2(sqrt((1-em^2))*sin(true_anomalym),em+cos(true_anomalym));
-eccentric_anomalym=wrapTo2Pi(eccentric_anomalym);
-mean_anomalym = eccentric_anomalym - em*sin(eccentric_anomalym);
-mean_anomalym=wrapTo2Pi(mean_anomalym);
-
-mass(ii) = current_mass;
-
-%orbital elements deputy (mean)
-oedm(:,ii) = [am; em; inm; omegam; raanm; true_anomalym; mean_anomalym];
-oeError(:,ii) = oedm(:,ii)-oecm(:,ii); %%% check this - should it be position of chief rel to deputy or pos deputy rel to chief?
-
-%%
-%Initialize variables for Fire
-%%
-fireA(ii)=0;
-fireB(ii)=0;
-fireC(ii)=0;
-fireD(ii)=0;
-
+%calculate the tracking error in orbital elements, 
+%check this - should it be position of chief rel to deputy or pos deputy rel to chief?
+oeError(:,end+1) = oedm(:,end)-oecm(:,end);
 
 % check if we are in a thrusting period
 %% check A window - check if we are in the last A window (most recent estimate of A window from last time step, thats why we have ii-1 )
-if(isbetween(current_time,tABoostStartCommand(ii-1),tABoostEndCommand(ii-1))) 
+if(isbetween(current_time,tABoostStartCommand(end),tABoostEndCommand(end))) 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
-    dVA(:,ii) = dVA(:,ii-1); %=last value
-    tABoostStartCommand(ii) = tABoostStartCommand(ii-1);
-    tABoostEndCommand(ii) = tABoostEndCommand(ii-1);
+    dVA(:,end+1) = dVA(:,end); %=last value
+    %dont change the window or the thrust while we are in the window
+    tABoostStartCommand(end+1) = tABoostStartCommand(end);%append the value from last time step
+    tABoostEndCommand(end+1) = tABoostEndCommand(end);
+    fireA(end+1) = 1;
+    AThrustVector(:,end+1) = dVA(:,end);%if fire commanded, compy the dV vector into the Thrust Vector
     
-    fireA(ii) = 1;
-    AThrustVector(:,ii) = dVA(:,ii);
-    [dVB(:,ii), tBBoostStartCommand(ii), tBBoostEndCommand(ii)] = updateThrustTimes( 2, current_time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,ii));
-    fireB(ii) = 0;
-    BThrustVector(:,ii) = [0;0;0];
+    %if we are in event A we can't be in B, so set the B thrust to zero
+    [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end));
+    fireB(end) = 0;
+    BThrustVector(:,end) = [0;0;0];
 else
     %update estimates
-    [dVA(:,ii), tABoostStartCommand(ii), tABoostEndCommand(ii)] = updateThrustTimes( 1, current_time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,ii));
-    fireA(ii) = 0;
-    AThrustVector(:,ii) = [0;0;0];
+    [dVA(:,end+1), tABoostStartCommand(end+1), tABoostEndCommand(end+1)] = updateThrustTimes( 1, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end));
+    fireA(end) = 0;
+    AThrustVector(:,end) = [0;0;0];
     
     %% check B window (only makes sense to check B window if we are sure we are not in A. (we cant be in the perigee and apogee boost windows at the same time.)
-    if(isbetween(current_time,tBBoostStartCommand(ii-1),tBBoostEndCommand(ii-1)))
+    if(isbetween(current_time,tBBoostStartCommand(end),tBBoostEndCommand(end)))
         % we are in the thrustingwindow, so keep thrust, and start and end
         % times constant
-        dVB(:,ii) = dVB(:,ii-1); %=last value
-        tBBoostStartCommand(ii) = tBBoostStartCommand(ii-1);
-        tBBoostEndCommand(ii) = tBBoostEndCommand(ii-1);
+        dVB(:,end+1) = dVB(:,end); %=last value
+        tBBoostStartCommand(end+1) = tBBoostStartCommand(end);
+        tBBoostEndCommand(end+1) = tBBoostEndCommand(end);
 
-        fireB(ii) = 1;
-        BThrustVector(:,ii) = dVB(:,ii);
+        fireB(end+1) = 1;
+        BThrustVector(:,end+1) = dVB(:,end);
     else
         %update estimates
-        [dVB(:,ii), tBBoostStartCommand(ii), tBBoostEndCommand(ii)] = updateThrustTimes( 2, current_time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,ii));
-        fireB(ii) = 0;
-        BThrustVector(:,ii) = [0;0;0];
+        [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end));
+        fireB(end+1) = 0;
+        BThrustVector(:,end+1) = [0;0;0];
     end
 
 end
 
 %% check C window
-if(isbetween(current_time,tCBoostStartCommand(ii-1),tCBoostEndCommand(ii-1)))
+if(isbetween(current_time,tCBoostStartCommand(end),tCBoostEndCommand(end)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
-    dVC(:,ii) = dVC(:,ii-1); %=last value
-    tCBoostStartCommand(ii) = tCBoostStartCommand(ii-1);
-    tCBoostEndCommand(ii) = tCBoostEndCommand(ii-1);
+    dVC(:,end+1) = dVC(:,end); %=last value
+    tCBoostStartCommand(end+1) = tCBoostStartCommand(end);
+    tCBoostEndCommand(end+1) = tCBoostEndCommand(end);
     
-    fireC(ii) = 1;
-    CThrustVector(:,ii) = dVC(:,ii);
-    [dVD(:,ii), tDBoostStartCommand(ii), tDBoostEndCommand(ii)] = updateThrustTimes( 4, current_time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,ii));
-    fireD(ii) = 0;
-    DThrustVector(:,ii) = [0;0;0];
+    fireC(end+1) = 1;
+    CThrustVector(:,end+1) = dVC(:,end);
+    %cant be in b, so update it
+    [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end));
+    fireD(end+1) = 0;
+    DThrustVector(:,end+1) = [0;0;0];
 else
     %update estimates
-    [dVC(:,ii), tCBoostStartCommand(ii), tCBoostEndCommand(ii)] = updateThrustTimes( 3, current_time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,ii));
-    fireC(ii) = 0;
-    CThrustVector(:,ii) = [0;0;0];
+    [dVC(:,end+1), tCBoostStartCommand(end+1), tCBoostEndCommand(end+1)] = updateThrustTimes( 3, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end));
+    fireC(end+1) = 0;
+    CThrustVector(:,end+1) = [0;0;0];
     
     %% check D window ( we check here cause we shouldnt be in C window provided that our boost duration is only a few mins and we are not highly elliptical)
-    if(isbetween(current_time,tDBoostStartCommand(ii-1),tDBoostEndCommand(ii-1)))
+    if(isbetween(current_time,tDBoostStartCommand(end),tDBoostEndCommand(end)))
         % we are in the thrustingwindow, so keep thrust, and start and end
         % times constant
-        dVD(:,ii) = dVD(:,ii-1); %=last value
-        tDBoostStartCommand(ii) = tDBoostStartCommand(ii-1);
-        tDBoostEndCommand(ii) = tDBoostEndCommand(ii-1);
+        dVD(:,end+1) = dVD(:,end); %=last value
+        tDBoostStartCommand(end+1) = tDBoostStartCommand(end);
+        tDBoostEndCommand(end+1) = tDBoostEndCommand(end);
 
-        fireD(ii) = 1;
-        DThrustVector(:,ii) = dVD(:,ii);
+        fireD(end+1) = 1;
+        DThrustVector(:,end+1) = dVD(:,end);
     else
         %update estimates
-        [dVD(:,ii), tDBoostStartCommand(ii), tDBoostEndCommand(ii)] = updateThrustTimes( 4, current_time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,ii));
-        fireD(ii) = 0;
-        DThrustVector(:,ii) = [0;0;0];
+        [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end));
+        fireD(end+1) = 0;
+        DThrustVector(:,end+1) = [0;0;0];
     end
 end
 
-
-fireThruster(ii) = any([fireA(ii),fireB(ii),fireC(ii),fireD(ii)]); %return 1 if any of A B C D = 1
-
-thrustVector(:,ii) = AThrustVector(:,ii)+BThrustVector(:,ii)+CThrustVector(:,ii)+DThrustVector(:,ii); %net delta V
-if(norm(thrustVector(:,ii)) ~= 0)%avoid dividing by zero
-    thrustVector(:,ii) = thrustVector(:,ii)/norm(thrustVector(:,ii)); %normalized 
+%net/overall fire the thruster flag - should we fire the thruster?
+fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
+%net/overall thrust vector - what thrust should we apply ? (delta V)
+thrustVector(:,end+1) = AThrustVector(:,end)+BThrustVector(:,end)+CThrustVector(:,end)+DThrustVector(:,end); %net delta V
+if(norm(thrustVector(:,end)) ~= 0)%avoid dividing by zero
+    thrustVector(:,end) = thrustVector(:,end)/norm(thrustVector(:,end)); %normalized to simply get a unit vector in the thrust direction
 end
+
 %need this for the output arguments, matlab wont allow it directly
-thrustFlag = fireThruster(ii);
-currentThrustDirection = thrustVector(:,ii);
-%currentThrustDirection = [0; 1; 0];
+thrustFlag = fireThruster(end);
+currentThrustDirection = thrustVector(:,end); %unit vector in the thrust direction
+%currentThrustDirection = [0; 1; 0]; %hard coded for testing purposes
+
 %if in last step plot everything
-if(ii == ceil(duration/step_size)+1)
+if(last_step_flag == 1)
     plotEverything;
 end
-ii=ii+1;
   
 end
-

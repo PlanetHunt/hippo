@@ -1,4 +1,4 @@
-function [ dV, tBoostStartCommand, tBoostEndCommand ] = updateThrustTimes( eventID, time, am, em, inm, omegam, raanm, true_anomalym, mean_anomalym, currentMass, Isp, thrust, burnTimeLimit, orbitElementsError)
+function [ dV, tBoostStartCommand, tBoostEndCommand ] = updateThrustTimes( eventID, time, currentMass, Isp, thrust, burnTimeLimit, orbitElementsError, deputyMeanOE)
 %UPDATETHRUSTTIMES calculate the time of thrusting required at each node
 %   This function calculates the thrust required (delta V) at a node (A
 %   B C or D) and calculated the time when the thruster should be on and
@@ -9,20 +9,24 @@ function [ dV, tBoostStartCommand, tBoostEndCommand ] = updateThrustTimes( event
 %   eventID = 2 is event B
 %   eventID = 3 is event C
 %   eventID = 4 is event D
+am = deputyMeanOE(1);
+em = deputyMeanOE(2);
+omegam = deputyMeanOE(4);
+true_anomalym = deputyMeanOE(6);
 global mu;
 global step_size;
 switch eventID
     case 1 %A
-        dV = FTCCalcPerigeeDv([am, em, inm, omegam, raanm, true_anomalym, mean_anomalym], orbitElementsError);
+        dV = FTCCalcPerigeeDv(deputyMeanOE, orbitElementsError);
         true_anomalyNode = 0;
     case 2 %B
-        dV = FTCCalcApogeeDv([am, em, inm, omegam, raanm, true_anomalym, mean_anomalym], orbitElementsError);
+        dV = FTCCalcApogeeDv(deputyMeanOE, orbitElementsError);
         true_anomalyNode = pi;
     case 3 %C
-        dV = FTCCalcLatArgZeroDv([am, em, inm, omegam, raanm, true_anomalym, mean_anomalym], orbitElementsError);
+        dV = FTCCalcLatArgZeroDv(deputyMeanOE, orbitElementsError);
         true_anomalyNode = wrapTo2Pi(0-omegam);
     case 4 %D
-        dV = FTCCalcLatArgNinetyDv([am, em, inm, omegam, raanm, true_anomalym, mean_anomalym], orbitElementsError);
+        dV = FTCCalcLatArgNinetyDv(deputyMeanOE, orbitElementsError);
         true_anomalyNode = wrapTo2Pi(pi/2-omegam);
 end
     %calc Burn duration for this node (s)

@@ -201,7 +201,7 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		PVCoordinates thrustDirectionInertial = localLVLH.getTransformTo(s.getFrame(), s.getDate())
 				.transformPVCoordinates(thrustDirectionLVLH);
 
-		Vector3D velocityNormal = thrustDirectionInertial.getAngularVelocity().normalize();
+		Vector3D velocityNormal = thrustDirectionInertial.getVelocity().normalize();
 		PVCoordinates test = s.getFrame().getTransformTo(localLVLH, s.getDate())
 				.transformPVCoordinates(thrustDirectionInertial);
 		System.out.println(test.getVelocity().toString());

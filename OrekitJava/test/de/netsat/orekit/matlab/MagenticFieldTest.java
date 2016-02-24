@@ -44,10 +44,10 @@ public class MagenticFieldTest {
 			throws MatlabInvocationException, OrekitException
 
 	{
-		int sat_nr = 4;
+		int sat_nr = 5;
 		boolean fire = false;
 		int thrusterNum = 4;
-		double thrust = -0.01;
+		double thrust = 0.01;
 		double[] thrustDirection = { 0, 0, 0 };
 		double massLoss = -0.0001;
 		Object[] returningObject;
