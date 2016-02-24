@@ -72,16 +72,15 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			try {
 				this.setVariableInMatlab("last_step_flag", 1);
 				System.out.println("We are in the Last Step.");
-				//Finds out if we are in last_step.
-				this.setVariableInMatlab("last_step_flag", 1);
-				this.PushAllDataToMatlab();
+				//this.PushAllDataToMatlab();
+				this.evaluateOptions(currentState);
 				/* Run the Matlab functions at the end of the propagation */
 				for (MatlabFunctionType ft : this.matlabFunctions) {
 					if (ft.getAtOnce()) {
 						this.runMatlabFunction(ft.getFunctionName());
 					}
 				}
-			} catch (MatlabInvocationException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				System.err.println(e.getMessage());
 			}

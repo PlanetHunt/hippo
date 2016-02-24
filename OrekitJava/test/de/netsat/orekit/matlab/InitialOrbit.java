@@ -29,8 +29,10 @@ public class InitialOrbit {
 	/**
 	 * 
 	 * @param orbitParams
+	 * @throws OrekitException 
 	 */
-	public InitialOrbit(double[] orbitParams, double[] dateParams, MatlabInterface mi) {
+	public InitialOrbit(double[] orbitParams, double[] dateParams, MatlabInterface mi) throws OrekitException {
+		this.constants = new ConstantValues();
 		this.orbitParams = orbitParams;
 		this.mi = mi;
 		this.dateParams = dateParams;

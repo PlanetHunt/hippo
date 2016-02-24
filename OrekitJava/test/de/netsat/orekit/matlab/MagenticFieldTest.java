@@ -51,7 +51,7 @@ public class MagenticFieldTest {
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
-		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 11);
+		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 10);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 		//returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
