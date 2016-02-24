@@ -171,6 +171,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 				} else {
 					Object[] a = this.runMatlabFunction(ft.getFunctionName(), 1);
 					double c = ((double[]) a[0])[0];
+					System.out.println(c);
 				}
 			}
 		}

@@ -46,8 +46,9 @@ public class MagenticFieldTest {
 	{
 		int sat_nr = 5;
 		boolean fire = false;
-		int thrusterNum = 4;
-		double thrust = 0.01;
+		int thrusterNum = 1;
+		double thrust = 1.9e-6;
+		//double thrust =  0.01;
 		double[] thrustDirection = { 0, 0, 0 };
 		double massLoss = -0.0001;
 		Object[] returningObject;

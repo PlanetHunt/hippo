@@ -193,23 +193,35 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	public double[] calculateThrustEffects(SpacecraftState s, double thrust, int thrusterNumber, double massLoss,
 			double[] thrustDirection) throws OrekitException {
 		double[] mainStates = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		double defValue = 0;
+		double signValue = 0;
+		for (double t : thrustDirection) {
+			if (Math.abs(t) > defValue) {
+				defValue = Math.abs(t);
+				signValue = Math.signum(t);
+			}
+		}
 		Vector3D thrustDirectionVector = new Vector3D(thrustDirection);
+		System.out.println(thrustDirectionVector.toString());
 		LocalOrbitalFrame localLVLH = new LocalOrbitalFrame(s.getFrame(), LOFType.LVLH, s.getOrbit(), "LVLH");
 		PVCoordinates pVSatLVLH = s.getFrame().getTransformTo(localLVLH, s.getDate())
 				.transformPVCoordinates(s.getPVCoordinates());
 		PVCoordinates thrustDirectionLVLH = new PVCoordinates(pVSatLVLH.getPosition(), thrustDirectionVector);
 		PVCoordinates thrustDirectionInertial = localLVLH.getTransformTo(s.getFrame(), s.getDate())
 				.transformPVCoordinates(thrustDirectionLVLH);
-
 		Vector3D velocityNormal = thrustDirectionInertial.getVelocity().normalize();
 		PVCoordinates test = s.getFrame().getTransformTo(localLVLH, s.getDate())
 				.transformPVCoordinates(thrustDirectionInertial);
 		System.out.println(test.getVelocity().toString());
+		System.out.println(velocityNormal.toString());
+		System.out.println();
+		thrust = thrust * signValue;
+		//thrust = thrust * -1;
 		velocityNormal = velocityNormal.scalarMultiply(thrusterNumber * thrust);
 		mainStates[3] = velocityNormal.getX() / (this.outputStepSize / 6);
 		mainStates[4] = velocityNormal.getY() / (this.outputStepSize / 6);
 		mainStates[5] = velocityNormal.getZ() / (this.outputStepSize / 6);
-		mainStates[6] = thrusterNumber * massLoss / (this.outputStepSize / 6);
+		mainStates[6] = massLoss / (this.outputStepSize / 6);
 		return mainStates;
 	}
 
@@ -230,7 +242,13 @@ public class NetSatThrustEquations implements AdditionalEquations {
 			if (this.fire) {
 				System.out.println("We are fireing");
 				this.setFire(false);
-				return this.calculateThrustEffects(s, getThrust(), getThrustNum(), this.massLoss, getThrustDirection());
+				NanoFEEP nanoFeep = new NanoFEEP(new Vector3D(0, 0), new Vector3D(0, 0));
+				// Times 1000 should be removed afterward, this is only for
+				// testing.
+				double massLoss = nanoFeep.getFlowRate(Math.abs(this.thrust)) * 10e6;
+				System.out.println("MassLoss:" + massLoss);
+				return this.calculateThrustEffects(s, this.getThrust() * 10000, this.getThrustNum(),
+						this.thrusterNum * massLoss, getThrustDirection());
 				// return null;
 			}
 		}

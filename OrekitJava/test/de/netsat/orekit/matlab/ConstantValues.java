@@ -9,7 +9,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
 public class ConstantValues {
