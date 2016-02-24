@@ -1,13 +1,13 @@
-function [startingDate,a,e,in,omega,raan,mean_anomaly,numberOfThrusters, thrust, numberOfThrusters, startingMass] = initialiseSimulationVariables(muValue)
+function [startingDate,deputyStartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size] = initialiseSimulationVariables(muValue)
 %% global variables
 global timeVector
-global Isp thrust mass
-global mu
+global Isp mass
+global mu thrust
 global req j2 g thrustDurationLimit;
-global position_tolerance min_step max_step duration step_size choiceofProp;
+% global position_tolerance min_step max_step duration step_size choiceofProp;
 %global ii %loop variable
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
-global fireA fireB fireC fireD fireThruster thrustVector;
+global fireA fireB fireC fireD fireThruster;
 global dVA dVB dVC dVD;
 
 global AThrustVector BThrustVector CThrustVector DThrustVector;
@@ -32,7 +32,10 @@ DThrustVector = [0;0;0];
 fireThruster = 0;
 fireA = 0; fireB = 0; fireC = 0; fireD = 0;
 dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0]; 
-[position_tolerance, min_step, max_step, duration, step_size, choiceofProp] = setNumericalPropagatorSettings();
+[position_tolerance, min_step, max_step, duration, step_size, ~] = setNumericalPropagatorSettings();
+global stepSize;
+stepSize = step_size; %matlabs copy.
+
 global pos vel;
 pos = [0;0;0];
 vel = [0;0;0];
@@ -42,13 +45,13 @@ mass = 0;
 %oec = setChiefOrbitalElements(1)
 
 %Chief OE from Schaubs paper
-oec = setChiefOrbitalElements(2)
+oec = setChiefOrbitalElements(2);
 oecm = oec; %just assume this for now - later this hsould be changed to get the actual mean cheif orbital elements
 %initialise deputy OE
 oed = zeros(7,1);
 oedm = zeros(7,1);
 %set initial deputy OEs and the date
-[a,e,in,omega,raan,mean_anomaly,startingDate] = setDeputyOrbitalElements(mu,1);
+[deputyStartingOE,startingDate] = setDeputyOrbitalElements(mu,5); %5 - shaubs deputy
 
 
 
@@ -56,6 +59,7 @@ oedm = zeros(7,1);
 Isp = 2000;%s
 numberOfThrusters = 1;
 thrust = 0.04; %N per thruster
+thrustVal = thrust; %this is the copy of the variable returned to orekit (cant send a global variable)
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
 req = 6378.137; %WGS84_EARTH_EQUATORIAL_RADIUS

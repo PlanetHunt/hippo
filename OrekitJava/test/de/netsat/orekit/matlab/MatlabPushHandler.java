@@ -61,6 +61,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
 		if (!isLast) {
 			try {
+				this.setVariableInMatlab("last_step_flag", 0);
 				this.evaluateOptions(currentState);
 				System.out.println("Still propagating..." + currentState.getDate());
 			} catch (Exception e) {
@@ -70,6 +71,8 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		} else {
 			try {
 				System.out.println("We are in the Last Step.");
+				//Finds out if we are in last_step.
+				this.setVariableInMatlab("last_step_flag", 1);
 				this.PushAllDataToMatlab();
 				/* Run the Matlab functions at the end of the propagation */
 				for (MatlabFunctionType ft : this.matlabFunctions) {

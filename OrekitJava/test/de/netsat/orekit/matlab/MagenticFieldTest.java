@@ -56,8 +56,8 @@ public class MagenticFieldTest {
 				SensorDataType.CURRENT_MASS , SensorDataType.VELOCITY, SensorDataType.POSITION};
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
-		mph.setVariableInMatlab("mu", mu);
-		mph.runMatlabFunction("initialiseSimulationVariables(mu)");
+		mph.setVariableInMatlab("muValue", mu);
+		mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 16);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 		returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
@@ -92,7 +92,7 @@ public class MagenticFieldTest {
 		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, thrusterNum, thrust,
 				thrustDirection, massLoss, outputStepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
-		mph.setVariableInMatlab("mu", mu);
+		//mph.setVariableInMatlab("mu", mu);
 		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
 		numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());

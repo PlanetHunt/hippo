@@ -9,7 +9,7 @@ function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_ele
 %   orbital_elements = [a;e;i;omega;raan;tru Anom; mean anom]
 global timeVector;
 global mass;
-global step_size duration req j2 g thrustDurationLimit; %ie the limit so that it is still an 'impulse'
+global stepSize duration req j2 g thrustDurationLimit; %ie the limit so that it is still an 'impulse'
 
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
 global fireA fireB fireC fireD fireThruster thrustVector;
