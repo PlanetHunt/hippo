@@ -51,7 +51,10 @@ public class MagenticFieldTest {
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
-		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 10);
+		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 11);
+		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
+		//returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 
 		/* Initial Orbit Settings */
 		double[] initialDate = ((double[]) initialVars[0]);
@@ -65,7 +68,6 @@ public class MagenticFieldTest {
 		double maxStep = ((double[]) initialVars[7])[0];
 		double duration = ((double[]) initialVars[8])[0];
 		double stepSize = ((double[]) initialVars[9])[0];
-		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
 		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
 				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -91,7 +93,6 @@ public class MagenticFieldTest {
 		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, (int) thrusterNumber, thrust,
 				thrustDirection, massLoss, stepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
-
 		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
 		numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());

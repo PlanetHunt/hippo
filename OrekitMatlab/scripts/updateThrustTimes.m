@@ -14,7 +14,7 @@ em = deputyMeanOE(2);
 omegam = deputyMeanOE(4);
 true_anomalym = deputyMeanOE(6);
 global mu;
-global step_size;
+global stepSize;
 switch eventID
     case 1 %A
         dV = FTCCalcPerigeeDv(deputyMeanOE, orbitElementsError);
@@ -51,7 +51,7 @@ end
     tBoostStart = time + seconds(durationCountDownBoost); %a matlab datetime object
     %the signal needs to be generated one step ahead, so orekit applies the
     %boost during the correct time interval.
-    tBoostStartCommand = tBoostStart - seconds(step_size); %a matlab datetime object
+    tBoostStartCommand = tBoostStart - seconds(stepSize); %a matlab datetime object
     %the turn thruster off command
     tBoostEndCommand = tBoostStartCommand + seconds(burnDuration); %a matlab datetime object
 end

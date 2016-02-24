@@ -22,6 +22,7 @@ public enum SensorDataType {
 	RAA("raa", "d", "getRaan"), 
 	TRU("tru", "d", "getTrueAnomaly"),
 	MEA("mea", "d", "getMeanAnomaly"),
+	LAST_STEP("last_step_flag", "d", "getLastStepFlag"),
 	CURRENT_MASS("current_mass", "d", "getCurrentMass"),
 	DETECT_PERIGEE("perigee_detections", "dd", "getPerigeeDetetions"),
 	DETECT_APOGEE("apogee_detections", "dd", "getApogeeDetections"),
