@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -21,6 +22,35 @@ public class InitialOrbit {
 	// constant values are set the same for the whole project to remove the
 	// Inconsistencies.
 	private ConstantValues constants;
+	private double[] orbitParams;
+	private double[] dateParams;
+	private MatlabInterface mi;
+
+	/**
+	 * 
+	 * @param orbitParams
+	 */
+	public InitialOrbit(double[] orbitParams, double[] dateParams, MatlabInterface mi) {
+		this.orbitParams = orbitParams;
+		this.mi = mi;
+		this.dateParams = dateParams;
+	}
+
+	/**
+	 * 
+	 * @param orbitParams
+	 */
+	public void setOrbitParams(double[] orbitParams) {
+		this.orbitParams = orbitParams;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public double[] getOrbitParams() {
+		return this.orbitParams;
+	}
 
 	/**
 	 * Returns the Keplerian Orbit from the Matlab Files.
@@ -30,20 +60,13 @@ public class InitialOrbit {
 	 * @throws MatlabInvocationException
 	 * @throws OrekitException
 	 */
-	public KeplerianOrbit getKeplerianOrbit(MatlabInterface mi, int satNum)
-			throws MatlabInvocationException, OrekitException {
-		String s = "getKeplerSat(mu," + String.valueOf(satNum) + ")";
-		Object[] returningObject = mi.returningEval(s, 2);
-		double[] elements = (double[]) returningObject[0];
-		double[] timevec = (double[]) returningObject[1];
-
-		TimeScale utc = TimeScalesFactory.getUTC();
-		AbsoluteDate initialDate = new AbsoluteDate((int) timevec[0], (int) timevec[1], (int) timevec[2],
-				(int) timevec[3], (int) timevec[4], timevec[5], utc);
-		System.out.println("Date: " + initialDate.toString());
-		return new KeplerianOrbit(elements[0], elements[1], elements[2], elements[3], elements[4], elements[5],
-				PositionAngle.MEAN, this.constants.getITRF(), initialDate, this.constants.getMu());
-
+	public KeplerianOrbit getKeplerianOrbit() throws MatlabInvocationException, OrekitException {
+		TimeScale ts = this.constants.getTimeScale();
+		Frame frame = this.constants.getITRF();
+		AbsoluteDate it = new AbsoluteDate((int) this.dateParams[0], (int) this.dateParams[1], (int) this.dateParams[2],
+				(int) this.dateParams[3], (int) this.dateParams[4], this.dateParams[5], ts);
+		return new KeplerianOrbit(this.orbitParams[0], this.orbitParams[1], this.orbitParams[2], this.orbitParams[3],
+				this.orbitParams[4], this.orbitParams[5], PositionAngle.MEAN, frame, it, this.constants.getMu());
 	}
 
 	/**

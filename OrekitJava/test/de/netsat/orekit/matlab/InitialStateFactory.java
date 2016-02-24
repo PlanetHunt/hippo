@@ -80,7 +80,7 @@ public class InitialStateFactory {
 	 */
 	public void setOrbit(int satNum) throws Exception {
 		if (this.orbitFromMatlab) {
-			this.orbit = this.initOrbit.getKeplerianOrbit(this.mi, satNum);
+			this.orbit = this.initOrbit.getKeplerianOrbit();
 		} else {
 			this.orbit = this.initOrbit.getKeplerianOrbit(null, null, "tle.txt");
 		}
