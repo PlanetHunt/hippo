@@ -1,4 +1,4 @@
-function [thrust] = initialiseSimulationVariables(muValue)
+function [startingDate,a,e,in,omega,raan,mean_anomaly,numberOfThrusters, thrust, numberOfThrusters, startingMass] = initialiseSimulationVariables(muValue)
 %% global variables
 global timeVector
 global Isp thrust mass
@@ -14,7 +14,7 @@ global AThrustVector BThrustVector CThrustVector DThrustVector;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 %setMu(mu);
-mu = muValue; 
+mu = muValue;
 oeError = [0; 0; 0; 0; 0; 0; 0]; %maybe should calculate this properly for the starting conditions, dont forget to use mean elements
 timeVector = datetime(0001,01,01,000,00,00);
 tABoostStartCommand = datetime(0001,01,01,000,00,00);
@@ -36,7 +36,7 @@ dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0];
 global pos vel;
 pos = [0;0;0];
 vel = [0;0;0];
-
+mass = 0;
 %chief
 %hincubeOE on 4/12/2013
 %oec = setChiefOrbitalElements(1)
@@ -47,14 +47,19 @@ oecm = oec; %just assume this for now - later this hsould be changed to get the 
 %initialise deputy OE
 oed = zeros(7,1);
 oedm = zeros(7,1);
+%set initial deputy OEs and the date
+[a,e,in,omega,raan,mean_anomaly,startingDate] = setDeputyOrbitalElements(mu,1);
+
+
 
 %thruster operating point
 Isp = 2000;%s
-thrust = 0.04; %N
+numberOfThrusters = 1;
+thrust = 0.04; %N per thruster
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
 req = 6378.137; %WGS84_EARTH_EQUATORIAL_RADIUS
 j2 = 1.08262668355e-3;
 g = 9.80665; %m/s^2
-%mass = 1+0.00025; %assume initial mass of sc is 1kg + the fuel of one thruster
+startingMass = 1; %assume initial mass of sc is 1kg + the fuel of one thruster
 
