@@ -2,6 +2,7 @@ package de.netsat.orekit.matlab;
 
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -16,7 +17,7 @@ public class NetsatPropagatorFactory {
 	 * @throws PropagationException
 	 */
 	public NetsatPropagatorFactory(PropagatorDataType propagatorType, double maxStep, double minStep, double duration,
-			double stepSize, double positionTolerance, Orbit orbit) throws PropagationException {
+			double stepSize, double positionTolerance, OrbitType orbitType) throws PropagationException {
 		this.propagatorType = propagatorType;
 		this.propagatorType.setDuration(duration);
 		this.propagatorType.setMinStep(minStep);
@@ -24,7 +25,7 @@ public class NetsatPropagatorFactory {
 		this.propagatorType.setDuration(duration);
 		this.propagatorType.setStepSize(stepSize);
 		this.propagatorType.setPositionTolerance(positionTolerance);
-		this.propagatorType.setOrbit(orbit);
+		this.propagatorType.setOrbitType(orbitType);
 		this.propagatorType.setPropagator();
 	}
 

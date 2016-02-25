@@ -1,5 +1,7 @@
 package de.netsat.orekit.matlab;
 
+import java.util.Hashtable;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -14,6 +16,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 
 import de.netsat.orekit.NetSatConfiguration;
 import de.netsat.orekit.matlab.MatlabPushHandler;
@@ -21,6 +24,7 @@ import de.netsat.orekit.matlab.EventCalculator;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -39,6 +43,66 @@ public class MagenticFieldTest {
 	 * @throws OrekitException
 	 */
 
+	public static void runApplication(MatlabInterface mi, double mu) throws MatlabInvocationException, OrekitException {
+		/** Set your Matlab variable queue **/
+
+		MatlabVariableType[] matlabDataTemplate = { MatlabVariableType.INITIAL_DATE, MatlabVariableType.INITIAL_ORBIT,
+				MatlabVariableType.THRUST_NUMBER, MatlabVariableType.THRUST, MatlabVariableType.STARTING_MASS,
+				MatlabVariableType.POSITION_TOLERANCE, MatlabVariableType.MIN_STEP, MatlabVariableType.MAX_STEP,
+				MatlabVariableType.DURATION, MatlabVariableType.STEP_SIZE };
+		MatlabInitialSettings matSettingsInit = new MatlabInitialSettings(mi, matlabDataTemplate,
+				"initialiseSimulationVariables(muVal)", mu);
+		Hashtable<String, Object> simInitialSettings = matSettingsInit.getSettings();
+		System.out.println("Matlab Settings imported");
+		/** Create initial Orbit **/
+		InitialOrbit initOrbit = new InitialOrbit(((double[]) simInitialSettings.get("initialOrbit")),
+				(double[]) simInitialSettings.get("initialDate"), mi);
+		KeplerianOrbit keplerOrbit = initOrbit.getKeplerianOrbit();
+		AbsoluteDate date = keplerOrbit.getDate();
+		System.out.println("Initial Orbit generated");
+		/** Create Basic Propagators **/
+		Hashtable<String, Double> propagatorSettings = new Hashtable<String, Double>();
+		for (MatlabVariableType val : matlabDataTemplate) {
+			if (val.getGroup() == "initProp") {
+				propagatorSettings.put(val.getVarName(), (double) simInitialSettings.get(val.getVarName()));
+			}
+		}
+		InitiatePropagators initPropRungeKutta = new InitiatePropagators("rungeKutta", propagatorSettings, keplerOrbit);
+		InitiatePropagators initPropAdaptiveStep = new InitiatePropagators("adaptiveStep", propagatorSettings,
+				keplerOrbit);
+		NumericalPropagator rungeKutta = initPropRungeKutta.getNumericalPropagator();
+		NumericalPropagator adaptiveStep = initPropAdaptiveStep.getNumericalPropagator();
+		System.out.println("Propagators generated");
+		/** Create the force Model and add them to the Propagators **/
+		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
+		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
+				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+		ForceModel atmosphericDrag = new DragForce(
+				new HarrisPriester(CelestialBodyFactory.getSun(),
+						new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+								FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+				new SphericalSpacecraft(0.01, 2.2, 0, 0));
+		rungeKutta.addForceModel(atmosphericDrag);
+		rungeKutta.addForceModel(holmesFeatherstone);
+		adaptiveStep.addForceModel(atmosphericDrag);
+		adaptiveStep.addForceModel(holmesFeatherstone);
+		System.out.println("Force Models added to the propagator.");
+		/** Initial State of the satellite is generated **/
+		SpacecraftState initialState = new SpacecraftState(keplerOrbit,
+				new Attitude(FramesFactory.getEME2000(),
+						new TimeStampedAngularCoordinates(keplerOrbit.getDate(),
+								new PVCoordinates(new Vector3D(10, 10), new Vector3D(1, 2)),
+								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
+				(double) simInitialSettings.get("startingMass"));
+		AbsoluteDate finishTime = keplerOrbit.getDate().shiftedBy((double) simInitialSettings.get("duration"));
+		while (date.compareTo(finishTime) <= 0) {
+			if(choiceOfProp==1){
+				
+			}
+		}
+
+	}
+
 	public static SpacecraftState runNumericalPropagatorlocal(MatlabInterface mi, double mu)
 			throws MatlabInvocationException, OrekitException
 
@@ -53,8 +117,10 @@ public class MagenticFieldTest {
 		mph.setVariableInMatlab("muValue", mu);
 		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 10);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
-		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
-		//returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
+		// PropagatorDataType np =
+		// PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
+		// returningObject =
+		// mi.returningEval("setNumericalPropagatorSettings()", 5);
 
 		/* Initial Orbit Settings */
 		double[] initialDate = ((double[]) initialVars[0]);
@@ -81,7 +147,7 @@ public class MagenticFieldTest {
 		KeplerianOrbit keplerOrbit = initOrbit.getKeplerianOrbit();
 
 		NetsatPropagatorFactory NumericalPropagatorFactory = new NetsatPropagatorFactory(np, maxStep, minStep, duration,
-				stepSize, positionTolerance, keplerOrbit);
+				stepSize, positionTolerance, OrbitType.KEPLERIAN);
 		NumericalPropagator numericPropagator = NumericalPropagatorFactory.getNumericalPropagator();
 		SpacecraftState initialState = new SpacecraftState(keplerOrbit,
 				new Attitude(FramesFactory.getEME2000(),
@@ -90,8 +156,8 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				startingMass);
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
-		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, (int) thrusterNumber, thrust,
-				thrustDirection, massLoss, stepSize);
+		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, (int) thrusterNumber,
+				thrust, thrustDirection, massLoss, stepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
 		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
 		numericPropagator.addAdditionalEquations(thrustEq);
@@ -105,6 +171,7 @@ public class MagenticFieldTest {
 		numericPropagator.setInitialState(initialState);
 		numericPropagator.setMasterMode(stepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
+		System.out.println(finalState.getPVCoordinates().toString());
 		return finalState;
 
 	}
@@ -131,8 +198,8 @@ public class MagenticFieldTest {
 		MatlabInterface mi;
 		ConstantValues constants = new ConstantValues();
 		mi = new MatlabInterface(MatlabInterface.MATLAB_PATH, null);
-		runNumericalPropagatorlocal(mi, constants.getMu());
-
+		// runNumericalPropagatorlocal(mi, constants.getMu());
+		runApplication(mi, constants.getMu());
 		// System.out.println(((double[]) obj[1])[0]);
 	}
 
