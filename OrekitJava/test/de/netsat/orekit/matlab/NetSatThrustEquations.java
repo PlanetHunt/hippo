@@ -224,9 +224,9 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		//thrustDirectionVector = thrustDirectionVector.scalarMultiply(thrusterNumber * thrust);
 		System.out.println(thrustDirectionVector.toString());
 		
-		mainStates[3] = 1.0;//thrustDirectionVector.getX();// / (this.outputStepSize / 6);
-		//mainStates[4] = thrustDirectionVector.getY();// / (this.outputStepSize / 6);
-		//mainStates[5] = thrustDirectionVector.getZ();// / (this.outputStepSize / 6);
+		mainStates[3] = thrustDirectionVector.getX();// / (this.outputStepSize / 6);
+		mainStates[4] = thrustDirectionVector.getY();// / (this.outputStepSize / 6);
+		mainStates[5] = thrustDirectionVector.getZ();// / (this.outputStepSize / 6);
 		mainStates[6] = massLoss / (this.outputStepSize / 6);
 		return mainStates;
 	}
