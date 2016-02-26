@@ -1,4 +1,4 @@
-function [ burnTime ] = calcBurnTime( dV, fullMass, Isp, thrust, burnTimeLimit )
+function [ burnTime ] = calcBurnTime( dV, fullMass, Isp, thrust, burnTimeLimit, numThrusters )
 %CALCBURNTIME calculates thrusting duration required (burn time) to achieve a given
 %delta V (basic rocket equation)
 %   dV is a vector [dVx; dVy; dVz]
@@ -12,7 +12,7 @@ global g
 
 emptyMass       = fullMass/(exp(norm(dV)/(Isp*g)));
 propellantMass  = fullMass - emptyMass;
-massFlowRate    = thrust/(Isp*g);
+massFlowRate    = numThrusters*thrust/(Isp*g);
 burnTime        = propellantMass/massFlowRate;
 
 %required burn time greater than limit, set to limit

@@ -38,9 +38,12 @@ switch i
         mean_anomaly = 67.959*pi/180;
         date = [2013, 12, 04, 11, 00, 00.000];
     case 5 % Shaubs deputy - from his paper
-        chief = [7555000;0.0500000000000000;0.837758040957278;0.349065850398866;0.174532925199433;2.00616895449115];
+        %these are mean oes%%%%%
+        chief = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);deg2rad(120)];
         delta = [-100; 0; 0.05*pi/180; 0; -0.01*pi/180; 0];
         deputy = chief+delta;
+        %%%must convert to osc OEs before sending to orekit
+        %deputy = convertMeanOeToOscOe( deputy );
         a = deputy(1);
         e = deputy(2);
         in = deputy(3);

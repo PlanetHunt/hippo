@@ -1,8 +1,9 @@
 function [startingDate,deputyStartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size] = initialiseSimulationVariables(muValue)
 %% global variables
-global timeVector
-global Isp mass
-global mu thrust
+global netThrustVector;
+global timeVector;
+global Isp mass;
+global mu thrust numThrusters;
 global req j2 g thrustDurationLimit;
 % global position_tolerance min_step max_step duration step_size choiceofProp;
 %global ii %loop variable
@@ -10,10 +11,12 @@ global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (a
 global fireA fireB fireC fireD fireThruster;
 global dVA dVB dVC dVD;
 
-global AThrustVector BThrustVector CThrustVector DThrustVector;
+global AThrustVector BThrustVector CThrustVector DThrustVector thrustVector;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 %setMu(mu);
+netThrustVector = 0;
+thrustVector = [0;0;0];
 mu = muValue;
 oeError = [0; 0; 0; 0; 0; 0; 0]; %maybe should calculate this properly for the starting conditions, dont forget to use mean elements
 timeVector = datetime(0001,01,01,000,00,00);
@@ -57,8 +60,9 @@ oedm = zeros(7,1);
 
 %thruster operating point
 Isp = 2000;%s
-numberOfThrusters = 1;
-thrust = 0.04; %N per thruster
+numberOfThrusters = 1000;
+numThrusters = numberOfThrusters;
+thrust = 19e-6; %N per thruster
 thrustVal = thrust; %this is the copy of the variable returned to orekit (cant send a global variable)
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;

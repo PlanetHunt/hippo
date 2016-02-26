@@ -45,7 +45,7 @@ public class MagenticFieldTest {
 	{
 		boolean fire = false;
 		double[] thrustDirection = { 0, 0, 0 };
-		double massLoss = -0.0001;
+		double massLoss = 0;//-0.0001;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
 				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
@@ -94,11 +94,12 @@ public class MagenticFieldTest {
 				thrustDirection, massLoss, stepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
 		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
+	
 		numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
 		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
-		numericPropagator.addEventDetector(eventCal.getLatArg(0));
-		numericPropagator.addEventDetector(eventCal.getLatArg(90));
+		//numericPropagator.addEventDetector(eventCal.getLatArg(0));
+		//numericPropagator.addEventDetector(eventCal.getLatArg(90));
 		numericPropagator.addForceModel(holmesFeatherstone);
 		numericPropagator.addForceModel(atmosphericDrag);
 

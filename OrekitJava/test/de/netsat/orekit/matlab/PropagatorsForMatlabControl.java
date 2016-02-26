@@ -20,6 +20,7 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
@@ -243,7 +244,7 @@ public class PropagatorsForMatlabControl {
 					return "Thrust";
 				}
 			};
-            numProp.addAdditionalEquations(ThrustEq);
+			numProp.addAdditionalEquations(ThrustEq);
             numProp.setMasterMode(setupSimulation.getOutputStepSize(), new matlabPushFinalHandler(mi));
             numProp.setInitialState(initialState);
             SpacecraftState finalState = numProp.propagate(orbit.getDate().shiftedBy(setupSimulation.getduration()));
