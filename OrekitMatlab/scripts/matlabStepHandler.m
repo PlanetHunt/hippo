@@ -129,12 +129,12 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 % end
 
 %need this for the output arguments, matlab wont allow it directly
-%thrustFlag =fireThruster(end);
-if(length(netThrustVector)==40)
-    thrustFlag = 1;
-else
-    thrustFlag = 0;
-end
+thrustFlag =fireThruster(end);
+%if(length(netThrustVector)==40)
+%    thrustFlag = 1;
+%else
+%    thrustFlag = 0;
+%end
 %currentThrustDirection = [1e-6;0;0]; %thrustVector(:,end); %unit vector in the thrust direction
 currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.01;0.00];
 % currentThrustDirection(3) = -currentThrustDirection(3);

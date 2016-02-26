@@ -35,9 +35,11 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	private double[] thrustDirection;
 	private double massLoss;
 	private double outputStepSize;
+	private boolean globalFire;
 
 	public NetSatThrustEquations(String name, String type, boolean fire, int thrusterNum, double thrust,
 			double[] thrustDirection, double massLoss, double outputStepSize) {
+		this.globalFire = true;
 		this.name = name;
 		this.type = type;
 		this.fire = fire;
@@ -203,30 +205,41 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		}
 		Vector3D thrustDirectionVector = new Vector3D(thrustDirection);
 		System.out.println(thrustDirectionVector.toString());
-//		LocalOrbitalFrame localLVLH = new LocalOrbitalFrame(s.getFrame(), LOFType.LVLH, s.getOrbit(), "LVLH");
-//		PVCoordinates pVSatLVLH = s.getFrame().getTransformTo(localLVLH, s.getDate())
-//				.transformPVCoordinates(s.getPVCoordinates());
-//		PVCoordinates thrustDirectionLVLH = new PVCoordinates(pVSatLVLH.getPosition(), thrustDirectionVector);
-//		PVCoordinates thrustDirectionInertial = localLVLH.getTransformTo(s.getFrame(), s.getDate())
-//				.transformPVCoordinates(thrustDirectionLVLH);
-//		Vector3D velocityNormal = thrustDirectionInertial.getVelocity();//.normalize();
-//		PVCoordinates test = s.getFrame().getTransformTo(localLVLH, s.getDate())
-//				.transformPVCoordinates(thrustDirectionInertial);
-//		System.out.println(test.getVelocity().toString());
-//		System.out.println(velocityNormal.toString());
+		// LocalOrbitalFrame localLVLH = new LocalOrbitalFrame(s.getFrame(),
+		// LOFType.LVLH, s.getOrbit(), "LVLH");
+		// PVCoordinates pVSatLVLH = s.getFrame().getTransformTo(localLVLH,
+		// s.getDate())
+		// .transformPVCoordinates(s.getPVCoordinates());
+		// PVCoordinates thrustDirectionLVLH = new
+		// PVCoordinates(pVSatLVLH.getPosition(), thrustDirectionVector);
+		// PVCoordinates thrustDirectionInertial =
+		// localLVLH.getTransformTo(s.getFrame(), s.getDate())
+		// .transformPVCoordinates(thrustDirectionLVLH);
+		// Vector3D velocityNormal =
+		// thrustDirectionInertial.getVelocity();//.normalize();
+		// PVCoordinates test = s.getFrame().getTransformTo(localLVLH,
+		// s.getDate())
+		// .transformPVCoordinates(thrustDirectionInertial);
+		// System.out.println(test.getVelocity().toString());
+		// System.out.println(velocityNormal.toString());
 		System.out.println();
-		//thrust = thrust * signValue;
-		//thrust = thrust * -1;
-		//velocityNormal = velocityNormal.scalarMultiply(thrusterNumber * thrust);
-//		mainStates[3] = velocityNormal.getX();// / (this.outputStepSize / 6);
-//		mainStates[4] = velocityNormal.getY();// / (this.outputStepSize / 6);
-//		mainStates[5] = velocityNormal.getZ();// / (this.outputStepSize / 6);
-		//thrustDirectionVector = thrustDirectionVector.scalarMultiply(thrusterNumber * thrust);
+		// thrust = thrust * signValue;
+		// thrust = thrust * -1;
+		// velocityNormal = velocityNormal.scalarMultiply(thrusterNumber *
+		// thrust);
+		// mainStates[3] = velocityNormal.getX();// / (this.outputStepSize / 6);
+		// mainStates[4] = velocityNormal.getY();// / (this.outputStepSize / 6);
+		// mainStates[5] = velocityNormal.getZ();// / (this.outputStepSize / 6);
+		// thrustDirectionVector =
+		// thrustDirectionVector.scalarMultiply(thrusterNumber * thrust);
 		System.out.println(thrustDirectionVector.toString());
-		
-		mainStates[3] = 1.0;//thrustDirectionVector.getX();// / (this.outputStepSize / 6);
-		//mainStates[4] = thrustDirectionVector.getY();// / (this.outputStepSize / 6);
-		//mainStates[5] = thrustDirectionVector.getZ();// / (this.outputStepSize / 6);
+
+		mainStates[3] = thrustDirectionVector.getX();// / (this.outputStepSize /
+														// 6);
+		mainStates[4] = thrustDirectionVector.getY();// / (this.outputStepSize /
+														// 6);
+		mainStates[5] = thrustDirectionVector.getZ();// / (this.outputStepSize /
+														// 6);
 		mainStates[6] = massLoss / (this.outputStepSize / 6);
 		return mainStates;
 	}
@@ -245,16 +258,18 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	/** {@inheritDoc} */
 	public double[] computeDerivatives(SpacecraftState s, double[] pDot) throws OrekitException {
 		if (this.type.equals("experimental")) {
-			if (this.fire) {
+			if (this.fire & this.globalFire) {
 				System.out.println("We are fireing");
 				this.setFire(false);
+				this.globalFire = false;
 				NanoFEEP nanoFeep = new NanoFEEP(new Vector3D(0, 0), new Vector3D(0, 0));
 				// Times 1000 should be removed afterward, this is only for
 				// testing.
-				//double massLoss = nanoFeep.getFlowRate(Math.abs(this.thrust));
+				// double massLoss =
+				// nanoFeep.getFlowRate(Math.abs(this.thrust));
 				System.out.println("MassLoss:" + massLoss);
-				return this.calculateThrustEffects(s, this.getThrust(), this.getThrustNum(),
-						this.massLoss, getThrustDirection());
+				return this.calculateThrustEffects(s, this.getThrust(), this.getThrustNum(), this.massLoss,
+						getThrustDirection());
 				// return null;
 			}
 		}
