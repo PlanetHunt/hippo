@@ -1,6 +1,7 @@
 package de.netsat.orekit.matlab;
 
 import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.geometry.Vector;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
@@ -232,15 +233,14 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		// mainStates[5] = velocityNormal.getZ();// / (this.outputStepSize / 6);
 		// thrustDirectionVector =
 		// thrustDirectionVector.scalarMultiply(thrusterNumber * thrust);
+		System.out.println("Attitude:" + s.getAttitude().getRotation().toString());
+		System.out.println("Acceleration:" + s.getPVCoordinates().getAcceleration().toString());
 		System.out.println(thrustDirectionVector.toString());
-
-		mainStates[3] = thrustDirectionVector.getX();// / (this.outputStepSize /
-														// 6);
-		mainStates[4] = thrustDirectionVector.getY();// / (this.outputStepSize /
-														// 6);
-		mainStates[5] = thrustDirectionVector.getZ();// / (this.outputStepSize /
-														// 6);
-		mainStates[6] = massLoss / (this.outputStepSize / 6);
+		//mainStates[3] = thrustDirectionVector.getX();
+		//mainStates[4] = thrustDirectionVector.getY();
+		//mainStates[5] = thrustDirectionVector.getZ();
+		mainStates[5] = 0.1;
+		mainStates[6] = massLoss;
 		return mainStates;
 	}
 
@@ -258,16 +258,13 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	/** {@inheritDoc} */
 	public double[] computeDerivatives(SpacecraftState s, double[] pDot) throws OrekitException {
 		if (this.type.equals("experimental")) {
-			if (this.fire & this.globalFire) {
-				System.out.println("We are fireing");
-				this.setFire(false);
-				this.globalFire = false;
+			if (this.fire) {
 				NanoFEEP nanoFeep = new NanoFEEP(new Vector3D(0, 0), new Vector3D(0, 0));
 				// Times 1000 should be removed afterward, this is only for
 				// testing.
 				// double massLoss =
 				// nanoFeep.getFlowRate(Math.abs(this.thrust));
-				System.out.println("MassLoss:" + massLoss);
+				// System.out.println("MassLoss:" + massLoss);
 				return this.calculateThrustEffects(s, this.getThrust(), this.getThrustNum(), this.massLoss,
 						getThrustDirection());
 				// return null;

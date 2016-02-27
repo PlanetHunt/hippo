@@ -45,16 +45,14 @@ public class MagenticFieldTest {
 	{
 		boolean fire = false;
 		double[] thrustDirection = { 0, 0, 0 };
-		double massLoss = 0;//-0.0001;
+		double massLoss = -0.0001;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
-				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION };
+				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION, SensorDataType.ACC };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
 		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 10);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
-		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
-		//returningObject = mi.returningEval("setNumericalPropagatorSettings()", 5);
 
 		/* Initial Orbit Settings */
 		double[] initialDate = ((double[]) initialVars[0]);
@@ -90,16 +88,16 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				startingMass);
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
-		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, (int) thrusterNumber, thrust,
-				thrustDirection, massLoss, stepSize);
+		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, (int) thrusterNumber,
+				thrust, thrustDirection, massLoss, stepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
 		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
-	
+
 		numericPropagator.addAdditionalEquations(thrustEq);
-		numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
-		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
-		//numericPropagator.addEventDetector(eventCal.getLatArg(0));
-		//numericPropagator.addEventDetector(eventCal.getLatArg(90));
+		// numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
+		// numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
+		numericPropagator.addEventDetector(eventCal.getLatArg(0));
+		numericPropagator.addEventDetector(eventCal.getLatArg(90));
 		numericPropagator.addForceModel(holmesFeatherstone);
 		numericPropagator.addForceModel(atmosphericDrag);
 

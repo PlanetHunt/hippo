@@ -26,6 +26,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	private EventCalculator eventCal;
 	Method method;
 	private NetSatThrustEquations thrustEquation;
+	private boolean fire;
 
 	/**
 	 * The constructor which needs atOnce set. It is the one that should be used
@@ -44,6 +45,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		this.matlabFunctions = matlabFunctions;
 		this.thrustEquation = thrustEquation;
 		this.dataList = new HashSet<MatlabData>();
+		this.fire = true;
 
 	}
 
@@ -162,7 +164,9 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 						thrustDirection[0] = ((double[]) result[1])[0];
 						thrustDirection[1] = ((double[]) result[1])[1];
 						thrustDirection[2] = ((double[]) result[1])[2];
-						this.thrustEquation.setFire(true);
+						this.thrustEquation.setFire(this.fire);
+						this.fire = false;
+						
 						this.thrustEquation.setThrustDirection(thrustDirection);
 					} else {
 						thrustDirection[0] = 0;

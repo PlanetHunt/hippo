@@ -6,7 +6,7 @@ public enum MatlabFunctionType {
 	FTC_CALC_PERIGEE("Caculate the delta V in perigee", "FTCCalcPerigeeDv(orbital_elements)", false, true),
 	FTC_CALC_TRUE_LAT_90("Calculate the delta v for true latitude of Nighty", "FTCCalcLatArgNinetyDv(orbital_elements)", false, true),
 	FTC_CALC_TRUE_LAT_0("Calculate the delta v for true latitude of Zero", "FTCCalcLatArgZeroDv(orbital_elements)", false, true),
-	MATLAB_STEP_HANDLER("Does the steps handling in Matlab, without usage of events.", "matlabStepHandler(orbital_elements, position, velocity, timestamp, current_mass, last_step_flag)",false, false);
+	MATLAB_STEP_HANDLER("Does the steps handling in Matlab, without usage of events.", "matlabStepHandler(orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag)",false, false);
 
 	private String help;
 	private String functionName;

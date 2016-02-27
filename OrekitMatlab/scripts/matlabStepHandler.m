@@ -1,4 +1,4 @@
-function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_elements, position, velocity, timestamp, current_mass, last_step_flag )
+function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
 %MATLABSTEPHANDLER function to be called at every time step
 %   event_A     perigee
 %   event_B     apogee
@@ -18,13 +18,14 @@ global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartC
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 global AThrustVector BThrustVector CThrustVector DThrustVector;
 global Isp thrust;
-global pos vel;
+global pos vel acc;
 global netThrustVector
 current_time = datetime(timestamp);
 timeVector=[timeVector;current_time];
 mass = [mass; current_mass];
 pos = [pos, position' ];
 vel = [vel, velocity' ];
+acc = [acc, acceleration'];
 oec(:,end+1) = oec(:,end);
 oecm(:,end+1) = oecm(:,end); %we are using a fixed chief orbit to formate on so it wont change time step to time step
 oed = [oed, orbital_elements'];
@@ -136,7 +137,7 @@ thrustFlag =fireThruster(end);
 %    thrustFlag = 0;
 %end
 %currentThrustDirection = [1e-6;0;0]; %thrustVector(:,end); %unit vector in the thrust direction
-currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.01;0.00];
+currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
 % currentThrustDirection(3) = -currentThrustDirection(3);
 %currentThrustDirection = [0; 1; 0]; %hard coded for testing purposes
 

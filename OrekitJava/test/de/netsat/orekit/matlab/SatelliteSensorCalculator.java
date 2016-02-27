@@ -51,6 +51,7 @@ public class SatelliteSensorCalculator {
 	private double[] perigeeDetections;
 	private double meanAnomaly;
 	private double mass;
+	private Vector3D acceleration;
 
 	/**
 	 * The Constructor method. The order here is important as some are
@@ -95,6 +96,11 @@ public class SatelliteSensorCalculator {
 		case "POSITION":
 			this.setTimeStampedPVCoordinates();
 			this.setPostionVector();
+			break;
+
+		case "ACC":
+			this.setTimeStampedPVCoordinates();
+			this.setAcceleration();
 			break;
 		case "MAGNETIC_FIELD":
 			this.setDate();
@@ -190,17 +196,26 @@ public class SatelliteSensorCalculator {
 		}
 	}
 
+	private void setAcceleration() {
+		this.acceleration = this.tsc.getAcceleration();
+
+	}
+
+	public double[] getAcceleration() {
+		return this.acceleration.toArray();
+	}
+
 	/**
 	 * Sets the mass for that timestep.
 	 */
 	private void setCurrentMass() {
 		this.mass = this.state.getMass();
 	}
-	
+
 	/**
 	 * Returns the mass for that timestep.
 	 */
-	public double getCurrentMass(){
+	public double getCurrentMass() {
 		return this.mass;
 	}
 
