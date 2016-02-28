@@ -69,7 +69,7 @@ else
     %thrustWindowStart = (tABoostStartCommand(end));
     %thrustWindowEnd = (tABoostEndCommand(end));
     %% check B window (only makes sense to check B window if we are sure we are not in A. (we cant be in the perigee and apogee boost windows at the same time.)
-    if(isbetween(current_time,tBBoostStartCommand(end),tBBoostEndCommand(end)))
+    if(isbetween(current_time+seconds(5*stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end)))
         % we are in the thrustingwindow, so keep thrust, and start and end
         % times constant
         dVB(:,end+1) = dVB(:,end); %=last value

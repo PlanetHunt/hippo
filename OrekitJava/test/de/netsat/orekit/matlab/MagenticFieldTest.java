@@ -97,7 +97,7 @@ public class MagenticFieldTest {
 		// thrust, thrustDirection, massLoss, stepSize);
 		AbsoluteDate dummyStartDate = new AbsoluteDate(1, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
 		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, duration, equivalentThrust, equivalentIsp,
-				new Vector3D(thrustDirection));
+				new Vector3D(thrustDirection), stepSize);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop);
 		// initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
 

@@ -21,12 +21,14 @@ import org.apache.commons.math3.analysis.function.Abs;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -79,6 +81,8 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 
 	private DateDetector endDateDetector;
 
+	private double maxCheck;
+
 	/**
 	 * Simple constructor for a constant direction and constant thrust.
 	 * 
@@ -95,7 +99,7 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 	 *            the acceleration direction in satellite frame.
 	 */
 	public PropulsionSystem(final AbsoluteDate date, final double duration, final double thrust, final double isp,
-			final Vector3D direction) {
+			final Vector3D direction, double maxCheck) {
 		super(THRUST, FLOW_RATE);
 		if (duration >= 0) {
 			this.startDate = date;
@@ -104,10 +108,10 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 			this.endDate = date;
 			this.startDate = endDate.shiftedBy(duration);
 		}
-
-		this.startDateDetector = new DateDetector(startDate).withHandler(new FiringStartHandler());
-		this.endDateDetector = new DateDetector(endDate).withHandler(new FiringStopHandler());
-
+		this.maxCheck = maxCheck;
+		this.startDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, startDate).withHandler(new FiringStartHandler());
+		this.endDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, endDate).withHandler(new FiringStopHandler());
+		
 		this.thrust = thrust;
 		this.flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
 		this.direction = direction.normalize();
