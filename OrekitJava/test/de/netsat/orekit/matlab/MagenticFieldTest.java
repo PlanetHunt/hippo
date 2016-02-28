@@ -104,7 +104,7 @@ public class MagenticFieldTest {
 		// numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addForceModel(holmesFeatherstone);
 		numericPropagator.addForceModel(atmosphericDrag);
-
+		numericPropagator.addForceModel(prop);
 		numericPropagator.setInitialState(initialState);
 		numericPropagator.setMasterMode(stepSize, mph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));

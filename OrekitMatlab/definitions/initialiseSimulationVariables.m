@@ -61,7 +61,7 @@ oedm = zeros(7,1);
 %thruster operating point
 Isp = 2000;%s
 equivalentISP = Isp;
-equivalentThrust = 10;% numThrusters*thrust;
+equivalentThrust = 0.1;% numThrusters*thrust;
 numberOfThrusters = 1000;
 numThrusters = numberOfThrusters;
 thrust = 19e-6; %N per thruster

@@ -59,15 +59,15 @@ if(isbetween(current_time,tABoostStartCommand(end),tABoostEndCommand(end)))
     [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end), numThrusters);
     fireB(end+1) = 0;
     BThrustVector(:,end+1) = [0;0;0];
-    thrustWindowStart = (tABoostStartCommand(end));
-    thrustWindowEnd = (tABoostEndCommand(end));
+    
     
 else
     %update estimates
     [dVA(:,end+1), tABoostStartCommand(end+1), tABoostEndCommand(end+1)] = updateThrustTimes( 1, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
     fireA(end+1) = 0;
     AThrustVector(:,end+1) = [0;0;0];
-    
+    %thrustWindowStart = (tABoostStartCommand(end));
+    %thrustWindowEnd = (tABoostEndCommand(end));
     %% check B window (only makes sense to check B window if we are sure we are not in A. (we cant be in the perigee and apogee boost windows at the same time.)
     if(isbetween(current_time,tBBoostStartCommand(end),tBBoostEndCommand(end)))
         % we are in the thrustingwindow, so keep thrust, and start and end
@@ -78,13 +78,14 @@ else
 
         fireB(end+1) = 1;
         BThrustVector(:,end+1) = dVB(:,end);
-        thrustWindowStart = tBBoostStartCommand(end);
-        thrustWindowEnd = tBBoostEndCommand(end);
+        
     else
         %update estimates
         [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
         fireB(end+1) = 0;
         BThrustVector(:,end+1) = [0;0;0];
+        thrustWindowStart = tBBoostStartCommand(end);
+        thrustWindowEnd = tBBoostEndCommand(end);
     end
 
 end
@@ -103,14 +104,14 @@ if(isbetween(current_time,tCBoostStartCommand(end),tCBoostEndCommand(end)))
     [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
     fireD(end+1) = 0;
     DThrustVector(:,end+1) = [0;0;0];
-    thrustWindowStart = tCBoostStartCommand(end);
-    thrustWindowEnd = tCBoostEndCommand(end);
+    
 else
     %update estimates
     [dVC(:,end+1), tCBoostStartCommand(end+1), tCBoostEndCommand(end+1)] = updateThrustTimes( 3, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
     fireC(end+1) = 0;
     CThrustVector(:,end+1) = [0;0;0];
-    
+    %thrustWindowStart = tCBoostStartCommand(end);
+    %thrustWindowEnd = tCBoostEndCommand(end);
     %% check D window ( we check here cause we shouldnt be in C window provided that our boost duration is only a few mins and we are not highly elliptical)
     if(isbetween(current_time,tDBoostStartCommand(end),tDBoostEndCommand(end)))
         % we are in the thrustingwindow, so keep thrust, and start and end
@@ -121,13 +122,14 @@ else
 
         fireD(end+1) = 1;
         DThrustVector(:,end+1) = dVD(:,end);
-        thrustWindowStart = tDBoostStartCommand(end);
-        thrustWindowEnd = tDBoostEndCommand(end);
+        
     else
         %update estimates
         [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
         fireD(end+1) = 0;
         DThrustVector(:,end+1) = [0;0;0];
+        %thrustWindowStart = tDBoostStartCommand(end);
+        %thrustWindowEnd = tDBoostEndCommand(end);
     end
 end
 
@@ -158,12 +160,12 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 % end
 
 %need this for the output arguments, matlab wont allow it directly
-thrustFlag =fireThruster(end);
-%if(length(netThrustVector)==40)
-%    thrustFlag = 1;
-%else
-%    thrustFlag = 0;
-%end
+%thrustFlag =fireThruster(end);
+if(length(netThrustVector)==10)
+   thrustFlag = 1;
+else
+   thrustFlag = 0;
+end
 %currentThrustDirection = [1e-6;0;0]; %thrustVector(:,end); %unit vector in the thrust direction
 %currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
 % currentThrustDirection(3) = -currentThrustDirection(3);
