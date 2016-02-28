@@ -69,7 +69,7 @@ else
     %thrustWindowStart = (tABoostStartCommand(end));
     %thrustWindowEnd = (tABoostEndCommand(end));
     %% check B window (only makes sense to check B window if we are sure we are not in A. (we cant be in the perigee and apogee boost windows at the same time.)
-    if(isbetween(current_time+seconds(5*stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end)))
+    if(isbetween(current_time+seconds(3*stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end)))
         % we are in the thrustingwindow, so keep thrust, and start and end
         % times constant
         dVB(:,end+1) = dVB(:,end); %=last value
@@ -151,10 +151,9 @@ thrustWindowEnd = datevec(thrustWindowEnd);
 %net/overall fire the thruster flag - should we fire the thruster?
 % fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
 fireThruster(end+1) = fireB(end); %only fire at apogee events
-if(fireThruster(end-1) == 1)
+if(fireB(end-1) == 1) %we only want the flag to be 1 at one timestep and then be zero at the following timesteps
     fireThruster(end) =0;
 end
-
 
 %net/overall thrust vector - what thrust should we apply ? (delta V)
 thrustVector(:,end+1) = AThrustVector(:,end)+BThrustVector(:,end)+CThrustVector(:,end)+DThrustVector(:,end); %net delta V
@@ -165,7 +164,7 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 
 %need this for the output arguments, matlab wont allow it directly
 thrustFlag =fireThruster(end);
-% if(length(netThrustVector)==10)
+% if(length(netThrustVector)==17)
 %    thrustFlag = 1;
 % else
 %    thrustFlag = 0;

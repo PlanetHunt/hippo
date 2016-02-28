@@ -242,6 +242,7 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 				final boolean increasing) {
 			// start the maneuver
 			System.out.println("Start!");
+			System.out.println(s.getDate());
 			firing = true;
 			return EventHandler.Action.RESET_DERIVATIVES;
 		}

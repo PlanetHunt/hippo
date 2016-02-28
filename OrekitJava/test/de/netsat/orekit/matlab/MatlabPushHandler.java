@@ -175,7 +175,6 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 4);
 					double matlabFire = (((double[]) result[0])[0]);
 					if (matlabFire == 1.0) {
-						System.out.println("I am Firing!");
 						thrustDirection[0] = ((double[]) result[1])[0];
 						thrustDirection[1] = ((double[]) result[1])[1];
 						thrustDirection[2] = ((double[]) result[1])[2];
@@ -192,7 +191,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 						((DateDetector) this.prop.getEventsDetectors()[1]).addEventDate(endDate);
 						// this.thrustEquation.setFire(this.fire);
 						// this.fire = false;
-
+						System.out.println("Flag=1 (setting thrustStartWindow =		"+startDate.toString()+" thrustStartWindow 	= 	"+endDate.toString()+" Direction 	= 	"+new Vector3D(thrustDirection).toString());
 						//this.thrustEquation.setThrustDirection(thrustDirection);
 					} else {
 						//this.thrustEquation.setFire(false);
