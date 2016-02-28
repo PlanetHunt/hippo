@@ -78,7 +78,8 @@ else
 
         fireB(end+1) = 1;
         BThrustVector(:,end+1) = dVB(:,end);
-        
+        thrustWindowStart = tBBoostStartCommand(end);
+        thrustWindowEnd = tBBoostEndCommand(end);
     else
         %update estimates
         [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
@@ -137,19 +138,22 @@ end
 thrustWindowStart = datevec(thrustWindowStart);
 thrustWindowEnd = datevec(thrustWindowEnd);
 
-if(isbetween(current_time-seconds(stepSize),tABoostStartCommand(end),tABoostEndCommand(end))) 
-    fireA(end) = 0;
-    elseif(isbetween(current_time-seconds(stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end))) 
-    fireB(end) = 0;
-    elseif(isbetween(current_time-seconds(stepSize),tCBoostStartCommand(end),tCBoostEndCommand(end))) 
-    fireC(end) = 0;
-    elseif(isbetween(current_time-seconds(stepSize),tDBoostStartCommand(end),tDBoostEndCommand(end))) 
-    fireD(end) = 0;
-end
+% if(isbetween(current_time-seconds(stepSize),tABoostStartCommand(end),tABoostEndCommand(end))) 
+%     fireA(end) = 0;
+%     elseif(isbetween(current_time-seconds(stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end))) 
+%     fireB(end) = 0;
+%     elseif(isbetween(current_time-seconds(stepSize),tCBoostStartCommand(end),tCBoostEndCommand(end))) 
+%     fireC(end) = 0;
+%     elseif(isbetween(current_time-seconds(stepSize),tDBoostStartCommand(end),tDBoostEndCommand(end))) 
+%     fireD(end) = 0;
+% end
+
 %net/overall fire the thruster flag - should we fire the thruster?
 % fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
 fireThruster(end+1) = fireB(end); %only fire at apogee events
-
+if(fireThruster(end-1) == 1)
+    fireThruster(end) =0;
+end
 
 
 %net/overall thrust vector - what thrust should we apply ? (delta V)
@@ -160,12 +164,12 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 % end
 
 %need this for the output arguments, matlab wont allow it directly
-%thrustFlag =fireThruster(end);
-if(length(netThrustVector)==10)
-   thrustFlag = 1;
-else
-   thrustFlag = 0;
-end
+thrustFlag =fireThruster(end);
+% if(length(netThrustVector)==10)
+%    thrustFlag = 1;
+% else
+%    thrustFlag = 0;
+% end
 %currentThrustDirection = [1e-6;0;0]; %thrustVector(:,end); %unit vector in the thrust direction
 %currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
 % currentThrustDirection(3) = -currentThrustDirection(3);

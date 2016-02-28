@@ -175,6 +175,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 4);
 					double matlabFire = (((double[]) result[0])[0]);
 					if (matlabFire == 1.0) {
+						System.out.println("I am Firing!");
 						thrustDirection[0] = ((double[]) result[1])[0];
 						thrustDirection[1] = ((double[]) result[1])[1];
 						thrustDirection[2] = ((double[]) result[1])[2];
