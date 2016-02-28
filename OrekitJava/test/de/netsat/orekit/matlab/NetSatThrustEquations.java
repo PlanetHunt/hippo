@@ -4,6 +4,7 @@ import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.Vector;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.propagation.SpacecraftState;
@@ -233,13 +234,21 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		// mainStates[5] = velocityNormal.getZ();// / (this.outputStepSize / 6);
 		// thrustDirectionVector =
 		// thrustDirectionVector.scalarMultiply(thrusterNumber * thrust);
+		// get velocity direction:
+		Vector3D velocity_norm = s.getPVCoordinates(FramesFactory.getEME2000()).getVelocity().normalize();
+		// create vector in opposite direction of velocity with magnitude of instantaneous acceleration of thrusters:
+		velocity_norm = velocity_norm.scalarMultiply(-0.001);//apply thrust in oposite dirn to flight
+		mainStates[3] = velocity_norm.getX();
+		mainStates[4] = velocity_norm.getY();
+		mainStates[5] = velocity_norm.getZ();
+		
 		System.out.println("Attitude:" + s.getAttitude().getRotation().toString());
 		System.out.println("Acceleration:" + s.getPVCoordinates().getAcceleration().toString());
 		System.out.println(thrustDirectionVector.toString());
 		//mainStates[3] = thrustDirectionVector.getX();	
 		//mainStates[4] = thrustDirectionVector.getY();
 		//mainStates[5] = thrustDirectionVector.getZ();
-		mainStates[5] = 0.1;
+		//mainStates[5] = 0.1;
 		mainStates[6] = massLoss;
 		return mainStates;
 	}

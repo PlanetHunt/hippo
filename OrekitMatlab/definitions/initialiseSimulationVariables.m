@@ -1,4 +1,4 @@
-function [startingDate,deputyStartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size] = initialiseSimulationVariables(muValue)
+function [startingDate,deputyStartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust] = initialiseSimulationVariables(muValue)
 %% global variables
 global netThrustVector;
 global timeVector;
@@ -47,7 +47,7 @@ mass = 0;
 %hincubeOE on 4/12/2013
 %oec = setChiefOrbitalElements(1)
 
-%Chief OE from Schaubs paper
+%Chief OE from Schaubs paper =2
 oec = setChiefOrbitalElements(2);
 oecm = oec; %just assume this for now - later this hsould be changed to get the actual mean cheif orbital elements
 %initialise deputy OE
@@ -60,6 +60,8 @@ oedm = zeros(7,1);
 
 %thruster operating point
 Isp = 2000;%s
+equivalentISP = Isp;
+equivalentThrust = numThrusters*thrust;
 numberOfThrusters = 1000;
 numThrusters = numberOfThrusters;
 thrust = 19e-6; %N per thruster

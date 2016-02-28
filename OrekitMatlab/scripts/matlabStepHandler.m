@@ -1,4 +1,4 @@
-function [ thrustFlag, currentThrustDirection ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
+function [ thrustFlag, currentThrustDirection, thrustWindowStart, thrustWindowEnd ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
 %MATLABSTEPHANDLER function to be called at every time step
 %   event_A     perigee
 %   event_B     apogee
@@ -29,7 +29,8 @@ acc = [acc, acceleration'];
 oec(:,end+1) = oec(:,end);
 oecm(:,end+1) = oecm(:,end); %we are using a fixed chief orbit to formate on so it wont change time step to time step
 oed = [oed, orbital_elements'];
-
+thrustWindowStart = [0001,01,01,00,00,00];
+thrustWindowEnd = [0001,01,01,00,00,00];
 %convert oscilating orbital elements to mean orbital elements
 meanOE = convertOscOeToMeanOe( orbital_elements );
 oedm = [oedm, meanOE];
@@ -48,6 +49,7 @@ if(isbetween(current_time,tABoostStartCommand(end),tABoostEndCommand(end)))
     % times constant
     dVA(:,end+1) = dVA(:,end); %=last value
     %dont change the window or the thrust while we are in the window
+
     tABoostStartCommand(end+1) = tABoostStartCommand(end);%append the value from last time step
     tABoostEndCommand(end+1) = tABoostEndCommand(end);
     fireA(end+1) = 1;
@@ -57,6 +59,9 @@ if(isbetween(current_time,tABoostStartCommand(end),tABoostEndCommand(end)))
     [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end), numThrusters);
     fireB(end+1) = 0;
     BThrustVector(:,end+1) = [0;0;0];
+    thrustWindowStart = (tABoostStartCommand(end));
+    thrustWindowEnd = (tABoostEndCommand(end));
+    
 else
     %update estimates
     [dVA(:,end+1), tABoostStartCommand(end+1), tABoostEndCommand(end+1)] = updateThrustTimes( 1, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
@@ -73,6 +78,8 @@ else
 
         fireB(end+1) = 1;
         BThrustVector(:,end+1) = dVB(:,end);
+        thrustWindowStart = tBBoostStartCommand(end);
+        thrustWindowEnd = tBBoostEndCommand(end);
     else
         %update estimates
         [dVB(:,end+1), tBBoostStartCommand(end+1), tBBoostEndCommand(end+1)] = updateThrustTimes( 2, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
@@ -96,6 +103,8 @@ if(isbetween(current_time,tCBoostStartCommand(end),tCBoostEndCommand(end)))
     [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
     fireD(end+1) = 0;
     DThrustVector(:,end+1) = [0;0;0];
+    thrustWindowStart = tCBoostStartCommand(end);
+    thrustWindowEnd = tCBoostEndCommand(end);
 else
     %update estimates
     [dVC(:,end+1), tCBoostStartCommand(end+1), tCBoostEndCommand(end+1)] = updateThrustTimes( 3, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
@@ -112,6 +121,8 @@ else
 
         fireD(end+1) = 1;
         DThrustVector(:,end+1) = dVD(:,end);
+        thrustWindowStart = tDBoostStartCommand(end);
+        thrustWindowEnd = tDBoostEndCommand(end);
     else
         %update estimates
         [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
@@ -120,8 +131,25 @@ else
     end
 end
 
+%convert to arrays - this is what orekit needs
+thrustWindowStart = datevec(thrustWindowStart);
+thrustWindowEnd = thrustWindowStart(thrustWindowEnd);
+
+if(isbetween(current_time-seconds(stepSize),tABoostStartCommand(end),tABoostEndCommand(end))) 
+    fireA = 0;
+    elseif(isbetween(current_time-seconds(stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end))) 
+    fireB = 0;
+    elseif(isbetween(current_time-seconds(stepSize),tCBoostStartCommand(end),tCBoostEndCommand(end))) 
+    fireC = 0;
+    elseif(isbetween(current_time-seconds(stepSize),tDBoostStartCommand(end),tDBoostEndCommand(end))) 
+    fireD = 0;
+end
 %net/overall fire the thruster flag - should we fire the thruster?
-fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
+% fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
+fireThruster(end+1) = fireB(end); %only fire at apogee events
+
+
+
 %net/overall thrust vector - what thrust should we apply ? (delta V)
 thrustVector(:,end+1) = AThrustVector(:,end)+BThrustVector(:,end)+CThrustVector(:,end)+DThrustVector(:,end); %net delta V
 netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
@@ -137,9 +165,9 @@ thrustFlag =fireThruster(end);
 %    thrustFlag = 0;
 %end
 %currentThrustDirection = [1e-6;0;0]; %thrustVector(:,end); %unit vector in the thrust direction
-currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
+%currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
 % currentThrustDirection(3) = -currentThrustDirection(3);
-%currentThrustDirection = [0; 1; 0]; %hard coded for testing purposes
+currentThrustDirection = [0; -1; 0]; %hard coded for testing purposes
 
 %if in last step plot everything
 if(last_step_flag == 1)
