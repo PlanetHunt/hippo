@@ -133,16 +133,16 @@ end
 
 %convert to arrays - this is what orekit needs
 thrustWindowStart = datevec(thrustWindowStart);
-thrustWindowEnd = thrustWindowStart(thrustWindowEnd);
+thrustWindowEnd = datevec(thrustWindowEnd);
 
 if(isbetween(current_time-seconds(stepSize),tABoostStartCommand(end),tABoostEndCommand(end))) 
-    fireA = 0;
+    fireA(end) = 0;
     elseif(isbetween(current_time-seconds(stepSize),tBBoostStartCommand(end),tBBoostEndCommand(end))) 
-    fireB = 0;
+    fireB(end) = 0;
     elseif(isbetween(current_time-seconds(stepSize),tCBoostStartCommand(end),tCBoostEndCommand(end))) 
-    fireC = 0;
+    fireC(end) = 0;
     elseif(isbetween(current_time-seconds(stepSize),tDBoostStartCommand(end),tDBoostEndCommand(end))) 
-    fireD = 0;
+    fireD(end) = 0;
 end
 %net/overall fire the thruster flag - should we fire the thruster?
 % fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1

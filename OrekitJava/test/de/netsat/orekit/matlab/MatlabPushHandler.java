@@ -60,6 +60,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		this.matlabFunctions = matlabFunctions;
 		this.atOnce = atOnce;
 		this.prop = prop;
+		this.dataList = new HashSet<MatlabData>();
 	}
 
 	/**
@@ -78,7 +79,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			try {
 				this.setVariableInMatlab("last_step_flag", 0);
 				this.evaluateOptions(currentState);
-				//System.out.println("Still propagating..." + currentState.getDate());
+				System.out.println("Still propagating..." + currentState.getDate());
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.err.println(e.getMessage());
@@ -193,7 +194,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 
 						//this.thrustEquation.setThrustDirection(thrustDirection);
 					} else {
-						this.thrustEquation.setFire(false);
+						//this.thrustEquation.setFire(false);
 						//thrustDirection[0] = 0;
 						//thrustDirection[1] = 0;
 						//thrustDirection[2] = 0;

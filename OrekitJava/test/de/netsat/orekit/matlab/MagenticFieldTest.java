@@ -12,8 +12,6 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.maneuvers.ConstantThrustManeuver;
-import org.orekit.forces.maneuvers.ConstantThrustManeuverTest;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 
@@ -22,12 +20,8 @@ import de.netsat.orekit.matlab.MatlabPushHandler;
 import de.netsat.orekit.matlab.EventCalculator;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -51,13 +45,8 @@ public class MagenticFieldTest {
 			throws MatlabInvocationException, OrekitException
 
 	{
-		AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01), new TimeComponents(23, 30, 00.000),
-				TimeScalesFactory.getUTC());
-		ConstantThrustManeuver maneuver = new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
-		EventDetector[] switches = maneuver.getEventsDetectors();
-		((DateDetector) switches[0]).addEventDate(date);
 		boolean fire = false;
-		double[] thrustDirection = { 0, 0, 0 };
+		double[] thrustDirection = { 1, 0, 0 };
 		double massLoss = -0.0001;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
 				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION, SensorDataType.ACC };
@@ -79,8 +68,8 @@ public class MagenticFieldTest {
 		double maxStep = ((double[]) initialVars[7])[0];
 		double duration = ((double[]) initialVars[8])[0];
 		double stepSize = ((double[]) initialVars[9])[0];
-		double equivalentThrust = ((double[]) initialVars[10])[0];
-		double equivalentIsp = ((double[]) initialVars[11])[0];
+		double equivalentIsp = ((double[]) initialVars[10])[0];
+		double equivalentThrust = ((double[]) initialVars[11])[0];
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
 		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
 				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -106,7 +95,7 @@ public class MagenticFieldTest {
 		// NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust",
 		// "experimental", fire, (int) thrusterNumber,
 		// thrust, thrustDirection, massLoss, stepSize);
-		AbsoluteDate dummyStartDate = new AbsoluteDate(0, 0, 0, 0, 0, 0, TimeScalesFactory.getUTC());
+		AbsoluteDate dummyStartDate = new AbsoluteDate(1, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
 		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, duration, equivalentThrust, equivalentIsp,
 				new Vector3D(thrustDirection));
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop);
