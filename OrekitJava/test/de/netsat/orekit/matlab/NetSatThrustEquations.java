@@ -236,7 +236,7 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		System.out.println("Attitude:" + s.getAttitude().getRotation().toString());
 		System.out.println("Acceleration:" + s.getPVCoordinates().getAcceleration().toString());
 		System.out.println(thrustDirectionVector.toString());
-		//mainStates[3] = thrustDirectionVector.getX();
+		//mainStates[3] = thrustDirectionVector.getX();	
 		//mainStates[4] = thrustDirectionVector.getY();
 		//mainStates[5] = thrustDirectionVector.getZ();
 		mainStates[5] = 0.1;

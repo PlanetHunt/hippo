@@ -12,6 +12,8 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.maneuvers.ConstantThrustManeuver;
+import org.orekit.forces.maneuvers.ConstantThrustManeuverTest;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 
@@ -20,7 +22,13 @@ import de.netsat.orekit.matlab.MatlabPushHandler;
 import de.netsat.orekit.matlab.EventCalculator;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -43,6 +51,11 @@ public class MagenticFieldTest {
 			throws MatlabInvocationException, OrekitException
 
 	{
+		AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01), new TimeComponents(23, 30, 00.000),
+				TimeScalesFactory.getUTC());
+		ConstantThrustManeuver maneuver = new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
+		EventDetector[] switches = maneuver.getEventsDetectors();
+		((DateDetector) switches[0]).addEventDate(date);
 		boolean fire = false;
 		double[] thrustDirection = { 0, 0, 0 };
 		double massLoss = -0.0001;
@@ -51,7 +64,7 @@ public class MagenticFieldTest {
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
-		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 10);
+		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 12);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 
 		/* Initial Orbit Settings */
@@ -66,6 +79,8 @@ public class MagenticFieldTest {
 		double maxStep = ((double[]) initialVars[7])[0];
 		double duration = ((double[]) initialVars[8])[0];
 		double stepSize = ((double[]) initialVars[9])[0];
+		double equivalentThrust = ((double[]) initialVars[10])[0];
+		double equivalentIsp = ((double[]) initialVars[11])[0];
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
 		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
 				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -88,16 +103,16 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				startingMass);
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
-		NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust", "experimental", fire, (int) thrusterNumber,
-				thrust, thrustDirection, massLoss, stepSize);
-		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, eventCal, thrustEq);
-		initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
+		// NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust",
+		// "experimental", fire, (int) thrusterNumber,
+		// thrust, thrustDirection, massLoss, stepSize);
+		AbsoluteDate dummyStartDate = new AbsoluteDate(0, 0, 0, 0, 0, 0, TimeScalesFactory.getUTC());
+		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, duration, equivalentThrust, equivalentIsp,
+				new Vector3D(thrustDirection));
+		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop);
+		// initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
 
-		numericPropagator.addAdditionalEquations(thrustEq);
-		// numericPropagator.addEventDetector(eventCal.getEclipseEventDetecor());
-		// numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
-		numericPropagator.addEventDetector(eventCal.getLatArg(0));
-		numericPropagator.addEventDetector(eventCal.getLatArg(90));
+		// numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addForceModel(holmesFeatherstone);
 		numericPropagator.addForceModel(atmosphericDrag);
 
@@ -107,7 +122,6 @@ public class MagenticFieldTest {
 		return finalState;
 
 	}
-
 	/**
 	 * Set the variable in Matlab (the variable should be the type double or
 	 * could be casted to double.

@@ -7,11 +7,14 @@ import java.util.Set;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 import matlabcontrol.MatlabInvocationException;
 
@@ -27,6 +30,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	Method method;
 	private NetSatThrustEquations thrustEquation;
 	private boolean fire;
+	private PropulsionSystem prop;
 
 	/**
 	 * The constructor which needs atOnce set. It is the one that should be used
@@ -47,6 +51,15 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		this.dataList = new HashSet<MatlabData>();
 		this.fire = true;
 
+	}
+
+	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions,
+			boolean atOnce, PropulsionSystem prop) {
+		this.mi = mi;
+		this.options = options;
+		this.matlabFunctions = matlabFunctions;
+		this.atOnce = atOnce;
+		this.prop = prop;
 	}
 
 	/**
@@ -74,7 +87,7 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			try {
 				this.setVariableInMatlab("last_step_flag", 1);
 				System.out.println("We are in the Last Step.");
-				//this.PushAllDataToMatlab();
+				// this.PushAllDataToMatlab();
 				this.evaluateOptions(currentState);
 				/* Run the Matlab functions at the end of the propagation */
 				for (MatlabFunctionType ft : this.matlabFunctions) {
@@ -158,22 +171,33 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 		for (MatlabFunctionType ft : this.matlabFunctions) {
 			if (!ft.getAtOnce()) {
 				if (ft == MatlabFunctionType.MATLAB_STEP_HANDLER) {
-					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 2);
+					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 4);
 					double matlabFire = (((double[]) result[0])[0]);
 					if (matlabFire == 1.0) {
 						thrustDirection[0] = ((double[]) result[1])[0];
 						thrustDirection[1] = ((double[]) result[1])[1];
 						thrustDirection[2] = ((double[]) result[1])[2];
-						this.thrustEquation.setFire(this.fire);
-						this.fire = false;
-						
-						this.thrustEquation.setThrustDirection(thrustDirection);
+						double[] startDateArray = ((double[]) result[2]);
+						double[] endDateArray = ((double[]) result[3]);
+						this.prop.setDirection(new Vector3D(thrustDirection));
+						AbsoluteDate startDate = new AbsoluteDate((int) startDateArray[0], (int) startDateArray[1],
+								(int) startDateArray[2], (int) startDateArray[3], (int) startDateArray[4],
+								startDateArray[5], TimeScalesFactory.getUTC());
+						AbsoluteDate endDate = new AbsoluteDate((int) endDateArray[0], (int) endDateArray[1],
+								(int) endDateArray[2], (int) endDateArray[3], (int) endDateArray[4], endDateArray[5],
+								TimeScalesFactory.getUTC());
+						((DateDetector) this.prop.getEventsDetectors()[0]).addEventDate(startDate);
+						((DateDetector) this.prop.getEventsDetectors()[1]).addEventDate(endDate);
+						// this.thrustEquation.setFire(this.fire);
+						// this.fire = false;
+
+						//this.thrustEquation.setThrustDirection(thrustDirection);
 					} else {
-						thrustDirection[0] = 0;
-						thrustDirection[1] = 0;
-						thrustDirection[2] = 0;
 						this.thrustEquation.setFire(false);
-						this.thrustEquation.setThrustDirection(thrustDirection);
+						//thrustDirection[0] = 0;
+						//thrustDirection[1] = 0;
+						//thrustDirection[2] = 0;
+						//this.thrustEquation.setThrustDirection(thrustDirection);
 					}
 				} else {
 					Object[] a = this.runMatlabFunction(ft.getFunctionName(), 1);
