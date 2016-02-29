@@ -3,55 +3,7 @@
 %plot thrust start times and end times
 %plot thrust direcitons
 
-%% plotting
-figure; clf;
-%subplot(6,1,1);
-hold on
-plot(timeVector(2:end),oedm(1,2:end));
-plot(timeVector(2:end),oecm(1,2:end));
-title('semimajor axis (a) vs Time');
-ylabel('a (m)');
-legend('deputy','chief')
 
-figure; clf;
-%subplot(6,1,1);
-hold on
-plot(timeVector(2:end),oedm(2,2:end));
-plot(timeVector(2:end),oecm(2,2:end));
-title('eccentricity (e) vs Time');
-ylabel('e');
-legend('deputy','chief')
-
-figure; clf;
-%subplot(6,1,1);
-hold on
-plot(timeVector(2:end),oedm(3,2:end));
-plot(timeVector(2:end),oecm(3,2:end));
-
-title('inclination(i) vs Time');
-ylabel('i (radians)');
-
-legend('deputy','chief')
-
-
-figure; clf;
-%subplot(6,1,1);
-hold on
-plot(timeVector(2:end),oedm(4,2:end));
-plot(timeVector(2:end),oecm(4,2:end));
-title('Argument of Perigee (\omega) vs Time');
-ylabel('\omega (radians)');
-legend('deputy','chief')
-
-
-figure; clf;
-%subplot(6,1,1);
-hold on
-plot(timeVector(2:end),oedm(5,2:end));
-plot(timeVector(2:end),oecm(5,2:end));
-title('RAAN (\Omega) vs Time');
-ylabel('\Omega (radians)')
-legend('deputy','chief')
 
 % % % 
 % % % figure; clf;
@@ -242,17 +194,7 @@ title('continuously computed netThrust Command (not actually applied until windo
 ylabel('DV computed (not necc applied)');
 legend('DVA','DVB','DVC','DVD');
 
-for kk = 1:length(vel)
-    vel_LVLH(:,kk) = (LVLH2ECICharles(pos(:,kk), vel(:,kk)))'*vel(:,kk);%ECI to LVLH
-end
-figure
-title('velocity in LVLH frame')
-%plot(timeVector(2:end),vel_LVLH(:,2:end))
-plot(timeVector(2:end),vel_LVLH(1,2:end))
-hold on
-plot(timeVector(2:end),vel_LVLH(2,2:end))
-plot(timeVector(2:end),vel_LVLH(3,2:end))
-legend('Vx','Vy','Vz')
+
 
 figure
 plot(timeVector(2:end),dVB(:,2:end),'*');
@@ -263,12 +205,3 @@ figure
 plot(timeVector(2:end),thrustVector(:,2:end),'*');
 legend('commanded thrust x','commanded thrust y','commanded thrust z')
 
-figure
-title('velocity in ECI frame')
-plot(timeVector(2:end),vel(:,2:end));
-legend('Veci x','Veci y','Veci z');
-
-vel_eci_mag = sqrt(sum(abs(vel).^2,1));
-delta_vel_eci_mag = vel_eci_mag(2:end)-vel_eci_mag(1:end-1);
-figure
-plot(timeVector(2:end),vel_eci_mag(2:end))

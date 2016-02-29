@@ -72,4 +72,14 @@ req = 6378.137; %WGS84_EARTH_EQUATORIAL_RADIUS
 j2 = 1.08262668355e-3;
 g = 9.80665; %m/s^2
 startingMass = 1; %assume initial mass of sc is 1kg + the fuel of one thruster
-
+global nextWindowStart nextWindowEnd nextWindowThrustDirection nextWindowType addToThrustCommandQue flagSentForNextWindow;
+nextWindowStart = datetime(0001,01,01,000,00,00);
+nextWindowEnd = datetime(0001,01,01,000,00,00);
+nextWindowThrustDirection = [0;0;0];
+nextWindowType = 0;
+addToThrustCommandQue = 0;
+flagSentForNextWindow = 0;
+approximateStartingOE = [deputyStartingOE,deputyStartingOE(6)]; %approximate true anomaly with mean anomaly (it doesnt matter I think) 
+[ nextWindowType(end), nextWindowStart(end), nextWindowEnd(end), nextWindowThrustDirection(:,(end)) ] = identifyNextEvent( datetime(startingDate), startingMass, Isp, thrust, thrustDurationLimit, oeError(:,end),approximateStartingOE, numThrusters );
+global allWindowTypes
+allWindowTypes = [0;0;0;0];

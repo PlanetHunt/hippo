@@ -20,9 +20,8 @@ public class LatitudeArgumentDetectionHandler implements EventHandler<LatitudeAr
 	public Action eventOccurred(SpacecraftState s, LatitudeArgumentDetector detector, boolean increasing)
 			throws OrekitException {
 		this.latitudeArgumentEventDate = new AbsoluteDate();
-		System.out.println(this.angle);
-		System.out.println(s.getDate());
-		System.out.println("Argument of Latitude crosssing detected!");
+		
+		System.out.println("Argument of Latitude crosssing detected!"+s.getDate() +" "+this.angle );
 		this.latitudeArgumentEventDate = s.getDate();
 		return Action.CONTINUE;
 	}

@@ -241,8 +241,8 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 		public EventHandler.Action eventOccurred(final SpacecraftState s, final DateDetector detector,
 				final boolean increasing) {
 			// start the maneuver
-			System.out.println("Start!");
-			System.out.println(s.getDate());
+			System.out.println("Start! "+s.getDate());
+			
 			firing = true;
 			return EventHandler.Action.RESET_DERIVATIVES;
 		}
@@ -262,7 +262,7 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 		public EventHandler.Action eventOccurred(final SpacecraftState s, final DateDetector detector,
 				final boolean increasing) {
 			// stop the maneuver
-			System.out.println("End!");
+			System.out.println("Stop! "+s.getDate());
 			firing = false;
 			return EventHandler.Action.RESET_DERIVATIVES;
 		}

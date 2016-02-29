@@ -24,12 +24,12 @@ public class ApsideDetectionHandler implements EventHandler<ApsideDetector> {
 		System.out.println(this.apsideCrossingDate + "\n");
 		System.out.println(this.radius + "\n");
 		if (increasing) {
-			System.out.println("Increasing \n");
+			System.out.println("Increasing (perigee) "+this.radius + " "+this.apsideCrossingDate );
 			this.isApogee = false;
 			return Action.CONTINUE;
 
 		} else {
-			System.out.println("Decreasing \n");
+			System.out.println("Decreasing (apogee) "+this.radius + " "+this.apsideCrossingDate);
 			this.isApogee = true;
 			return Action.CONTINUE;
 

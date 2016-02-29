@@ -41,25 +41,25 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 	 * @param atOnce
 	 */
 	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions,
-			boolean atOnce, EventCalculator eventCal, NetSatThrustEquations thrustEquation) {
+			boolean atOnce, EventCalculator eventCal) {
 		this.mi = mi;
 		this.options = options;
 		this.atOnce = atOnce;
 		this.eventCal = eventCal;
 		this.matlabFunctions = matlabFunctions;
-		this.thrustEquation = thrustEquation;
 		this.dataList = new HashSet<MatlabData>();
 		this.fire = true;
 
 	}
 
 	public MatlabPushHandler(MatlabInterface mi, SensorDataType[] options, MatlabFunctionType[] matlabFunctions,
-			boolean atOnce, PropulsionSystem prop) {
+			boolean atOnce, PropulsionSystem prop, EventCalculator eventCal) {
 		this.mi = mi;
 		this.options = options;
 		this.matlabFunctions = matlabFunctions;
 		this.atOnce = atOnce;
 		this.prop = prop;
+		this.eventCal = eventCal;
 		this.dataList = new HashSet<MatlabData>();
 	}
 

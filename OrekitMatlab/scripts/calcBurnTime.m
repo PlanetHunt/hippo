@@ -8,17 +8,17 @@ function [ burnTime ] = calcBurnTime( dV, fullMass, Isp, thrust, burnTimeLimit, 
 %   burnTimeLimit is the max burn time we allow for an 'impulse' maneuvre
 %   (180seconds for LEO)? - check reference of josh newman in canX paper /
 %   ask Alex
-% % % % % global g
-% % % % % 
-% % % % % emptyMass       = fullMass/(exp(norm(dV)/(Isp*g)));
-% % % % % propellantMass  = fullMass - emptyMass;
-% % % % % massFlowRate    = numThrusters*thrust/(Isp*g);
-% % % % % burnTime        = propellantMass/massFlowRate;
-% % % % % 
-% % % % % %required burn time greater than limit, set to limit
-% % % % % if(burnTime > burnTimeLimit);
-% % % % %     burnTime = burnTimeLimit;
-% % % % % end
-burnTime = 180;
+global g
+
+emptyMass       = fullMass/(exp(norm(dV)/(Isp*g)));
+propellantMass  = fullMass - emptyMass;
+massFlowRate    = numThrusters*thrust/(Isp*g);
+burnTime        = propellantMass/massFlowRate;
+
+%required burn time greater than limit, set to limit
+if(burnTime > burnTimeLimit);
+    burnTime = burnTimeLimit;
+end
+
 end
 

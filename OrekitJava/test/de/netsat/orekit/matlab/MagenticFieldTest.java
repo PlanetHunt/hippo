@@ -49,7 +49,9 @@ public class MagenticFieldTest {
 		double[] thrustDirection = { 1, 0, 0 };
 		double massLoss = -0.0001;
 		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
-				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION, SensorDataType.ACC };
+				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION, SensorDataType.ACC,
+				SensorDataType.DETECT_APOGEE, SensorDataType.DETECT_LATARG_NINETY, SensorDataType.DETECT_LATARG_ZERO,
+				SensorDataType.DETECT_PERIGEE };
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
@@ -96,11 +98,14 @@ public class MagenticFieldTest {
 		// "experimental", fire, (int) thrusterNumber,
 		// thrust, thrustDirection, massLoss, stepSize);
 		AbsoluteDate dummyStartDate = new AbsoluteDate(1, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
-		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, duration, equivalentThrust, equivalentIsp,
+		double dummyDuration = 100;
+		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, dummyDuration, equivalentThrust, equivalentIsp,
 				new Vector3D(thrustDirection), stepSize);
-		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop);
+		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop, eventCal);
 		// initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
-
+		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
+		numericPropagator.addEventDetector(eventCal.getLatArg(0));
+		numericPropagator.addEventDetector(eventCal.getLatArg(90));
 		// numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addForceModel(holmesFeatherstone);
 		numericPropagator.addForceModel(atmosphericDrag);
@@ -111,6 +116,7 @@ public class MagenticFieldTest {
 		return finalState;
 
 	}
+
 	/**
 	 * Set the variable in Matlab (the variable should be the type double or
 	 * could be casted to double.
