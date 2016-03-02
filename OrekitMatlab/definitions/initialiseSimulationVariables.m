@@ -15,6 +15,16 @@ global AThrustVector BThrustVector CThrustVector DThrustVector thrustVector;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 %setMu(mu);
+
+global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
+thrustWindowStart = datetime(0001,01,01,000,00,00);
+thrustWindowEnd = datetime(0001,01,01,000,00,00);
+thrustDirection = [0;0;0];
+addEventToOrekitDateTimeDetector = 0;
+eventTypes = 0;
+global counter; %pouyans variable
+counter = 0;
+
 netThrustVector = 0;
 thrustVector = [0;0;0];
 mu = muValue;
