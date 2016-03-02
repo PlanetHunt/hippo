@@ -67,14 +67,14 @@ oeError(7,end) = 0; %dont correct MA
 % % end
 
 
-
+addEventToOrekitDateTimeDetectorFlag = 0;
 inAZone(end+1) = inAZone(end);%copy last values
 inBZone(end+1) = inBZone(end);
 inCZone(end+1) = inCZone(end);
 inDZone(end+1) = inDZone(end);
 % check if we are in a thrusting period
 %% check A window 
-if(isbetween(current_time,tABoostStartCommand(end)-maxCheck-maxStep,tABoostEndCommand(end))) 
+if(isbetween(current_time,tABoostStartCommand(end)-seconds(3*maxCheck),tABoostEndCommand(end))) 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVA(:,end+1) = dVA(:,end); %=last value
@@ -89,7 +89,8 @@ if(isbetween(current_time,tABoostStartCommand(end)-maxCheck-maxStep,tABoostEndCo
         %send A to scheduler for parsing
         %scheduler decides if this event should be the next one sent to
         %orekit
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(1); 
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(1, tABoostStartCommand(end), tABoostEndCommand(end));
+        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
         eventTypes(end+1) = 1;
         thrustDirection(:,end+1) = dVA(:,end);
         thrustWindowStart(end+1) = tABoostStartCommand(end);
@@ -104,7 +105,7 @@ else
 end
 
 %% check B Zone 
-if(isbetween(current_time,tBBoostStartCommand(end)-maxCheck-maxStep,tBBoostEndCommand(end)))
+if(isbetween(current_time,tBBoostStartCommand(end)-seconds(3*maxCheck),tBBoostEndCommand(end)))
 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
@@ -117,7 +118,8 @@ if(isbetween(current_time,tBBoostStartCommand(end)-maxCheck-maxStep,tBBoostEndCo
     if(inBZone(end) == 0) %if this is the first time we have fallen innto this window
         inBZone(end) = 1; %toggle the fireB sticky flag
         
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(2); 
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(2, tBBoostStartCommand(end), tBBoostEndCommand(end)); 
+        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
         eventTypes(end+1) = 2;
         thrustDirection(:,end+1) = dVB(:,end);
         thrustWindowStart(end+1) = tBBoostStartCommand(end);
@@ -132,7 +134,7 @@ else
 end
     
 %% check C window
-if(isbetween(current_time,tCBoostStartCommand(end)-maxCheck-maxStep,tCBoostEndCommand(end)))
+if(isbetween(current_time,tCBoostStartCommand(end)-seconds(3*maxCheck),tCBoostEndCommand(end)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVC(:,end+1) = dVC(:,end); %=last value
@@ -142,7 +144,8 @@ if(isbetween(current_time,tCBoostStartCommand(end)-maxCheck-maxStep,tCBoostEndCo
     
     if(inCZone(end) == 0) %if this is the first time we have fallen innto this window
         inCZone(end) = 1; %toggle the fireC sticky flag
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(3); 
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(3, tCBoostStartCommand(end), tCBoostEndCommand(end)); 
+        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
         eventTypes(end+1) = 1;
         thrustDirection(:,end+1) = dVC(:,end);
         thrustWindowStart(end+1) = tCBoostStartCommand(end);
@@ -157,7 +160,7 @@ else
 end
 
 %% check D window ( we check here cause we shouldnt be in C window provided that our boost duration is only a few mins and we are not highly elliptical)
-if(isbetween(current_time,tDBoostStartCommand(end)-maxCheck-maxStep,tDBoostEndCommand(end)))
+if(isbetween(current_time,tDBoostStartCommand(end)-seconds(3*maxCheck),tDBoostEndCommand(end)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVD(:,end+1) = dVD(:,end); %=last value
@@ -168,7 +171,8 @@ if(isbetween(current_time,tDBoostStartCommand(end)-maxCheck-maxStep,tDBoostEndCo
     if(inDZone(end) == 0) %if this is the first time we have fallen innto this window
         inDZone(end) = 1; %toggle the fireC sticky flag
         
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(4); 
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(4, tDBoostStartCommand(end), tDBoostEndCommand(end));
+        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
         eventTypes(end+1) = 4;
         thrustDirection(:,end+1) = dVD(:,end);
         thrustWindowStart(end+1) = tDBoostStartCommand(end);
@@ -195,13 +199,13 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 
 %currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
 currentThrustDirection = [0; -1; 0]; %hard coded for testing purposes
-global latitudeArgument
-figure(1)
-latitudeArgument(end+1) = wrapTo2Pi(oedm(4,end)+oedm(6,end));
-plot(timeVector(end),oedm(6,end),'xb');
-hold on
-%plot(timeVector(2:end),oecm(6,2:end));
-plot(timeVector(end),latitudeArgument(end),'+k');
+% % % % global latitudeArgument
+% % % % figure(1)
+% % % % latitudeArgument(end+1) = wrapTo2Pi(oedm(4,end)+oedm(6,end));
+% % % % plot(timeVector(end),oedm(6,end),'xb');
+% % % % hold on
+% % % % %plot(timeVector(2:end),oecm(6,2:end));
+% % % % plot(timeVector(end),latitudeArgument(end),'+k');
 % plot(timeVector(2:end), zeros(length(timeVector(2:end))))
 % title('True Anomaly and Theta');
 % ylabel('True Anomaly (radians)')
@@ -209,7 +213,7 @@ plot(timeVector(end),latitudeArgument(end),'+k');
 %if in last step plot everything
 
 %make copies to return from the matlabstephandler function
-addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
+%addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
 eventThrustDirection = thrustDirection(:,end);
 eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
 eventThrustWindowEnd = datevec(thrustWindowEnd(end));

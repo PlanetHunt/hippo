@@ -5,7 +5,6 @@ classdef ThrustSchedule
         type %type of the thrust, could be 1, 2, 3 or 4.
         thrustWindowStart % When thrusting window starts an array
         thrustWindowEnd % When the thrusting window ends an array
-        thrustDirection % the thrust direction which is calculated.
         started % 1 or 0 toggle which is switched bz oreki.
     end
     
@@ -13,13 +12,12 @@ classdef ThrustSchedule
         
         %% Constructor function for the thrustschedule.
         % this function create new ThrustSChedule objects.
-        function obj = ThrustSchedule(type, thrustWindowStart, thrustWindowEnd, thrustDirection, started)
+        function obj = ThrustSchedule(type, thrustWindowStart, thrustWindowEnd, started)
             if(nargin>0)
                 obj.started = started;
                 obj.type = type;
                 obj.thrustWindowStart = thrustWindowStart;
                 obj.thrustWindowEnd = thrustWindowEnd;
-                obj.thrustDirection = thrustDirection;
             end
         end
         

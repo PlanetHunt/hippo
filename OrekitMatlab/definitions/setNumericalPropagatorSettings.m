@@ -2,7 +2,7 @@ function [position_tolerance, min_step, max_step, duration, step_size, choiceofP
 
 position_tolerance = 100; %m
 min_step = 0.001;
-max_step = 1000;
+max_step = 60;
 step_size = 60;
 duration = 4*3600;
 choiceofProp = 0;

@@ -22,23 +22,24 @@ thrustWindowEnd = datetime(0001,01,01,000,00,00);
 thrustDirection = [0;0;0];
 addEventToOrekitDateTimeDetector = 0;
 eventTypes = 0;
-global counter recentOrbit; %pouyans variable
+global counter recentOrbit initialize; %pouyans variable
+initialize = 1;
 counter = 0;
-recentOrbit = 0;
+recentOrbit = '';
 
 netThrustVector = 0;
 thrustVector = [0;0;0];
 mu = muValue;
 oeError = [0; 0; 0; 0; 0; 0; 0]; %maybe should calculate this properly for the starting conditions, dont forget to use mean elements
 timeVector = datetime(0001,01,01,000,00,00);
-tABoostStartCommand = datetime(0001,01,01,000,00,00);
-tBBoostStartCommand = datetime(0001,01,01,000,00,00);
-tCBoostStartCommand = datetime(0001,01,01,000,00,00);
-tDBoostStartCommand = datetime(0001,01,01,000,00,00);
-tABoostEndCommand = datetime(0001,01,01,000,00,00);
-tBBoostEndCommand = datetime(0001,01,01,000,00,00);
-tCBoostEndCommand = datetime(0001,01,01,000,00,00);
-tDBoostEndCommand = datetime(0001,01,01,000,00,00);
+tABoostStartCommand = datetime(0001,12,01,000,00,00);
+tBBoostStartCommand = datetime(0001,12,01,000,00,00);
+tCBoostStartCommand = datetime(0001,12,01,000,00,00);
+tDBoostStartCommand = datetime(0001,12,01,000,00,00);
+tABoostEndCommand = datetime(0001,01,12,000,00,00);
+tBBoostEndCommand = datetime(0001,01,12,000,00,00);
+tCBoostEndCommand = datetime(0001,01,12,000,00,00);
+tDBoostEndCommand = datetime(0001,01,12,000,00,00);
 AThrustVector = [0;0;0];
 BThrustVector = [0;0;0];
 CThrustVector = [0;0;0];
@@ -97,7 +98,7 @@ nextWindowType = 0;
 addToThrustCommandQue = 0;
 flagSentForNextWindow = 0;
 approximateStartingOE = [deputyStartingOE,deputyStartingOE(6)]; %approximate true anomaly with mean anomaly (it doesnt matter I think) 
-[ nextWindowType(end), nextWindowStart(end), nextWindowEnd(end), nextWindowThrustDirection(:,(end)) ] = identifyNextEvent( datetime(startingDate), startingMass, Isp, thrust, thrustDurationLimit, oeError(:,end),approximateStartingOE, numThrusters );
+%[ nextWindowType(end), nextWindowStart(end), nextWindowEnd(end), nextWindowThrustDirection(:,(end)) ] = identifyNextEvent( datetime(startingDate), startingMass, Isp, thrust, thrustDurationLimit, oeError(:,end),approximateStartingOE, numThrusters );
 global allWindowTypes
 allWindowTypes = [0;0;0;0];
 global latitudeArgument
