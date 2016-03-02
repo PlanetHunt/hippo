@@ -55,7 +55,7 @@ public class MagenticFieldTest {
 		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
-		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 12);
+		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 13);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
 
 		/* Initial Orbit Settings */
@@ -72,6 +72,7 @@ public class MagenticFieldTest {
 		double stepSize = ((double[]) initialVars[9])[0];
 		double equivalentIsp = ((double[]) initialVars[10])[0];
 		double equivalentThrust = ((double[]) initialVars[11])[0];
+		double maxCheck = ((double[]) initialVars[12])[0];
 		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
 		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
 				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -100,7 +101,7 @@ public class MagenticFieldTest {
 		AbsoluteDate dummyStartDate = new AbsoluteDate(1, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
 		double dummyDuration = 100;
 		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, dummyDuration, equivalentThrust, equivalentIsp,
-				new Vector3D(thrustDirection), stepSize);
+				new Vector3D(thrustDirection), maxCheck);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop, eventCal);
 		// initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
 		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());

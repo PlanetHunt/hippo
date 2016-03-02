@@ -1,4 +1,4 @@
-function [startingDate,deputyStartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust] = initialiseSimulationVariables(muValue)
+function [startingDate,deputyStartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust, max_check] = initialiseSimulationVariables(muValue)
 %% global variables
 global netThrustVector;
 global timeVector;
@@ -8,7 +8,7 @@ global req j2 g thrustDurationLimit;
 % global position_tolerance min_step max_step duration step_size choiceofProp;
 %global ii %loop variable
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
-global fireA fireB fireC fireD fireThruster;
+global inAZone inBZone inCZone inDZone fireThruster;
 global dVA dVB dVC dVD;
 
 global AThrustVector BThrustVector CThrustVector DThrustVector thrustVector;
@@ -22,8 +22,9 @@ thrustWindowEnd = datetime(0001,01,01,000,00,00);
 thrustDirection = [0;0;0];
 addEventToOrekitDateTimeDetector = 0;
 eventTypes = 0;
-global counter; %pouyans variable
+global counter recentOrbit; %pouyans variable
 counter = 0;
+recentOrbit = 0;
 
 netThrustVector = 0;
 thrustVector = [0;0;0];
@@ -43,10 +44,16 @@ BThrustVector = [0;0;0];
 CThrustVector = [0;0;0];
 DThrustVector = [0;0;0];
 fireThruster = 0;
-fireA = 0; fireB = 0; fireC = 0; fireD = 0;
+inAZone = 0;
+inBZone = 0;
+inCZone = 0;
+inDZone = 0; 
+
 dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0]; 
-[position_tolerance, min_step, max_step, duration, step_size, ~] = setNumericalPropagatorSettings();
-global stepSize;
+[position_tolerance, min_step, max_step, duration, step_size, ~, max_check] = setNumericalPropagatorSettings();
+global stepSize maxStep maxCheck;
+maxStep = max_step;
+maxCheck = max_check;
 stepSize = step_size; %matlabs copy.
 
 global pos vel;

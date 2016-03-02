@@ -9,7 +9,8 @@ function [ addEventToOrekitDateTimeDetectorFlag, eventThrustDirection, eventThru
 %   orbital_elements = [a;e;i;omega;raan;tru Anom; mean anom]
 global timeVector;
 global mass;
-global stepSize duration req j2 g thrustDurationLimit; %ie the limit so that it is still an 'impulse'
+global stepSize maxStep maxCheck;
+global duration req j2 g thrustDurationLimit; %ie the limit so that it is still an 'impulse'
 global numThrusters;
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
 global inAZone inBZone inCZone inDZone fireThruster thrustVector;
@@ -216,8 +217,8 @@ eventThrustWindowEnd = datevec(thrustWindowEnd(end));
 
 if(last_step_flag == 1)
     plotBasicOe;
-    plotCommandsToOrekit;
-    plotDebug;
+    %plotCommandsToOrekit;
+    %plotDebug;
     plotThrustSchedulerOutput;
     %plotControllerOutput;
     %plotVelocities;
