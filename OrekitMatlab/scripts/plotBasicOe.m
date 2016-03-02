@@ -52,8 +52,8 @@ legend('deputy','chief')
 latitudeArgument = wrapTo2Pi(oedm(4,2:end)+oedm(6,2:end));
 
 figure; clf;
-hold on
 plot(timeVector(2:end),oedm(6,2:end));
+hold on
 %plot(timeVector(2:end),oecm(6,2:end));
 plot(timeVector(2:end),latitudeArgument);
 % plot(timeVector(2:end), zeros(length(timeVector(2:end))))

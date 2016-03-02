@@ -15,6 +15,12 @@ nextWindowStart = sortedStartTimes(1);
 nextWindowEnd = endTimes(I(1));
 nextWindowThrustDirection = thrustDirection(I(1));
 
+figure(2)
+hold on
+plot(startTimes(1),1,'b*'); plot(endTimes(1),1,'bx');
+plot(startTimes(2),2,'k*'); plot(endTimes(2),2,'kx');
+plot(startTimes(3),3,'g*'); plot(endTimes(3),3,'gx');
+plot(startTimes(4),4,'c*'); plot(endTimes(4),4,'cx');
 allWindowTypes(:,end+1) = I';
 end
 

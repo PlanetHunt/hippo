@@ -83,3 +83,5 @@ approximateStartingOE = [deputyStartingOE,deputyStartingOE(6)]; %approximate tru
 [ nextWindowType(end), nextWindowStart(end), nextWindowEnd(end), nextWindowThrustDirection(:,(end)) ] = identifyNextEvent( datetime(startingDate), startingMass, Isp, thrust, thrustDurationLimit, oeError(:,end),approximateStartingOE, numThrusters );
 global allWindowTypes
 allWindowTypes = [0;0;0;0];
+global latitudeArgument
+latitudeArgument = 0;
