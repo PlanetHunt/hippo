@@ -1,5 +1,5 @@
 function [ addThrustCommandQueFlag ] = thrustScheduler(thrustType)
-    %%Checks if the event is happening in the right time.
+    %% Checks if the event is happening in the right time.
     %if not set the event to be called.
     global counter;
     global recentOrbit;
@@ -17,7 +17,6 @@ function [ addThrustCommandQueFlag ] = thrustScheduler(thrustType)
         counter = 0;
         recentOrbit = getOrbitType(thrustType);
         nextSchedule = 1;
-
     end
     if(nextSchedule~=0)
         addThrustCommandQueFlag = 1;
