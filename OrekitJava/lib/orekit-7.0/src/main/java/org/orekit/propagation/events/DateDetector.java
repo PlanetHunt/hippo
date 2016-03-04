@@ -68,7 +68,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     public DateDetector(final double maxCheck, final double threshold, final TimeStamped ... dates) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<DateDetector>(), dates);
     }
-
+    
     /** Build a new instance.
      * <p>This constructor is dedicated to single date detection.
      * {@link #getMaxCheckInterval() max check interval} is set to 1.0e10, so almost

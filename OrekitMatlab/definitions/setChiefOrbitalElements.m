@@ -1,4 +1,4 @@
-function [ chiefMeanOE ] = setChiefOrbitalElements(chiefNr)
+function [ chiefMeanOE,date ] = setChiefOrbitalElements(chiefNr)
 
 switch chiefNr
     case 1 % hin cube 4/12/2013 11:00:00
@@ -7,14 +7,14 @@ switch chiefNr
     case 2 % Shaubs chief - from his paper
         
         %Chief OE from Schaubs paper
-        chiefMeanOE = [7555000; 0.05; 48*pi/180; 20*pi/180; 10*pi/180; 0; 120*pi/180];
+        chiefMeanOE = [7555000; 0.05; 48*pi/180; 10*pi/180; 20*pi/180; 0; 120*pi/180];
         
         %calc true anomaly as shaub didnt provide it
         %calc true anomaly
         true_anomaly = meanAnomToTrueAnom(chiefMeanOE(2), chiefMeanOE(7) );
         chiefMeanOE(6) = true_anomaly;
         
-
+        
     case 3 %UWE-3 slightly shifted: %date: 2014.01.01 00:00:00.000
         a = 7019120.191+500;
         e = 0.007879+0.002;
@@ -28,6 +28,16 @@ switch chiefNr
         %calc true anomaly
         true_anomaly = meanAnomToTrueAnom(chiefMeanOE(2), chiefMeanOE(7) );
         chiefMeanOE(6) = true_anomaly;
+    case 6
+        oecBase = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
+        oecBase(6) = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
+        
+         delta = [-63.38115; 5.6267e-05; -8.7266e-06; 5.6267e-03; -4.8267e-04; 0; 0];
+        chiefMeanOE = oecBase+delta;
+       
+        
+        
+        date = [2014, 01, 01, 00, 00, 00.000];
 end
 % chiefMeanOE=chiefMeanOE';
 end

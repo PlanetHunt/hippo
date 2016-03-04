@@ -23,7 +23,8 @@ global pos vel acc;
 global netThrustVector
 
 global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
-
+global typeOfSimulation;
+global oe oem;
 
 current_time = datetime(timestamp);
 timeVector=[timeVector;current_time];
@@ -31,50 +32,74 @@ mass = [mass; current_mass];
 pos = [pos, position' ];
 vel = [vel, velocity' ];
 acc = [acc, acceleration'];
-oec(:,end+1) = oec(:,end);
-oecm(:,end+1) = oecm(:,end); %we are using a fixed chief orbit to formate on so it wont change time step to time step
-oed = [oed, orbital_elements'];
+
 
 %convert oscilating orbital elements to mean orbital elements
-meanOE = convertOscOeToMeanOe( orbital_elements );
-oedm = [oedm, meanOE];
+% if(size(timeVector,1)==2) %this is the time zero timestep
+%     %at time zero we just get back to mean OE from orkit
+%     oscOE = convertMeanOeToOscOe(orbital_elements);
+%     %oe = [oe, orbital_elements'];
+%     oe = [oe, oscOE];
+%     
+%     meanOE = orbital_elements'; %
+%     oem = [oem, meanOE];
+% else
+    meanOE = convertOscOeToMeanOe( orbital_elements ); %orbital_elements';%
+    oem = [oem, meanOE];
+    oscOE = orbital_elements';
+    oe = [oe, oscOE];
+%  end
+%%
+switch typeOfSimulation
+    case 'propogateChief' %use this to gather the chief OE time history
+       %oeError(:,end+1) = [0;0;0;0;0;0;0];
+       oecm = oem; %the only task is to save the chief Mean OEs, nothing else.
+    case 'propogateDeputy'
+       oedm = oem;%the only task is to save the deputy Mean OEs, nothing else.
+    case 'propogateDeputyStationKeep'
+        
+        %copy over last chief OEs
+        oec(:,end+1) = oec(:,end);
+        oecm(:,end+1) = oecm(:,end); %we are using a fixed chief orbit to formate on so it wont change time step to time step
+        %calculate the tracking error in orbital elements, 
+        %check this - should it be position of chief rel to deputy or pos deputy rel to chief?
+        
+        oed = oe;
+        oedm = oem;
+        oeError(:,end+1) = oedm(:,end)-oecm(:,end);
 
-%calculate the tracking error in orbital elements, 
-%check this - should it be position of chief rel to deputy or pos deputy rel to chief?
-oeError(:,end+1) = oedm(:,end)-oecm(:,end);
-oeError(4,end) = 0; %dont correct omega
-oeError(6,end) = 0; %dont correct TA
-oeError(7,end) = 0; %dont correct MA
-% % global nextWindowStart nextWindowEnd nextWindowThrustDirection nextWindowType addToThrustCommandQue flagSentForNextWindow;
-% % 
-% % %% before event update & flag raise
-% % if(isbetween(current_time,nextWindowStart(end)-seconds(stepSize*5),nextWindowStart(end)-seconds(stepSize*4)) && flagSentForNextWindow(end) ~= 1) 
-% %     [ nextWindowType(end+1), nextWindowStart(end+1), nextWindowEnd(end+1), nextWindowThrustDirection(:,(end+1)) ] = identifyNextEvent( current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end), numThrusters );
-% %     addToThrustCommandQue(end+1) = 1;
-% %     flagSentForNextWindow(end+1) = 1;
-% % %% after event update
-% % elseif(isbetween(current_time,nextWindowEnd(end)+seconds(stepSize*2),nextWindowEnd(end)+seconds(stepSize*3))) 
-% %     [ nextWindowType(end+1), nextWindowStart(end+1), nextWindowEnd(end+1), nextWindowThrustDirection(:,end+1) ] = identifyNextEvent( current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end), numThrusters );
-% %     addToThrustCommandQue(end+1) = 0;
-% %     flagSentForNextWindow(end+1) = 0;
-% % else
-% %     addToThrustCommandQue(end+1) = 0;
-% %     nextWindowStart(end+1) = nextWindowStart(end);
-% %     nextWindowEnd(end+1) = nextWindowEnd(end);
-% %     nextWindowThrustDirection(:,end+1) = nextWindowThrustDirection(:,end);
-% %     nextWindowType(end+1) = nextWindowType(end);
-% %     flagSentForNextWindow(end+1) = flagSentForNextWindow(end);
-% % end
-
+    case 'propogateDeputyFormationFlight' %run this option after you have done a full propogateChief
+        oed = oe;
+        oedm = oem;
+        stepIndex = size(oedm,2);
+        oeError(:,end+1) = oedm(:,end)-oecm(:,stepIndex);
+%         
+%         oeError(3,end) = 0; %dont correct i errors
+%         oeError(4,end) = 0; %AoP error = 0
+%         oeError(5,end) = 0; %RAAN error = 0
+%         oeError(6,end) = 0;
+%         oeError(7,end) = 0; %dont correct mean anomaly errors
+end
+impulsive=1;
 
 addEventToOrekitDateTimeDetectorFlag = 0;
+%default values if there is no event (the calues dont matter since
+%addEventToOrekitDateTimeDetectorFlag = 0 so orekit wont process the values
+eventThrustDirection = [0; 0; 0];
+eventThrustWindowStart = [0 0 0 0 0 0];
+eventThrustWindowEnd = [0 0 0 0 0 0];
+
+
+
+if(strcmp(typeOfSimulation,'propogateDeputyStationKeep') || strcmp(typeOfSimulation,'propogateDeputyFormationFlight')) %doesnt make sense to calculate errors if we are only propogating the chief
 inAZone(end+1) = inAZone(end);%copy last values
 inBZone(end+1) = inBZone(end);
 inCZone(end+1) = inCZone(end);
 inDZone(end+1) = inDZone(end);
+preWindowDetectionRange = 3*maxStep;
 % check if we are in a thrusting period
 %% check A window 
-if(isbetween(current_time,tABoostStartCommand(end)-seconds(3*maxCheck),tABoostEndCommand(end))) 
+if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRange),tABoostEndCommand(end))) 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVA(:,end+1) = dVA(:,end); %=last value
@@ -89,12 +114,21 @@ if(isbetween(current_time,tABoostStartCommand(end)-seconds(3*maxCheck),tABoostEn
         %send A to scheduler for parsing
         %scheduler decides if this event should be the next one sent to
         %orekit
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(1, tABoostStartCommand(end), tABoostEndCommand(end));
-        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
+        
+        %historical data for plotting
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(1, tABoostStartCommand(end), tABoostEndCommand(end),impulsive);
         eventTypes(end+1) = 1;
         thrustDirection(:,end+1) = dVA(:,end);
         thrustWindowStart(end+1) = tABoostStartCommand(end);
         thrustWindowEnd(end+1) = tABoostEndCommand(end);
+            
+        if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
+            %set the variables to return to orekit
+            addEventToOrekitDateTimeDetectorFlag = 1;
+            eventThrustDirection = thrustDirection(:,end);
+            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+        end
     end
         
 else
@@ -105,7 +139,7 @@ else
 end
 
 %% check B Zone 
-if(isbetween(current_time,tBBoostStartCommand(end)-seconds(3*maxCheck),tBBoostEndCommand(end)))
+if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRange),tBBoostEndCommand(end)))
 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
@@ -118,12 +152,18 @@ if(isbetween(current_time,tBBoostStartCommand(end)-seconds(3*maxCheck),tBBoostEn
     if(inBZone(end) == 0) %if this is the first time we have fallen innto this window
         inBZone(end) = 1; %toggle the fireB sticky flag
         
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(2, tBBoostStartCommand(end), tBBoostEndCommand(end)); 
-        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(2, tBBoostStartCommand(end), tBBoostEndCommand(end),impulsive); 
         eventTypes(end+1) = 2;
         thrustDirection(:,end+1) = dVB(:,end);
         thrustWindowStart(end+1) = tBBoostStartCommand(end);
         thrustWindowEnd(end+1) = tBBoostEndCommand(end);
+        
+        if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
+            addEventToOrekitDateTimeDetectorFlag = 1;
+            eventThrustDirection = thrustDirection(:,end);
+            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+        end
     end
 
 else
@@ -134,7 +174,7 @@ else
 end
     
 %% check C window
-if(isbetween(current_time,tCBoostStartCommand(end)-seconds(3*maxCheck),tCBoostEndCommand(end)))
+if(isbetween(current_time,tCBoostStartCommand(end)-seconds(preWindowDetectionRange),tCBoostEndCommand(end)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVC(:,end+1) = dVC(:,end); %=last value
@@ -144,12 +184,19 @@ if(isbetween(current_time,tCBoostStartCommand(end)-seconds(3*maxCheck),tCBoostEn
     
     if(inCZone(end) == 0) %if this is the first time we have fallen innto this window
         inCZone(end) = 1; %toggle the fireC sticky flag
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(3, tCBoostStartCommand(end), tCBoostEndCommand(end)); 
-        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
-        eventTypes(end+1) = 1;
+        
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(3, tCBoostStartCommand(end), tCBoostEndCommand(end),impulsive); 
+        eventTypes(end+1) = 3;
         thrustDirection(:,end+1) = dVC(:,end);
         thrustWindowStart(end+1) = tCBoostStartCommand(end);
         thrustWindowEnd(end+1) = tCBoostEndCommand(end);
+        
+        if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
+            addEventToOrekitDateTimeDetectorFlag = 1;
+            eventThrustDirection = thrustDirection(:,end);
+            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+        end
     end
     
 else
@@ -160,7 +207,7 @@ else
 end
 
 %% check D window ( we check here cause we shouldnt be in C window provided that our boost duration is only a few mins and we are not highly elliptical)
-if(isbetween(current_time,tDBoostStartCommand(end)-seconds(3*maxCheck),tDBoostEndCommand(end)))
+if(isbetween(current_time,tDBoostStartCommand(end)-seconds(preWindowDetectionRange),tDBoostEndCommand(end)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVD(:,end+1) = dVD(:,end); %=last value
@@ -171,12 +218,19 @@ if(isbetween(current_time,tDBoostStartCommand(end)-seconds(3*maxCheck),tDBoostEn
     if(inDZone(end) == 0) %if this is the first time we have fallen innto this window
         inDZone(end) = 1; %toggle the fireC sticky flag
         
-        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(4, tDBoostStartCommand(end), tDBoostEndCommand(end));
-        addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
+        addEventToOrekitDateTimeDetector(end+1) = thrustScheduler(4, tDBoostStartCommand(end), tDBoostEndCommand(end),impulsive);
         eventTypes(end+1) = 4;
         thrustDirection(:,end+1) = dVD(:,end);
         thrustWindowStart(end+1) = tDBoostStartCommand(end);
         thrustWindowEnd(end+1) = tDBoostEndCommand(end);
+        
+        if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
+            addEventToOrekitDateTimeDetectorFlag = 1;
+            eventThrustDirection = thrustDirection(:,end);
+            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+        end
+        
     end
 else
     inDZone(end) = 0;
@@ -185,7 +239,10 @@ else
     DThrustVector(:,end+1) = [0;0;0];
 end
     
- 
+if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
+    eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
+end
+
 %net/overall fire the thruster flag - should we fire the thruster?
 % fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
 
@@ -198,7 +255,6 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 
 
 %currentThrustDirection = (LVLH2ECICharles(pos(:,end), vel(:,end)))*[0.00;0.1;0.00];
-currentThrustDirection = [0; -1; 0]; %hard coded for testing purposes
 % % % % global latitudeArgument
 % % % % figure(1)
 % % % % latitudeArgument(end+1) = wrapTo2Pi(oedm(4,end)+oedm(6,end));
@@ -214,18 +270,22 @@ currentThrustDirection = [0; -1; 0]; %hard coded for testing purposes
 
 %make copies to return from the matlabstephandler function
 %addEventToOrekitDateTimeDetectorFlag = addEventToOrekitDateTimeDetector(end);
-eventThrustDirection = thrustDirection(:,end);
-eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
-eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+% % % eventThrustDirection = thrustDirection(:,end);
+% % % eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+% % % eventThrustWindowEnd = datevec(thrustWindowEnd(end));
 
 
 if(last_step_flag == 1)
-    plotBasicOe;
-    %plotCommandsToOrekit;
+    %plotBasicOe;
+    %plotMeanOeErrors;
+    plotCommandsToOrekit;
     %plotDebug;
-    plotThrustSchedulerOutput;
+    %plotThrustSchedulerOutput;
     %plotControllerOutput;
     %plotVelocities;
+    %plotBasicOeChiefPropogated;
+    plotMeanOeErrors;
 end
-  
+end
+
 end

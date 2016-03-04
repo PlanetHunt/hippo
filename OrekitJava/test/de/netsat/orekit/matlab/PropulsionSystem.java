@@ -109,8 +109,10 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 			this.startDate = endDate.shiftedBy(duration);
 		}
 		this.maxCheck = maxCheck;
-		this.startDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, startDate).withHandler(new FiringStartHandler());
-		this.endDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, endDate).withHandler(new FiringStopHandler());
+		//this.startDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, startDate).withHandler(new FiringStartHandler());
+		//this.endDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, endDate).withHandler(new FiringStopHandler());
+		this.startDateDetector = new DateDetector(maxCheck,  AbstractDetector.DEFAULT_THRESHOLD, startDate).withHandler(new FiringStartHandler());
+		this.endDateDetector = new DateDetector(maxCheck,  AbstractDetector.DEFAULT_THRESHOLD , endDate).withHandler(new FiringStopHandler());
 		
 		this.thrust = thrust;
 		this.flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);

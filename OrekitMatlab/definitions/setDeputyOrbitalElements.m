@@ -34,14 +34,18 @@ switch i
         in = 97.859*pi/180; 
         omega = 145.12*pi/180; 
         raan = 50.485*pi/180; 
-        %ta=68.643*pi/180; 
+        ta=68.643*pi/180; 
         mean_anomaly = 67.959*pi/180;
         date = [2013, 12, 04, 11, 00, 00.000];
     case 5 % Shaubs deputy - from his paper
         %these are mean oes%%%%%
-        chief = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);deg2rad(120)];
-        delta = [-100; 0; 0.05*pi/180; 0; -0.01*pi/180; 0];
+        chief = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
+        delta = [-100; 0; 0.05*pi/180; 0; -0.01*pi/180; 0; 0];
         deputy = chief+delta;
+        
+        true_anomaly = meanAnomToTrueAnom(deputy(2), deputy(7) );
+        deputy(6) = true_anomaly;
+        ta = deputy(6);
         %%%must convert to osc OEs before sending to orekit
         %deputy = convertMeanOeToOscOe( deputy );
         a = deputy(1);
@@ -51,6 +55,29 @@ switch i
         raan = deputy(5);
         mean_anomaly = deputy(6);
         date = [2014, 01, 01, 00, 00, 00.000];
+    case 6 % Shaubs deputy - from his paper
+        oecBase = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
+        oecBase(6) = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
+        
+         delta = [-63.38115; 5.6267e-05; -8.7266e-06; 5.6267e-03; -4.8267e-04; 0; 0];
+        oec_temp = oecBase+delta;
+        oecm_temp  = convertOscOeToMeanOe( oec_temp );
+        oed_delta = [-100+0.649;0;deg2rad(0.05);0;deg2rad(-0.01);0;0];
+        oed_temp=oec_temp+oed_delta;
+        oedm_temp = convertOscOeToMeanOe( oed_temp );
+        
+        
+        
+        ta = oed_temp(6);
+        %%%must convert to osc OEs before sending to orekit
+        %deputy = convertMeanOeToOscOe( deputy );
+        a = oed_temp(1);
+        e = oed_temp(2);
+        in = oed_temp(3);
+        omega = oed_temp(4);
+        raan = oed_temp(5);
+        mean_anomaly = oed_temp(7);
+        date = [2014, 01, 01, 00, 00, 00.000];
 end
 
-deputy = [a,e,in,omega,raan,mean_anomaly];
+deputy = [a,e,in,omega,raan,ta,mean_anomaly];

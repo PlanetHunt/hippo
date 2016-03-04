@@ -57,6 +57,7 @@ public class MagenticFieldTest {
 		mph.setVariableInMatlab("muValue", mu);
 		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 13);
 		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 
 		/* Initial Orbit Settings */
 		double[] initialDate = ((double[]) initialVars[0]);
@@ -103,10 +104,11 @@ public class MagenticFieldTest {
 		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, dummyDuration, equivalentThrust, equivalentIsp,
 				new Vector3D(thrustDirection), maxCheck);
 		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop, eventCal);
+		MatlabAdaptivePushHandler maph = new MatlabAdaptivePushHandler(mi, options, matlabFunctions, false, prop, eventCal);
 		// initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
-		numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
-		numericPropagator.addEventDetector(eventCal.getLatArg(0));
-		numericPropagator.addEventDetector(eventCal.getLatArg(90));
+		//numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
+		//numericPropagator.addEventDetector(eventCal.getLatArg(0));
+		//numericPropagator.addEventDetector(eventCal.getLatArg(90));
 		// numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addForceModel(holmesFeatherstone);
 		numericPropagator.addForceModel(atmosphericDrag);

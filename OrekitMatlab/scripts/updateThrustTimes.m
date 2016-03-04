@@ -59,8 +59,9 @@ end
     %absolute time of boost  start (dd mm yyyy hh mm ss)
     tBoostStart = time + seconds(durationCountDownBoost); %a matlab datetime object
     %the signal needs to be generated one step ahead, so orekit applies the
-    %boost during the correct time interval.
-    tBoostStartCommand = tBoostStart - seconds(stepSize); %a matlab datetime object
+    %boost during the correct time interval. ---not anymore since we use a
+    %orekit datetime detector
+    tBoostStartCommand = tBoostStart;% - seconds(stepSize); %a matlab datetime object
     %the turn thruster off command
     tBoostEndCommand = tBoostStartCommand + seconds(burnDuration); %a matlab datetime object
 end
