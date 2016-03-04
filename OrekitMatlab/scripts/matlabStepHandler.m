@@ -1,4 +1,6 @@
-function [ addEventToOrekitDateTimeDetectorFlag, eventThrustDirection, eventThrustWindowStart, eventThrustWindowEnd ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
+% function [ addEventToOrekitDateTimeDetectorFlag, eventThrustDirection, eventThrustWindowStart, eventThrustWindowEnd ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
+function [ returnMatrix ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
+
 %MATLABSTEPHANDLER function to be called at every time step
 %  1 event_A     perigee
 %  2 event_B     apogee
@@ -124,10 +126,10 @@ if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRan
             
         if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
             %set the variables to return to orekit
-            addEventToOrekitDateTimeDetectorFlag = 1;
-            eventThrustDirection = thrustDirection(:,end);
-            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
-            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+            addEventToOrekitDateTimeDetectorFlag(end+1) = 1;
+            eventThrustDirection(end+1,:) = thrustDirection(:,end)';
+            eventThrustWindowStart(end+1,:) = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd(end+1,:) = datevec(thrustWindowEnd(end));
         end
     end
         
@@ -159,10 +161,10 @@ if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRan
         thrustWindowEnd(end+1) = tBBoostEndCommand(end);
         
         if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
-            addEventToOrekitDateTimeDetectorFlag = 1;
-            eventThrustDirection = thrustDirection(:,end);
-            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
-            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+            addEventToOrekitDateTimeDetectorFlag(end+1) = 1;
+            eventThrustDirection(end+1,:) = thrustDirection(:,end)';
+            eventThrustWindowStart(end+1,:) = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd(end+1,:) = datevec(thrustWindowEnd(end));
         end
     end
 
@@ -192,10 +194,10 @@ if(isbetween(current_time,tCBoostStartCommand(end)-seconds(preWindowDetectionRan
         thrustWindowEnd(end+1) = tCBoostEndCommand(end);
         
         if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
-            addEventToOrekitDateTimeDetectorFlag = 1;
-            eventThrustDirection = thrustDirection(:,end);
-            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
-            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+            addEventToOrekitDateTimeDetectorFlag(end+1) = 1;
+            eventThrustDirection(end+1,:) = thrustDirection(:,end)';
+            eventThrustWindowStart(end+1,:) = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd(end+1,:) = datevec(thrustWindowEnd(end));
         end
     end
     
@@ -225,10 +227,10 @@ if(isbetween(current_time,tDBoostStartCommand(end)-seconds(preWindowDetectionRan
         thrustWindowEnd(end+1) = tDBoostEndCommand(end);
         
         if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
-            addEventToOrekitDateTimeDetectorFlag = 1;
-            eventThrustDirection = thrustDirection(:,end);
-            eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
-            eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+            addEventToOrekitDateTimeDetectorFlag(end+1) = 1;
+            eventThrustDirection(end+1,:) = thrustDirection(:,end)';
+            eventThrustWindowStart(end+1,:) = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
+            eventThrustWindowEnd(end+1,:) = datevec(thrustWindowEnd(end));
         end
         
     end
@@ -238,10 +240,12 @@ else
     [dVD(:,end+1), tDBoostStartCommand(end+1), tDBoostEndCommand(end+1)] = updateThrustTimes( 4, current_time, current_mass, Isp, thrust, thrustDurationLimit, oeError(:,end), oedm(:,end),numThrusters);
     DThrustVector(:,end+1) = [0;0;0];
 end
-    
-if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
-    eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
-end
+%     
+% if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
+%     eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
+% end
+
+returnMatrix = [addEventToOrekitDateTimeDetectorFlag',eventThrustDirection,eventThrustWindowStart,eventThrustWindowEnd];
 
 %net/overall fire the thruster flag - should we fire the thruster?
 % fireThruster(end+1) = any([fireA(end),fireB(end),fireC(end),fireD(end)]); %return 1 if any of A B C D = 1
