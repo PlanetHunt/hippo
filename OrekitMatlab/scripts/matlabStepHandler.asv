@@ -132,9 +132,13 @@ if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRan
         if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
             %set the variables to return to orekit
             addEventToOrekitDateTimeDetectorFlag = 1;
-
+            dVA(:,end)
+            dVB(:,end)
             eventThrustDirection = thrustDirection(:,end)';
-
+%             if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
+%                 eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
+%             end
+ 
               %% code to alternate X and Y thrusts
 %             if(apsideCounter == 0 || apsideCounter == 1)
 %                 %only thrust Y thrust
@@ -147,10 +151,7 @@ if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRan
 %                 eventThrustDirection(1) = 0;
 %             end
 %              apsideCounter=apsideCounter+1;
-            if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
-                eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
-            end
- 
+
             eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
             eventThrustWindowEnd = datevec(thrustWindowEnd(end));
             returnMatrix = [returnMatrix, addEventToOrekitDateTimeDetectorFlag,eventThrustDirection,eventThrustWindowStart,eventThrustWindowEnd];
@@ -203,10 +204,7 @@ if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRan
 %                 eventThrustDirection(1) = 0;
 %             end
 %             apsideCounter=apsideCounter+1;
-            %%normalize thrust direction
-            if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
-                eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
-            end             
+             
             eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
             eventThrustWindowEnd = datevec(thrustWindowEnd(end));
             returnMatrix = [returnMatrix, addEventToOrekitDateTimeDetectorFlag,eventThrustDirection,eventThrustWindowStart,eventThrustWindowEnd];

@@ -712,8 +712,8 @@ public class SatelliteSensorCalculator {
 		this.orbitalElements[2] = this.getInclination();
 		this.orbitalElements[3] = this.getArgumentOfPerigee();
 		this.orbitalElements[4] = this.getRaan();
-		this.orbitalElements[6] = this.getTrueAnomaly();
-		this.orbitalElements[5] = this.getMeanAnomaly();
+		this.orbitalElements[5] = this.getTrueAnomaly();
+		this.orbitalElements[6] = this.getMeanAnomaly();
 	}
 
 	/**

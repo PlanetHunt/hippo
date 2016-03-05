@@ -23,6 +23,8 @@ thrustDirection = [0;0;0];
 addEventToOrekitDateTimeDetector = 0;
 eventTypes = 0;
 global counter recentOrbit initialize; %pouyans variable
+global apsideCounter
+apsideCounter = 0;
 initialize = 1;
 counter = 0;
 recentOrbit = '';
@@ -74,14 +76,14 @@ oem = zeros(7,1);
 %typeOfSimulation = 'propogateChief'; %note- should probably use a fixed
 %typeOfSimulation = 'propogateDeputy';
 %time step
-% typeOfSimulation = 'propogateDeputyStationKeep';
-typeOfSimulation = 'propogateDeputyFormationFlight'; %make sure a chief has been propogated fires
+ %typeOfSimulation = 'propogateDeputyStationKeep';
+ typeOfSimulation = 'propogateDeputyFormationFlight'; %make sure a chief has been propogated fires
 switch typeOfSimulation
     case 'propogateChief'
         %oec = setChiefOrbitalElements(2); %Chief OE from Schaubs paper =2
         
         %% OE Chief OSC
-        [oec,startingDate] = setChiefOrbitalElements(mu,6);
+        [oec,startingDate] = setChiefOrbitalElements(6);
         oec=oec';
         oecm = [0;0;0;0;0;0;0];
         StartingOE = [oec(1:5)',oec(7)]; %label the chief as deputy. (orekit will propogate the deputy only)
@@ -99,9 +101,10 @@ switch typeOfSimulation
         oedm = [0;0;0;0;0;0;0];
         StartingOE = [oed(1:5)',oed(7)]; %label the chief as deputy. (orekit will propogate the deputy only)
         
-        [oec,~] = setChiefOrbitalElements(mu,6);
+        [oec,~] = setChiefOrbitalElements(6);
+        oec=oec';
         oecm = convertOscOeToMeanOe(oec);
-        oecm = oecm';
+        
     case 'propogateDeputyFormationFlight' %use the same fixed time step that was used to propogate the chief
        [oed,startingDate] = setDeputyOrbitalElements(mu,6);
         oed=oed';
@@ -114,10 +117,10 @@ end
 %thruster operating point
 Isp = 2000;%s
 equivalentISP = Isp;
-equivalentThrust = 1;% numThrusters*thrust;
-numberOfThrusters = 1000;
+equivalentThrust = 0.1;% numThrusters*thrust;
+numberOfThrusters = 1;
 numThrusters = numberOfThrusters;
-thrust = 19e-6; %N per thruster
+thrust = 0.1; %N per thruster
 thrustVal = thrust; %this is the copy of the variable returned to orekit (cant send a global variable)
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;

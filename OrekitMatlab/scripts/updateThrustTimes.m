@@ -22,12 +22,16 @@ switch eventID
     case 2 %B
         dV = FTCCalcApogeeDv(deputyMeanOE, orbitElementsError);
         true_anomalyNode = pi;
-    case 3 %C
-        dV = FTCCalcLatArgZeroDv(deputyMeanOE, orbitElementsError);
-        true_anomalyNode = wrapTo2Pi(0-omegam);
-    case 4 %D
-        dV = FTCCalcLatArgNinetyDv(deputyMeanOE, orbitElementsError);
-        true_anomalyNode = wrapTo2Pi(pi/2-omegam);
+    case 3
+        dV = FTCCalcLatArg180Dv(deputyMeanOE, orbitElementsError);
+        thetaCritical = calcCriticalLatArg(deputyMeanOE,orbitElementsError);
+        true_anomalyNode = wrapTo2Pi(thetaCritical-omegam);
+%     case 3 %C
+%         dV = FTCCalcLatArgZeroDv(deputyMeanOE, orbitElementsError);
+%         true_anomalyNode = wrapTo2Pi(0-omegam);
+%     case 4 %D
+%         dV = FTCCalcLatArgNinetyDv(deputyMeanOE, orbitElementsError);
+%         true_anomalyNode = wrapTo2Pi(pi/2-omegam);
 end
     %calc Burn duration for this node (s)
     burnDuration = calcBurnTime(dV, currentMass, Isp, thrust, burnTimeLimit, numThrusters); % burn duration

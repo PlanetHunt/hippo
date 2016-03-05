@@ -168,37 +168,40 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 			this.dataList.clear();
 		}
 		double[] thrustDirection = { 0, 0, 0 };
+		state.getAttitude().getReferenceFrame();
 		/* Run the Matlab function at every step. */
 		for (MatlabFunctionType ft : this.matlabFunctions) {
 			if (!ft.getAtOnce()) {
 				if (ft == MatlabFunctionType.MATLAB_STEP_HANDLER) {
-					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 4);
-					double matlabFire = (((double[]) result[0])[0]);
-					if (matlabFire == 1.0) {
-						thrustDirection[0] = ((double[]) result[1])[0];
-						thrustDirection[1] = ((double[]) result[1])[1];
-						thrustDirection[2] = ((double[]) result[1])[2];
-						double[] startDateArray = ((double[]) result[2]);
-						double[] endDateArray = ((double[]) result[3]);
-						this.prop.setDirection(new Vector3D(thrustDirection));
-						AbsoluteDate startDate = new AbsoluteDate((int) startDateArray[0], (int) startDateArray[1],
-								(int) startDateArray[2], (int) startDateArray[3], (int) startDateArray[4],
-								startDateArray[5], TimeScalesFactory.getUTC());
-						AbsoluteDate endDate = new AbsoluteDate((int) endDateArray[0], (int) endDateArray[1],
-								(int) endDateArray[2], (int) endDateArray[3], (int) endDateArray[4], endDateArray[5],
-								TimeScalesFactory.getUTC());
-						((DateDetector) this.prop.getEventsDetectors()[0]).addEventDate(startDate);
-						((DateDetector) this.prop.getEventsDetectors()[1]).addEventDate(endDate);
-						// this.thrustEquation.setFire(this.fire);
-						// this.fire = false;
-						System.out.println("Flag=1 (setting thrustStartWindow =		"+startDate.toString()+" thrustStartWindow 	= 	"+endDate.toString()+" Direction 	= 	"+new Vector3D(thrustDirection).toString());
-						//this.thrustEquation.setThrustDirection(thrustDirection);
-					} else {
-						//this.thrustEquation.setFire(false);
-						//thrustDirection[0] = 0;
-						//thrustDirection[1] = 0;
-						//thrustDirection[2] = 0;
-						//this.thrustEquation.setThrustDirection(thrustDirection);
+					Object[] result = this.runMatlabFunction(ft.getFunctionName(), 1);
+					for (int i = 0; i < ((double[]) result[0]).length; i = i + 16) {
+						double matlabFire = (((double[]) result[0])[i]);
+						if (matlabFire == 1.0) {
+
+							thrustDirection[0] = ((double[]) result[0])[i + 1];
+							thrustDirection[1] = ((double[]) result[0])[i + 2];
+							thrustDirection[2] = ((double[]) result[0])[i + 3];
+							AbsoluteDate startDate = new AbsoluteDate((int) (((double[]) result[0])[i + 4]),
+									(int) (((double[]) result[0])[i + 5]), (int) (((double[]) result[0])[i + 6]),
+									(int) (((double[]) result[0])[i + 7]), (int) (((double[]) result[0])[i + 8]),
+									(((double[]) result[0])[i + 9]), TimeScalesFactory.getUTC());
+							AbsoluteDate endDate = new AbsoluteDate((int) (((double[]) result[0])[i + 10]),
+									(int) (((double[]) result[0])[i + 11]), (int) (((double[]) result[0])[i + 12]),
+									(int) (((double[]) result[0])[i + 13]), (int) (((double[]) result[0])[i + 14]),
+									(((double[]) result[0])[i + 15]), TimeScalesFactory.getUTC());
+							this.prop.setDirection(new Vector3D(thrustDirection));
+							((DateDetector) this.prop.getEventsDetectors()[0]).addEventDate(startDate);
+							((DateDetector) this.prop.getEventsDetectors()[1]).addEventDate(endDate);
+							System.out.println("Flag=1 (setting thrustStartWindow =		" + startDate.toString()
+									+ " thrustStartWindow 	= 	" + endDate.toString() + " Direction 	= 	"
+									+ new Vector3D(thrustDirection).toString());
+						} else {
+							// this.thrustEquation.setFire(false);
+							// thrustDirection[0] = 0;
+							// thrustDirection[1] = 0;
+							// thrustDirection[2] = 0;
+							// this.thrustEquation.setThrustDirection(thrustDirection);
+						}
 					}
 				} else {
 					Object[] a = this.runMatlabFunction(ft.getFunctionName(), 1);
@@ -206,7 +209,9 @@ public class MatlabPushHandler implements OrekitFixedStepHandler {
 					System.out.println(c);
 				}
 			}
+
 		}
+
 	}
 
 	/**

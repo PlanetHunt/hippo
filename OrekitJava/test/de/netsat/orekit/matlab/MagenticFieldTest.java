@@ -1,7 +1,10 @@
 package de.netsat.orekit.matlab;
 
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -13,6 +16,7 @@ import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 
 import de.netsat.orekit.NetSatConfiguration;
@@ -95,6 +99,8 @@ public class MagenticFieldTest {
 								new PVCoordinates(new Vector3D(10, 10), new Vector3D(1, 2)),
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				startingMass);
+
+		//SpacecraftState initialState = new SpacecraftState(keplerOrbit, lof.getAttitude(keplerOrbit, keplerOrbit.getDate(), keplerOrbit.getFrame()));
 		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
 		// NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust",
 		// "experimental", fire, (int) thrusterNumber,
@@ -111,6 +117,7 @@ public class MagenticFieldTest {
 		//numericPropagator.addEventDetector(eventCal.getLatArg(90));
 		// numericPropagator.addAdditionalEquations(thrustEq);
 		numericPropagator.addForceModel(holmesFeatherstone);
+		numericPropagator.setAttitudeProvider(new LofOffset(initialState.getFrame(), LOFType.LVLH, RotationOrder.XYZ, 0, 0, 0));
 		numericPropagator.addForceModel(atmosphericDrag);
 		numericPropagator.addForceModel(prop);
 		numericPropagator.setInitialState(initialState);

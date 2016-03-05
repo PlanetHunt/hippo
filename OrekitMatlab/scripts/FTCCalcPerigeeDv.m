@@ -1,4 +1,4 @@
-function [ dV_vector ] = FTCCalcPerigeeDv( oeDeputy, oeerror )
+function [ dV_vector_Perigee ] = FTCCalcPerigeeDv( oeDeputy, oeerror )
 %FTCCalcPerigeeDv calculates the thrust (delta V) required at perigee
 %   Based on the four thrust controller (FTC) described in Hans-Peter
 %   Schaub's paper "Impulsive Feeback Control to Establish Specific Mean Orbit
@@ -39,7 +39,9 @@ delta_v_x = -(n*a/4)*(((1+e)^2/eta)*(d_omega + d_raan*cos(i))+d_M); %(16)
 %along track impulse delta_v_AT_p
 delta_v_y = (n*a*eta/4)*(d_a/a+d_e/(1+e)); %(24)
 
-dV_vector = [delta_v_x; delta_v_y; 0];
+
+%delta_v_y_APOGEE = (n*a*eta/4)*(d_a/a-d_e/(1-e))
+dV_vector_Perigee = [0*-delta_v_x; -delta_v_y; 0];
 end
 
 

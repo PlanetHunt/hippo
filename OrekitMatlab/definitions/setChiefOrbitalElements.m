@@ -39,5 +39,5 @@ switch chiefNr
         
         date = [2014, 01, 01, 00, 00, 00.000];
 end
-% chiefMeanOE=chiefMeanOE';
+ chiefMeanOE=chiefMeanOE';
 end

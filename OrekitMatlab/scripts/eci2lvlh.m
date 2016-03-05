@@ -1,10 +1,10 @@
-function [R, rlvlh, vlvlh, xvlvlh] = eci2lvlh(reci, veci, xveci)
-yaw = -reci/mag(reci);
+function [R] = eci2lvlh(reci, veci)
+yaw = -reci/norm(reci);
 temp = cross(veci,reci);
-pitch = temp/mag(temp);
+pitch = temp/norm(temp);
 roll = cross(pitch, yaw);
 R = [roll'; pitch'; yaw'];
-rlvlh = R*reci;
-vlvlh = R*veci;
-xvlvlh = R*xveci;
+% rlvlh = R*reci;
+% vlvlh = R*veci;
+% xvlvlh = R*xveci;
 end
