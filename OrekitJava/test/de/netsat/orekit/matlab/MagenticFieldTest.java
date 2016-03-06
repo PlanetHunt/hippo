@@ -60,8 +60,8 @@ public class MagenticFieldTest {
 		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
 		mph.setVariableInMatlab("muValue", mu);
 		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 13);
-		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
-		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
+		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 
 		/* Initial Orbit Settings */
 		double[] initialDate = ((double[]) initialVars[0]);
@@ -121,7 +121,7 @@ public class MagenticFieldTest {
 		numericPropagator.addForceModel(atmosphericDrag);
 		numericPropagator.addForceModel(prop);
 		numericPropagator.setInitialState(initialState);
-		numericPropagator.setMasterMode(stepSize, mph);
+		numericPropagator.setMasterMode(maph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
 		return finalState;
 

@@ -1,4 +1,4 @@
-function [ dV_vector ] = FTCCalcLatArg180Dv( oeDeputy, oeerror )
+function [ dV_vector_LatArg ] = FTCCalcLatArg180Dv( oeDeputy, oeerror )
 %FTCCalcLatArgZeroDv calculates the thrust (delta V) required at the point
 %where the argument of lattitude = 0
 %   Based on the four thrust controller (FTC) described in Hans-Peter
@@ -26,6 +26,21 @@ d_i = oeerror(3);
 d_raan = oeerror(5);
 %d_true_anomaly = oeerror(6);
 %d_M = oeerror(7);
+if(d_a<tolerances(1))
+    d_a = 0;
+end
+if(d_e<tolerances(2))
+    d_e = 0;
+end
+if(d_omega<tolerances(4))
+    d_omega = 0;
+end
+if(d_raan<tolerances(5))
+    d_raan = 0;
+end
+if(d_M<tolerances(7))
+    d_M = 0;
+end
 
 true_latitude = omega + true_anomaly;
 eta = sqrt(1-e^2);
@@ -35,9 +50,9 @@ r = a*(1-e^2)/(1+e*cos(true_anomaly)); %scalar orbit radius
 
 %% thrust 3 (D) - true latitude = 0
 %delta_vz = d_raan * ((h*sin(i)/(r*sin(true_latitude))));
-delta_v_z = d_i*h/(r*cos(true_latitude)) %(6)
-delta_v_z = (h/r)*sqrt(d_i^2+d_raan^2*(sin(i))^2);
-dV_vector = [0; 0; delta_v_z];
+% delta_v_z = d_i*h/(r*cos(true_latitude)) %(6)
+delta_v_z = (h/r)*sqrt(d_i^2+d_raan^2*(sin(i))^2); %sign(d_i)*
+dV_vector_LatArg = [0; 0; delta_v_z];
 end
 
 

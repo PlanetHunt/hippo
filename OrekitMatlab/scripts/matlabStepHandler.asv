@@ -23,7 +23,7 @@ global AThrustVector BThrustVector CThrustVector DThrustVector;
 global Isp thrust;
 global pos vel acc;
 global netThrustVector
-
+global oecmMatchedTime;
 global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
 global typeOfSimulation;
 global oe oem;
@@ -75,7 +75,8 @@ switch typeOfSimulation
         oed = oe;
         oedm = oem;
         stepIndex = size(oedm,2);
-        oeError(:,end+1) = oedm(:,end)-oecm(:,stepIndex);
+        oecmMatchedTime(stepIndex,:) = interp1(chiefTimeVectorNum,oecm',datenum(current_time),'pchip');
+        oeError(:,end+1) = oedm(:,end)-oecmMatchedTime(stepIndex,:)';
 %         
 %         oeError(3,end) = 0; %dont correct i errors
 %         oeError(4,end) = 0; %AoP error = 0
@@ -106,7 +107,7 @@ preWindowDetectionRange = 4*maxStep;
 
 % check if we are in a thrusting period
 %% check A window 
-if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRange),tABoostEndCommand(end))) 
+if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRange),tABoostEndCommand(end)+seconds(50*60))) 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVA(:,end+1) = dVA(:,end); %=last value
@@ -132,13 +133,9 @@ if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRan
         if(addEventToOrekitDateTimeDetector(end)==1)%if its this events turn to take place
             %set the variables to return to orekit
             addEventToOrekitDateTimeDetectorFlag = 1;
-            dVA(:,end)
-            dVB(:,end)
+
             eventThrustDirection = thrustDirection(:,end)';
-%             if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
-%                 eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
-%             end
- 
+
               %% code to alternate X and Y thrusts
 %             if(apsideCounter == 0 || apsideCounter == 1)
 %                 %only thrust Y thrust
@@ -151,7 +148,10 @@ if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRan
 %                 eventThrustDirection(1) = 0;
 %             end
 %              apsideCounter=apsideCounter+1;
-
+            if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
+                eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
+            end
+ 
             eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
             eventThrustWindowEnd = datevec(thrustWindowEnd(end));
             returnMatrix = [returnMatrix, addEventToOrekitDateTimeDetectorFlag,eventThrustDirection,eventThrustWindowStart,eventThrustWindowEnd];
@@ -166,7 +166,7 @@ else
 end
 
 %% check B Zone 
-if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRange),tBBoostEndCommand(end)))
+if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRange),tBBoostEndCommand(end)+seconds(50*60)))
 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
@@ -204,7 +204,10 @@ if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRan
 %                 eventThrustDirection(1) = 0;
 %             end
 %             apsideCounter=apsideCounter+1;
-             
+            %%normalize thrust direction
+            if(norm(eventThrustDirection) ~= 0)%avoid dividing by zero
+                eventThrustDirection= eventThrustDirection/norm(eventThrustDirection); %normalized to simply get a unit vector in the thrust direction
+            end             
             eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
             eventThrustWindowEnd = datevec(thrustWindowEnd(end));
             returnMatrix = [returnMatrix, addEventToOrekitDateTimeDetectorFlag,eventThrustDirection,eventThrustWindowStart,eventThrustWindowEnd];
@@ -220,7 +223,7 @@ else
 end
     
 %% check C window
-if(isbetween(current_time,tCBoostStartCommand(end)-seconds(preWindowDetectionRange),tCBoostEndCommand(end)+seconds(10*60)))
+if(isbetween(current_time,tCBoostStartCommand(end)-seconds(preWindowDetectionRange),tCBoostEndCommand(end)+seconds(50*60)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVC(:,end+1) = dVC(:,end); %=last value
@@ -336,6 +339,7 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 
 
 if(last_step_flag == 1)
+    case 'propogateDeputyFormationFlight'
     %plotBasicOe;
     %plotMeanOeErrors;
     plotCommandsToOrekit;

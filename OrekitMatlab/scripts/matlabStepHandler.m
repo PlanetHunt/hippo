@@ -1,6 +1,6 @@
 % function [ addEventToOrekitDateTimeDetectorFlag, eventThrustDirection, eventThrustWindowStart, eventThrustWindowEnd ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
 function [ returnMatrix ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
-
+global timerVal;
 %MATLABSTEPHANDLER function to be called at every time step
 %  1 event_A     perigee
 %  2 event_B     apogee
@@ -23,11 +23,12 @@ global AThrustVector BThrustVector CThrustVector DThrustVector;
 global Isp thrust;
 global pos vel acc;
 global netThrustVector
-
+global oecmMatchedTime chiefTimeVectorNum;
 global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
 global typeOfSimulation;
 global oe oem;
 global apsideCounter;
+global tolerances;
 current_time = datetime(timestamp);
 timeVector=[timeVector;current_time];
 mass = [mass; current_mass];
@@ -75,7 +76,8 @@ switch typeOfSimulation
         oed = oe;
         oedm = oem;
         stepIndex = size(oedm,2);
-        oeError(:,end+1) = oedm(:,end)-oecm(:,stepIndex);
+        oecmMatchedTime(stepIndex,:) = interp1(chiefTimeVectorNum,oecm',datenum(current_time),'pchip');
+        oeError(:,end+1) = oedm(:,end)-oecmMatchedTime(stepIndex,:)';
 %         
 %         oeError(3,end) = 0; %dont correct i errors
 %         oeError(4,end) = 0; %AoP error = 0
@@ -100,13 +102,13 @@ inAZone(end+1) = inAZone(end);%copy last values
 inBZone(end+1) = inBZone(end);
 inCZone(end+1) = inCZone(end);
 inDZone(end+1) = inDZone(end);
-preWindowDetectionRange = 4*maxStep;
+preWindowDetectionRange = 3*maxStep;
 
 %theta=oedm(4,end)+oedm(6,end)
 
 % check if we are in a thrusting period
 %% check A window 
-if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRange),tABoostEndCommand(end))) 
+if(isbetween(current_time,tABoostStartCommand(end)-seconds(preWindowDetectionRange),tABoostEndCommand(end)+seconds(50*60))) 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVA(:,end+1) = dVA(:,end); %=last value
@@ -165,7 +167,7 @@ else
 end
 
 %% check B Zone 
-if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRange),tBBoostEndCommand(end)))
+if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRange),tBBoostEndCommand(end)+seconds(50*60)))
 
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
@@ -209,6 +211,7 @@ if(isbetween(current_time,tBBoostStartCommand(end)-seconds(preWindowDetectionRan
             end             
             eventThrustWindowStart = datevec(thrustWindowStart(end)); %orekit needs a date array, not a matlab datetime object
             eventThrustWindowEnd = datevec(thrustWindowEnd(end));
+           
             returnMatrix = [returnMatrix, addEventToOrekitDateTimeDetectorFlag,eventThrustDirection,eventThrustWindowStart,eventThrustWindowEnd];
 
         end
@@ -222,7 +225,7 @@ else
 end
     
 %% check C window
-if(isbetween(current_time,tCBoostStartCommand(end)-seconds(preWindowDetectionRange),tCBoostEndCommand(end)+seconds(10*60)))
+if(isbetween(current_time,tCBoostStartCommand(end)-seconds(preWindowDetectionRange),tCBoostEndCommand(end)+seconds(50*60)))
     % we are in the thrustingwindow, so keep thrust, and start and end
     % times constant
     dVC(:,end+1) = dVC(:,end); %=last value
@@ -338,6 +341,8 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 
 
 if(last_step_flag == 1)
+    elapsedTime = toc(timerVal)
+    oecmMatchedTime = oecmMatchedTime';
     %plotBasicOe;
     %plotMeanOeErrors;
     plotCommandsToOrekit;

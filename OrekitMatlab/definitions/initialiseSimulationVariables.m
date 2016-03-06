@@ -1,5 +1,7 @@
 function [startingDate,StartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust, max_check] = initialiseSimulationVariables(muValue)
 %% global variables
+global timerVal ;
+timerVal = tic
 global netThrustVector;
 global timeVector;
 global Isp mass;
@@ -54,7 +56,8 @@ inAZone = 0;
 inBZone = 0;
 inCZone = 0;
 inDZone = 0; 
-
+global oecmMatchedTime;
+oecmMatchedTime = [0 0 0 0 0 0 0];
 dVA = [0;0;0]; dVB = [0;0;0]; dVC = [0;0;0]; dVD = [0;0;0]; 
 [position_tolerance, min_step, max_step, duration, step_size, ~, max_check] = setNumericalPropagatorSettings();
 global stepSize maxStep maxCheck;
@@ -66,7 +69,8 @@ global pos vel;
 pos = [0;0;0];
 vel = [0;0;0];
 mass = 0;
-
+global tolerances;
+tolerances = [1.2; 0.0006; deg2rad(0.006); 0; 0; 0; 0]; %a e i omega raan ta ma
 %% change here to propogate the chief first
 global oe oem;
 %initialise propogated OE
@@ -75,9 +79,8 @@ oem = zeros(7,1);
 
 %typeOfSimulation = 'propogateChief'; %note- should probably use a fixed
 %typeOfSimulation = 'propogateDeputy';
-%time step
- %typeOfSimulation = 'propogateDeputyStationKeep';
- typeOfSimulation = 'propogateDeputyFormationFlight'; %make sure a chief has been propogated fires
+%typeOfSimulation = 'propogateDeputyStationKeep';
+typeOfSimulation = 'propogateDeputyFormationFlight'; %make sure a chief has been propogated fires
 switch typeOfSimulation
     case 'propogateChief'
         %oec = setChiefOrbitalElements(2); %Chief OE from Schaubs paper =2
