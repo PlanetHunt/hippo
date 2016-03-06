@@ -71,9 +71,7 @@ public class MagenticFieldTest {
 
 		/* Set the data types to be set to Matlab */
 		final SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
-				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION, SensorDataType.ACC,
-				SensorDataType.DETECT_APOGEE, SensorDataType.DETECT_LATARG_NINETY, SensorDataType.DETECT_LATARG_ZERO,
-				SensorDataType.DETECT_PERIGEE };
+				SensorDataType.CURRENT_MASS };
 
 		/* Set the Matlab functions that should run */
 		final MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
@@ -110,7 +108,7 @@ public class MagenticFieldTest {
 		/* Propulsion System Initiate */
 		PropulsionSystem propulsionSystem = new PropulsionSystem(
 				new AbsoluteDate(1, 1, 1, 0, 0, 0, constants.getTimeScale()), 100, equivalentThrust, equivalentIsp,
-				new Vector3D(0, 0, 0), maxCheck, emptyMass);
+				new Vector3D(1, 0, 0), maxCheck, emptyMass, mi);
 
 		/* Create the Matlab push Handler */
 		final MatlabFixedPushHandler mph;
@@ -121,7 +119,8 @@ public class MagenticFieldTest {
 			numericPropagator.setMasterMode(maph);
 			mph = null;
 		} else {
-			mph = new MatlabFixedPushHandler(mi, options, matlabFunctions, false, propulsionSystem, eventCal, constants);
+			mph = new MatlabFixedPushHandler(mi, options, matlabFunctions, false, propulsionSystem, eventCal,
+					constants);
 			numericPropagator.setMasterMode(stepSize, mph);
 			maph = null;
 		}

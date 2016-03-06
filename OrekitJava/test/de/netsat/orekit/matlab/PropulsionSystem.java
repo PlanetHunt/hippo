@@ -18,6 +18,8 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import matlabcontrol.MatlabInvocationException;
+
 /**
  * This class implements a simple maneuver with constant thrust.
  * <p>
@@ -66,6 +68,8 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 
 	private double emptyMass;
 
+	private final MatlabInterface mi;
+
 	/**
 	 * Simple constructor for a constant direction and constant thrust.
 	 * 
@@ -78,7 +82,7 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 	 * @param emptyMass
 	 */
 	public PropulsionSystem(final AbsoluteDate date, final double duration, final double thrust, final double isp,
-			final Vector3D direction, double maxCheck, double emptyMass) {
+			final Vector3D direction, double maxCheck, double emptyMass, final MatlabInterface mi) {
 		super(THRUST, FLOW_RATE);
 		if (duration >= 0) {
 			this.startDate = date;
@@ -95,6 +99,7 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 		this.flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
 		this.direction = direction.normalize();
 		this.emptyMass = emptyMass;
+		this.mi = mi;
 		firing = false;
 
 	}
@@ -139,8 +144,6 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 			// compute flow rate
 			adder.addMassDerivative(flowRate);
 
-		} else {
-			System.out.println("Run out of Fuel: " + s.getDate());
 		}
 
 	}
@@ -230,6 +233,11 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 				return EventHandler.Action.RESET_DERIVATIVES;
 			} else {
 				System.out.println("Last Step run out of Fuel:" + s.getDate());
+				try {
+					mi.getProxy().setVariable("last_step_flag", 1);
+				} catch (MatlabInvocationException e) {
+					e.printStackTrace();
+				}
 				return EventHandler.Action.STOP;
 			}
 		}
@@ -255,6 +263,11 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 				return EventHandler.Action.RESET_DERIVATIVES;
 			} else {
 				System.out.println("Last Step run out of Fuel:" + s.getDate());
+				try {
+					mi.getProxy().setVariable("last_step_flag", 1);
+				} catch (MatlabInvocationException e) {
+					e.printStackTrace();
+				}
 				return EventHandler.Action.STOP;
 			}
 		}

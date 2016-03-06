@@ -1,5 +1,5 @@
 % function [ addEventToOrekitDateTimeDetectorFlag, eventThrustDirection, eventThrustWindowStart, eventThrustWindowEnd ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
-function [ returnMatrix ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
+function [ returnMatrix ] = matlabStepHandler( orbital_elements, timestamp, current_mass, last_step_flag )
 global timerVal;
 %MATLABSTEPHANDLER function to be called at every time step
 %  1 event_A     perigee
@@ -21,7 +21,7 @@ global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartC
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 global AThrustVector BThrustVector CThrustVector DThrustVector;
 global Isp thrust;
-global pos vel acc;
+global pos vel;
 global netThrustVector
 global oecmMatchedTime chiefTimeVectorNum;
 global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
@@ -32,10 +32,6 @@ global tolerances;
 current_time = datetime(timestamp);
 timeVector=[timeVector;current_time];
 mass = [mass; current_mass];
-pos = [pos, position' ];
-vel = [vel, velocity' ];
-acc = [acc, acceleration'];
-
 
 %convert oscilating orbital elements to mean orbital elements
 % if(size(timeVector,1)==2) %this is the time zero timestep

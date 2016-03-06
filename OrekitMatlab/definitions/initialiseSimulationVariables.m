@@ -1,4 +1,4 @@
-function [startingDate,StartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust, max_check] = initialiseSimulationVariables(muValue)
+function [startingDate,StartingOE, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust, max_check, propogationType, isForceModelsActive, isValidationFlag, emptyMass] = initialiseSimulationVariables(muValue)
 %% global variables
 global timerVal ; timerVal = tic;
 global netThrustVector;
@@ -6,6 +6,7 @@ global timeVector;
 global Isp mass;
 global mu thrust numThrusters;
 global req j2 g thrustDurationLimit;
+
 % global position_tolerance min_step max_step duration step_size choiceofProp;
 %global ii %loop variable
 global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
@@ -112,7 +113,7 @@ switch typeOfSimulation
         oed=oed';
         oedm = [0;0;0;0;0;0;0];
         StartingOE = [oed(1:5)',oed(7)]; %label the chief as deputy. (orekit will propogate the deputy only)   
-
+        importChief();
         %chief OEs should already exist in workspace, since we already ran propogateChief
 end
 %%
@@ -127,7 +128,7 @@ thrust = 0.1; %N per thruster
 thrustVal = thrust; %this is the copy of the variable returned to orekit (cant send a global variable)
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
-
+emptyMass = 0.7;
 startingMass = 1; %assume initial mass of sc is 1kg + the fuel of one thruster
 global nextWindowStart nextWindowEnd nextWindowThrustDirection nextWindowType addToThrustCommandQue flagSentForNextWindow;
 nextWindowStart = datetime(0001,01,01,000,00,00);
@@ -142,3 +143,6 @@ global allWindowTypes
 allWindowTypes = [0;0;0;0];
 global latitudeArgument
 latitudeArgument = 0;
+isValidationFlag = 0; % enable apside and true latitude detection (disables time detector)
+isForceModelsActive = 1; %drag and stuff on
+propogationType = 1; %1 - adaptive step 0-runge kutta fixed step

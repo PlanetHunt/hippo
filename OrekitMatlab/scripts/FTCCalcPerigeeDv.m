@@ -56,7 +56,7 @@ end
 delta_v_x = -(n*a/4)*(((1+e)^2/eta)*(d_omega + d_raan*cos(i))+d_M); %(16)
 % delta_v_x = 0.2276;
 %along track impulse delta_v_AT_p
- delta_v_y = (n*a*eta/4)*(d_a/a+d_e/(1+e)); %(24)
+delta_v_y = (n*a*eta/4)*(d_a/a+d_e/(1+e)); %(24)
 
 
 %delta_v_y_APOGEE = (n*a*eta/4)*(d_a/a-d_e/(1-e))

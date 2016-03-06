@@ -39,7 +39,7 @@ public abstract class MatlabPushHandler {
 		this.propulsionSystem = propulsionSystem;
 		this.dataList = new HashSet<MatlabData>();
 		this.constants = constants;
-		this.debug = false;
+		this.debug = true;
 	}
 
 	/**
