@@ -4,6 +4,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
@@ -13,49 +14,34 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 public class ConstantValues {
 
-	private double mu;
-	private OneAxisEllipsoid oae;
-	private Frame itrf;
-	private TimeScale timescale;
-	private PVCoordinatesProvider sun;
-	private PVCoordinatesProvider earth;
+	private final double mu;
+	private final double earthRaduis;
+	private final double earthFlattening;
+	private final OneAxisEllipsoid oae;
+	private final Frame eci;
+	private final TimeScale timeScale;
+	private final PVCoordinatesProvider sun;
+	private final PVCoordinatesProvider earth;
+	private final NormalizedSphericalHarmonicsProvider gravityProvider;
 
 	public ConstantValues() throws OrekitException {
-		this.setMu();
-		this.setITRF();
-		this.setBodyEllipsoid();
-		this.setTimeScale();
-		this.setEarth();
-		this.setSun();
-	}
-
-	/**
-	 * Sets the mu in constants.
-	 * 
-	 * @throws OrekitException
-	 */
-	public void setMu() throws OrekitException {
-		this.mu = GravityFieldFactory.getNormalizedProvider(2, 0).getMu();
+		this.earthRaduis = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+		this.earthFlattening = Constants.WGS84_EARTH_FLATTENING;
+		this.gravityProvider = GravityFieldFactory.getNormalizedProvider(10, 10);
+		this.mu = gravityProvider.getMu();
+		this.eci = FramesFactory.getEME2000();
+		this.oae = new OneAxisEllipsoid(this.earthRaduis, this.earthFlattening, this.eci);
+		this.sun = CelestialBodyFactory.getSun();
+		this.earth = CelestialBodyFactory.getEarth();
+		this.timeScale = TimeScalesFactory.getUTC();
 	}
 
 	/**
 	 * 
 	 * @return mu.
 	 */
-	public double getMu() {
+	public final double getMu() {
 		return this.mu;
-	}
-
-	/**
-	 * Sets the One Axis Body Ellipsoid with WGS84
-	 */
-	public void setBodyEllipsoid() {
-		try {
-			this.oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-					this.getITRF());
-		} catch (NullPointerException e) {
-			System.out.println(e);
-		}
 	}
 
 	/**
@@ -63,18 +49,8 @@ public class ConstantValues {
 	 * 
 	 * @return {@link OneAxisEllipsoid}
 	 */
-	public OneAxisEllipsoid getBodyEllipsoid() {
+	public final OneAxisEllipsoid getBodyEllipsoid() {
 		return this.oae;
-	}
-
-	/**
-	 * Set the Frame Type.
-	 * 
-	 * @throws OrekitException
-	 */
-	public void setITRF() throws OrekitException {
-		//this.itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-		this.itrf = FramesFactory.getEME2000();
 	}
 
 	/**
@@ -82,18 +58,8 @@ public class ConstantValues {
 	 * 
 	 * @return
 	 */
-	public Frame getITRF() {
-		return this.itrf;
-	}
-
-	/**
-	 * Set the timescale.
-	 * 
-	 * @throws OrekitException
-	 * 
-	 */
-	public void setTimeScale() throws OrekitException {
-		this.timescale = TimeScalesFactory.getUTC();
+	public final Frame getEci() {
+		return this.eci;
 	}
 
 	/**
@@ -101,17 +67,8 @@ public class ConstantValues {
 	 * 
 	 * @return {@link TimeScale}
 	 */
-	public TimeScale getTimeScale() {
-		return this.timescale;
-	}
-
-	/**
-	 * set the earth
-	 * 
-	 * @throws OrekitException
-	 */
-	public void setEarth() throws OrekitException {
-		this.earth = CelestialBodyFactory.getEarth();
+	public final TimeScale getTimeScale() {
+		return this.timeScale;
 	}
 
 	/**
@@ -119,17 +76,8 @@ public class ConstantValues {
 	 * 
 	 * @return {@link PVCoordinatesProvider} earth
 	 */
-	public PVCoordinatesProvider getEarth() {
+	public final PVCoordinatesProvider getEarth() {
 		return this.earth;
-	}
-
-	/**
-	 * Set the sun
-	 * 
-	 * @throws OrekitException
-	 */
-	public void setSun() throws OrekitException {
-		this.sun = CelestialBodyFactory.getSun();
 	}
 
 	/**
@@ -137,8 +85,35 @@ public class ConstantValues {
 	 * 
 	 * @return {@link PVCoordinatesProvider} sun
 	 */
-	public PVCoordinatesProvider getSun() {
+	public final PVCoordinatesProvider getSun() {
 		return this.sun;
+	}
+
+	/**
+	 * Returns the Earth radius from WGS84 Model
+	 * 
+	 * @return {@link Double}
+	 */
+	public final double getEarthRadius() {
+		return this.earthRaduis;
+	}
+
+	/**
+	 * Returns the Earth flattening from WGS84 Model
+	 * 
+	 * @return {@link Double}
+	 */
+	public final double getEarthFlattening() {
+		return this.earthFlattening;
+	}
+
+	/**
+	 * Returns the gravity Provider for the propagation.
+	 * 
+	 * @return {@link NormalizedSphericalHarmonicsProvider}
+	 */
+	public final NormalizedSphericalHarmonicsProvider getGravityProvider() {
+		return this.gravityProvider;
 	}
 
 }

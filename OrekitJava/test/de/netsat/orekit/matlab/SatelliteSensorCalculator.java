@@ -385,7 +385,7 @@ public class SatelliteSensorCalculator {
 	 * @throws OrekitException
 	 */
 	public void setTimeStampedPVCoordinates() throws OrekitException {
-		this.tsc = this.state.getPVCoordinates(this.constants.getITRF());
+		this.tsc = this.state.getPVCoordinates(this.constants.getEci());
 	}
 
 	/**
@@ -575,7 +575,7 @@ public class SatelliteSensorCalculator {
 		EventDetector eclipseDetector = this.eventCal.getEclipseEventDetecor();
 		if (eclipseDetector.g(this.state) > 0) {
 			TimeStampedPVCoordinates sunPos = CelestialBodyFactory.getSun().getPVCoordinates(this.getDate(),
-					this.constants.getITRF());
+					this.constants.getEci());
 			this.sunPos = sunPos.getPosition();
 
 		} else {
@@ -632,7 +632,7 @@ public class SatelliteSensorCalculator {
 	 * @throws OrekitException
 	 */
 	public GeodeticPoint getLLA() throws OrekitException {
-		return this.constants.getBodyEllipsoid().transform(this.getPositionVector(), this.constants.getITRF(),
+		return this.constants.getBodyEllipsoid().transform(this.getPositionVector(), this.constants.getEci(),
 				this.getDate());
 	}
 

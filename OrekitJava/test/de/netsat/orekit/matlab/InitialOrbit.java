@@ -14,39 +14,39 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 
 import matlabcontrol.MatlabInvocationException;
 
 public class InitialOrbit {
 	// constant values are set the same for the whole project to remove the
 	// Inconsistencies.
-	private ConstantValues constants;
-	private double[] orbitParams;
-	private double[] dateParams;
-	private MatlabInterface mi;
+	private final ConstantValues constants;
+	private final double[] orbitParams;
+	private final double[] dateParams;
 
 	/**
 	 * 
 	 * @param orbitParams
-	 * @throws OrekitException 
+	 * @throws OrekitException
 	 */
-	public InitialOrbit(double[] orbitParams, double[] dateParams, MatlabInterface mi) throws OrekitException {
-		this.constants = new ConstantValues();
+	public InitialOrbit(final double[] orbitParams, final double[] dateParams, final ConstantValues constants)
+			throws OrekitException {
+		this.constants = constants;
 		this.orbitParams = orbitParams;
-		this.mi = mi;
 		this.dateParams = dateParams;
 	}
 
 	/**
+	 * Return the date parameters.
 	 * 
-	 * @param orbitParams
+	 * @return
 	 */
-	public void setOrbitParams(double[] orbitParams) {
-		this.orbitParams = orbitParams;
+	public double[] getDateParams() {
+		return this.dateParams;
 	}
 
 	/**
+	 * Returns the orbital parameters.
 	 * 
 	 * @return
 	 */
@@ -64,7 +64,7 @@ public class InitialOrbit {
 	 */
 	public KeplerianOrbit getKeplerianOrbit() throws MatlabInvocationException, OrekitException {
 		TimeScale ts = this.constants.getTimeScale();
-		Frame frame = this.constants.getITRF();
+		Frame frame = this.constants.getEci();
 		AbsoluteDate it = new AbsoluteDate((int) this.dateParams[0], (int) this.dateParams[1], (int) this.dateParams[2],
 				(int) this.dateParams[3], (int) this.dateParams[4], this.dateParams[5], ts);
 		return new KeplerianOrbit(this.orbitParams[0], this.orbitParams[1], this.orbitParams[2], this.orbitParams[3],
@@ -100,7 +100,7 @@ public class InitialOrbit {
 		Propagator prop = TLEPropagator.selectExtrapolator(tleData);
 		return new KeplerianOrbit(prop.getInitialState().getA(), prop.getInitialState().getE(),
 				prop.getInitialState().getI(), tleData.getPerigeeArgument(), tleData.getRaan(),
-				tleData.getMeanAnomaly(), PositionAngle.MEAN, this.constants.getITRF(), tleData.getDate(),
+				tleData.getMeanAnomaly(), PositionAngle.MEAN, this.constants.getEci(), tleData.getDate(),
 				this.constants.getMu());
 	}
 

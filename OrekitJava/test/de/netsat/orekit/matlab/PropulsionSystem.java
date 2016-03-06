@@ -1,35 +1,14 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package de.netsat.orekit.matlab;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.function.Abs;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.DateDetector;
@@ -53,6 +32,7 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @author Pouyan Azari
  */
 public class PropulsionSystem extends AbstractParameterizable implements ForceModel {
 
@@ -84,25 +64,21 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 
 	private DateDetector endDateDetector;
 
-	private double maxCheck;
+	private double emptyMass;
 
 	/**
 	 * Simple constructor for a constant direction and constant thrust.
 	 * 
 	 * @param date
-	 *            maneuver date
 	 * @param duration
-	 *            the duration of the thrust (s) (if negative, the date is
-	 *            considered to be the stop date)
 	 * @param thrust
-	 *            the thrust force (N)
 	 * @param isp
-	 *            engine specific impulse (s)
 	 * @param direction
-	 *            the acceleration direction in satellite frame.
+	 * @param maxCheck
+	 * @param emptyMass
 	 */
 	public PropulsionSystem(final AbsoluteDate date, final double duration, final double thrust, final double isp,
-			final Vector3D direction, double maxCheck) {
+			final Vector3D direction, double maxCheck, double emptyMass) {
 		super(THRUST, FLOW_RATE);
 		if (duration >= 0) {
 			this.startDate = date;
@@ -111,15 +87,14 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 			this.endDate = date;
 			this.startDate = endDate.shiftedBy(duration);
 		}
-		this.maxCheck = maxCheck;
-		//this.startDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, startDate).withHandler(new FiringStartHandler());
-		//this.endDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, endDate).withHandler(new FiringStopHandler());
-		this.startDateDetector = new DateDetector(maxCheck,  AbstractDetector.DEFAULT_THRESHOLD, startDate).withHandler(new FiringStartHandler());
-		this.endDateDetector = new DateDetector(maxCheck,  AbstractDetector.DEFAULT_THRESHOLD , endDate).withHandler(new FiringStopHandler());
-		
+		this.startDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, startDate)
+				.withHandler(new FiringStartHandler());
+		this.endDateDetector = new DateDetector(maxCheck, AbstractDetector.DEFAULT_THRESHOLD, endDate)
+				.withHandler(new FiringStopHandler());
 		this.thrust = thrust;
 		this.flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
 		this.direction = direction.normalize();
+		this.emptyMass = emptyMass;
 		firing = false;
 
 	}
@@ -154,7 +129,7 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 	/** {@inheritDoc} */
 	public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) throws OrekitException {
 
-		if (firing) {
+		if (firing && this.emptyMass < s.getMass()) {
 
 			// compute thrust acceleration in inertial frame
 			adder.addAcceleration(
@@ -164,6 +139,8 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 			// compute flow rate
 			adder.addMassDerivative(flowRate);
 
+		} else {
+			System.out.println("Run out of Fuel: " + s.getDate());
 		}
 
 	}
@@ -246,10 +223,15 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 		public EventHandler.Action eventOccurred(final SpacecraftState s, final DateDetector detector,
 				final boolean increasing) {
 			// start the maneuver
-			System.out.println("Start! "+s.getDate());
-			
-			firing = true;
-			return EventHandler.Action.RESET_DERIVATIVES;
+			if (s.getMass() > emptyMass) {
+				System.out.println("Start Firing! " + s.getDate());
+
+				firing = true;
+				return EventHandler.Action.RESET_DERIVATIVES;
+			} else {
+				System.out.println("Last Step run out of Fuel:" + s.getDate());
+				return EventHandler.Action.STOP;
+			}
 		}
 
 		/** {@inheritDoc} */
@@ -267,9 +249,14 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 		public EventHandler.Action eventOccurred(final SpacecraftState s, final DateDetector detector,
 				final boolean increasing) {
 			// stop the maneuver
-			System.out.println("Stop! "+s.getDate());
-			firing = false;
-			return EventHandler.Action.RESET_DERIVATIVES;
+			if (s.getMass() > emptyMass) {
+				System.out.println("Stop Firing! " + s.getDate());
+				firing = false;
+				return EventHandler.Action.RESET_DERIVATIVES;
+			} else {
+				System.out.println("Last Step run out of Fuel:" + s.getDate());
+				return EventHandler.Action.STOP;
+			}
 		}
 
 		/** {@inheritDoc} */
@@ -281,16 +268,28 @@ public class PropulsionSystem extends AbstractParameterizable implements ForceMo
 	}
 
 	/**
-	 * Sets the direction of the trust in satellite frame.
+	 * Set the direction of the thrust.
+	 * 
+	 * @param direction
 	 */
 	public void setDirection(Vector3D direction) {
 		this.direction = direction;
 	}
 
+	/**
+	 * Set the start date of the thrust.
+	 * 
+	 * @param date
+	 */
 	public void setStartDate(AbsoluteDate date) {
 		this.startDate = date;
 	}
 
+	/**
+	 * Set the end date of the thrust
+	 * 
+	 * @param date
+	 */
 	public void setEndDate(AbsoluteDate date) {
 		this.endDate = date;
 	}
