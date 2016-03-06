@@ -16,15 +16,16 @@ true_anomaly = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
 %delta = [-100; 0; 0.05*pi/180; 0; -0.01*pi/180; 0; 0];
 
 oec = oecBase+delta;
+%oec = [7554936.61885000;0.0500562670000000;0.837749314357278;0.180159625199433;0.348583180398866;2.17827223098421;2.09439510239320];
 oecm  = convertOscOeToMeanOe( oec );
 
 makeZero = oecBase-oecm
 %% deputy oe
-oed_delta = [-100+0.649;0;deg2rad(0.05);0;deg2rad(-0.01);0;0];
+oed_delta = [-100+0.649+0.180328887887299-0.187677412293851;1.087970624098766e-06;deg2rad(0.05);-2.102567626557916e-05;deg2rad(-0.01);2.054491208403064e-05;2.169732792900447e-05];
 
 oed=oec+oed_delta
 
 oedm = convertOscOeToMeanOe( oed );
-% error = oedm-oecm;
-% targetError = [-100;0;deg2rad(0.05);0;deg2rad(-0.01);0;0];
-% makeZero2 = targetError-error
+ error = oedm-oecm;
+ targetError = [-100;0;deg2rad(0.05);0;deg2rad(-0.01);0;0];
+ makeZero2 = targetError-error

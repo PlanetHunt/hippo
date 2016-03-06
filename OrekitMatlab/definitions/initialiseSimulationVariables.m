@@ -1,7 +1,6 @@
 function [startingDate,StartingOE,numberOfThrusters, thrustVal, startingMass, position_tolerance, min_step, max_step, duration, step_size, equivalentISP, equivalentThrust, max_check] = initialiseSimulationVariables(muValue)
 %% global variables
-global timerVal ;
-timerVal = tic
+global timerVal ; timerVal = tic;
 global netThrustVector;
 global timeVector;
 global Isp mass;
@@ -70,7 +69,7 @@ pos = [0;0;0];
 vel = [0;0;0];
 mass = 0;
 global tolerances;
-tolerances = [1.2; 0.0006; deg2rad(0.006); 0; 0; 0; 0]; %a e i omega raan ta ma
+tolerances = [1.2; 0.0000000006; deg2rad(0.006); 0; 0; 0; 0]; %a e i omega raan ta ma
 %% change here to propogate the chief first
 global oe oem;
 %initialise propogated OE
