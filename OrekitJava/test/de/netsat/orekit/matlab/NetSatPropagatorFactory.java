@@ -10,7 +10,7 @@ public class NetSatPropagatorFactory {
 	private PropagatorDataType propagatorType;
 
 	/**
-	 * Propagator's Constructor Method
+	 * Propagator's Constructor Metho
 	 * 
 	 * @param propagatorType
 	 * @throws PropagationException
