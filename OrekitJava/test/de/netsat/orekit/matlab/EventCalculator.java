@@ -28,12 +28,12 @@ public class EventCalculator {
 	private LatitudeArgumentDetector latArgZero;
 	private LatitudeArgumentDetector latArgNinety;
 
-	public EventCalculator(SpacecraftState state, AbsoluteDate startDate, KeplerianOrbit startOrbit)
-			throws OrekitException {
+	public EventCalculator(SpacecraftState state, AbsoluteDate startDate, KeplerianOrbit startOrbit,
+			final ConstantValues constants) throws OrekitException {
 		this.startOrbit = startOrbit;
 		this.startDate = startDate;
 		this.startState = state;
-		this.constants = new ConstantValues();
+		this.constants = constants;
 		this.setEclipseEvenetDetector();
 		this.setApogeeEventDetector();
 		this.setNetSatLatitudeArgumentDetectorZero();
@@ -83,8 +83,8 @@ public class EventCalculator {
 	 */
 	public LatitudeArgumentDetector createNetSatLatitudeArgumentDetectorEvent(final double angle) {
 		LatitudeArgumentDetectionHandler latArgDetHandler = new LatitudeArgumentDetectionHandler(angle);
-		LatitudeArgumentDetector posAngDet = new LatitudeArgumentDetector(this.startOrbit.getType(),
-				PositionAngle.TRUE, angle).withHandler(latArgDetHandler);
+		LatitudeArgumentDetector posAngDet = new LatitudeArgumentDetector(this.startOrbit.getType(), PositionAngle.TRUE,
+				angle).withHandler(latArgDetHandler);
 		return posAngDet;
 	}
 

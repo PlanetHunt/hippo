@@ -2,33 +2,19 @@ package de.netsat.orekit.matlab;
 
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
-import org.orekit.forces.SphericalSpacecraft;
-import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.HarrisPriester;
-import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 
 import de.netsat.orekit.NetSatConfiguration;
-import de.netsat.orekit.matlab.MatlabPushHandler;
+import de.netsat.orekit.matlab.MatlabFixedPushHandler;
 import de.netsat.orekit.matlab.EventCalculator;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -49,79 +35,121 @@ public class MagenticFieldTest {
 			throws MatlabInvocationException, OrekitException
 
 	{
-		boolean fire = false;
-		double[] thrustDirection = { 1, 0, 0 };
-		double massLoss = -0.0001;
-		SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
+		/* Generates the constant numbers */
+		final ConstantValues constants = new ConstantValues();
+
+		/* Ask for the initial settings in Matlab */
+		mi.getProxy().setVariable("muValue", constants.getMu());
+		Object[] initialVars = mi.getProxy().returningEval("initialiseSimulationVariables(muValue)", 15);
+		/* Initial Orbit Settings */
+		final double[] initialDate = ((double[]) initialVars[0]);
+		final double[] initialOrbit = ((double[]) initialVars[1]);
+		final double startingMass = ((double[]) initialVars[2])[0];
+		final double equivalentIsp = ((double[]) initialVars[8])[0];
+		final double equivalentThrust = ((double[]) initialVars[9])[0];
+
+		/* Initial Propagation Settings */
+		final double positionTolerance = ((double[]) initialVars[3])[0];
+		final double minStep = ((double[]) initialVars[4])[0];
+		final double maxStep = ((double[]) initialVars[5])[0];
+		final double duration = ((double[]) initialVars[6])[0];
+		final double stepSize = ((double[]) initialVars[7])[0];
+
+		final double maxCheck = ((double[]) initialVars[10])[0];
+		final double propagtiontype = ((double[]) initialVars[11])[0];
+		final double isForceModelsActive = ((double[]) initialVars[12])[0];
+		final double isValidationFlag = ((double[]) initialVars[13])[0];
+		final double emptyMass = ((double[]) initialVars[14])[0];
+
+		/* Generate the force models */
+		final NetSatForceModelFactory fmf;
+		if (isForceModelsActive == 1.0) {
+			fmf = new NetSatForceModelFactory(constants);
+		} else {
+			fmf = null;
+		}
+
+		/* Set the data types to be set to Matlab */
+		final SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
 				SensorDataType.CURRENT_MASS, SensorDataType.VELOCITY, SensorDataType.POSITION, SensorDataType.ACC,
 				SensorDataType.DETECT_APOGEE, SensorDataType.DETECT_LATARG_NINETY, SensorDataType.DETECT_LATARG_ZERO,
 				SensorDataType.DETECT_PERIGEE };
-		MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
-		MatlabPushHandler mph = new MatlabPushHandler(mi, options, matlabFunctions);
-		mph.setVariableInMatlab("muValue", mu);
-		Object[] initialVars = mph.runMatlabFunction("initialiseSimulationVariables(muValue)", 13);
-		//PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
-		PropagatorDataType np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
 
-		/* Initial Orbit Settings */
-		double[] initialDate = ((double[]) initialVars[0]);
-		double[] initialOrbit = ((double[]) initialVars[1]);
-		double thrusterNumber = ((double[]) initialVars[2])[0];
-		double thrust = ((double[]) initialVars[3])[0];
-		double startingMass = ((double[]) initialVars[4])[0];
-		/* Initial Propagation Settings */
-		double positionTolerance = ((double[]) initialVars[5])[0];
-		double minStep = ((double[]) initialVars[6])[0];
-		double maxStep = ((double[]) initialVars[7])[0];
-		double duration = ((double[]) initialVars[8])[0];
-		double stepSize = ((double[]) initialVars[9])[0];
-		double equivalentIsp = ((double[]) initialVars[10])[0];
-		double equivalentThrust = ((double[]) initialVars[11])[0];
-		double maxCheck = ((double[]) initialVars[12])[0];
-		final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
-		ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
-				FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
-		ForceModel atmosphericDrag = new DragForce(
-				new HarrisPriester(CelestialBodyFactory.getSun(),
-						new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-								FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-				new SphericalSpacecraft(0.01, 2.2, 0, 0));
+		/* Set the Matlab functions that should run */
+		final MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
 
-		InitialOrbit initOrbit = new InitialOrbit(initialOrbit, initialDate, mi);
-		KeplerianOrbit keplerOrbit = initOrbit.getKeplerianOrbit();
+		/* Create the initial Orbit */
+		final KeplerianOrbit keplerOrbit = (new InitialOrbit(initialOrbit, initialDate, constants)).getKeplerianOrbit();
 
-		NetsatPropagatorFactory NumericalPropagatorFactory = new NetsatPropagatorFactory(np, maxStep, minStep, duration,
-				stepSize, positionTolerance, keplerOrbit);
-		NumericalPropagator numericPropagator = NumericalPropagatorFactory.getNumericalPropagator();
+		/* Create initial State */
 		SpacecraftState initialState = new SpacecraftState(keplerOrbit,
-				new Attitude(FramesFactory.getEME2000(),
+				new Attitude(constants.getEci(),
 						new TimeStampedAngularCoordinates(keplerOrbit.getDate(),
 								new PVCoordinates(new Vector3D(10, 10), new Vector3D(1, 2)),
 								new PVCoordinates(new Vector3D(15, 3), new Vector3D(1, 2)))),
 				startingMass);
 
-		//SpacecraftState initialState = new SpacecraftState(keplerOrbit, lof.getAttitude(keplerOrbit, keplerOrbit.getDate(), keplerOrbit.getFrame()));
-		EventCalculator eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit);
-		// NetSatThrustEquations thrustEq = new NetSatThrustEquations("Thrust",
-		// "experimental", fire, (int) thrusterNumber,
-		// thrust, thrustDirection, massLoss, stepSize);
-		AbsoluteDate dummyStartDate = new AbsoluteDate(1, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
-		double dummyDuration = 100;
-		PropulsionSystem prop = new PropulsionSystem(dummyStartDate, dummyDuration, equivalentThrust, equivalentIsp,
-				new Vector3D(thrustDirection), maxCheck);
-		mph = new MatlabPushHandler(mi, options, matlabFunctions, false, prop, eventCal);
-		MatlabAdaptivePushHandler maph = new MatlabAdaptivePushHandler(mi, options, matlabFunctions, false, prop, eventCal);
-		// initialState = initialState.addAdditionalState("Thrust", 0, 0, 0);
-		//numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
-		//numericPropagator.addEventDetector(eventCal.getLatArg(0));
-		//numericPropagator.addEventDetector(eventCal.getLatArg(90));
-		// numericPropagator.addAdditionalEquations(thrustEq);
-		numericPropagator.addForceModel(holmesFeatherstone);
-		numericPropagator.setAttitudeProvider(new LofOffset(initialState.getFrame(), LOFType.LVLH, RotationOrder.XYZ, 0, 0, 0));
-		numericPropagator.addForceModel(atmosphericDrag);
-		numericPropagator.addForceModel(prop);
+		/* Set the Numerical Propagtor Type */
+		final PropagatorDataType np;
+		if (propagtiontype == 1.0) {
+			np = PropagatorDataType.NUMERICAL_KEPLERIAN_ADAPTIVE;
+		} else {
+			np = PropagatorDataType.NUMERICAL_KEPLERIAN_RUNGEKUTTA;
+		}
+		NumericalPropagator numericPropagator = (new NetSatPropagatorFactory(np, maxStep, minStep, duration, stepSize,
+				positionTolerance, keplerOrbit)).getNumericalPropagator();
+
+		/* Event Calculator for validation of event detection in Matlab */
+		final EventCalculator eventCal;
+		if (isValidationFlag == 1.0) {
+			eventCal = new EventCalculator(initialState, keplerOrbit.getDate(), keplerOrbit, constants);
+		} else {
+			eventCal = null;
+		}
+
+		/* Propulsion System Initiate */
+		PropulsionSystem propulsionSystem = new PropulsionSystem(
+				new AbsoluteDate(1, 1, 1, 0, 0, 0, constants.getTimeScale()), 100, equivalentThrust, equivalentIsp,
+				new Vector3D(0, 0, 0), maxCheck, emptyMass);
+
+		/* Create the Matlab push Handler */
+		final MatlabFixedPushHandler mph;
+		final MatlabVariablePushHandler maph;
+		if (propagtiontype == 1.0) {
+			maph = new MatlabVariablePushHandler(mi, options, matlabFunctions, false, propulsionSystem, eventCal,
+					constants);
+			numericPropagator.setMasterMode(maph);
+			mph = null;
+		} else {
+			mph = new MatlabFixedPushHandler(mi, options, matlabFunctions, false, propulsionSystem, eventCal, constants);
+			numericPropagator.setMasterMode(stepSize, mph);
+			maph = null;
+		}
+
+		/* Register the force models */
+		if (isForceModelsActive == 1.0) {
+			numericPropagator.addForceModel(fmf.getDrag());
+			numericPropagator.addForceModel(fmf.getHolmesFeatherstone());
+		}
+		/* Register the events */
+		if (isValidationFlag == 1.0) {
+			numericPropagator.addEventDetector(eventCal.getApogeeEventDetector());
+			numericPropagator.addEventDetector(eventCal.getLatArg(0));
+			numericPropagator.addEventDetector(eventCal.getLatArg(90));
+		}
+
+		/* Deactivate the thrusters by validation */
+		if (isValidationFlag == 0.0) {
+			numericPropagator.addForceModel(propulsionSystem);
+		}
+
+		/*
+		 * Set the Attitude Provider when thrust direction need local orbital
+		 * frame
+		 */
+		numericPropagator
+				.setAttitudeProvider(new LofOffset(initialState.getFrame(), LOFType.LVLH, RotationOrder.XYZ, 0, 0, 0));
 		numericPropagator.setInitialState(initialState);
-		numericPropagator.setMasterMode(maph);
 		SpacecraftState finalState = numericPropagator.propagate(keplerOrbit.getDate().shiftedBy(duration));
 		return finalState;
 

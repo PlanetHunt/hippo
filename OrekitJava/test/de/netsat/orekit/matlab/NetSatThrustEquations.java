@@ -1,15 +1,10 @@
 package de.netsat.orekit.matlab;
 
 import org.apache.commons.math3.exception.MathArithmeticException;
-import org.apache.commons.math3.geometry.Vector;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.LOFType;
-import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.utils.PVCoordinates;
 
 import de.netsat.orekit.actuator.NanoFEEP;
 
@@ -35,21 +30,16 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	private ConstantValues constants;
 	private double[] velocityVector;
 	private double[] thrustDirection;
-	private double massLoss;
-	private double outputStepSize;
-	private boolean globalFire;
 
 	public NetSatThrustEquations(String name, String type, boolean fire, int thrusterNum, double thrust,
-			double[] thrustDirection, double massLoss, double outputStepSize) {
-		this.globalFire = true;
+			double[] thrustDirection, ConstantValues constants) {
 		this.name = name;
 		this.type = type;
 		this.fire = fire;
 		this.thrusterNum = thrusterNum;
 		this.thrust = thrust;
 		this.thrustDirection = thrustDirection;
-		this.massLoss = massLoss;
-		this.outputStepSize = outputStepSize;
+		this.constants = constants;
 	}
 
 	/**
@@ -174,7 +164,7 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	public double[] calculateThrustEffects(SpacecraftState s, double thrust, int thrusterNumber, double massLoss)
 			throws MathArithmeticException, OrekitException {
 		double[] mainStates = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		Vector3D velocityNormal = s.getPVCoordinates(this.constants.getITRF()).getVelocity().normalize();
+		Vector3D velocityNormal = s.getPVCoordinates(this.constants.getEci()).getVelocity().normalize();
 		velocityNormal = velocityNormal.scalarMultiply(-thrusterNumber * thrust);
 		mainStates[3] = velocityNormal.getX();
 		mainStates[4] = velocityNormal.getY();
@@ -197,58 +187,11 @@ public class NetSatThrustEquations implements AdditionalEquations {
 	public double[] calculateThrustEffects(SpacecraftState s, double thrust, int thrusterNumber, double massLoss,
 			double[] thrustDirection) throws OrekitException {
 		double[] mainStates = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		double defValue = 0;
-		double signValue = 0;
-		for (double t : thrustDirection) {
-			if (Math.abs(t) > defValue) {
-				defValue = Math.abs(t);
-				signValue = Math.signum(t);
-			}
-		}
 		Vector3D thrustDirectionVector = new Vector3D(thrustDirection);
-		System.out.println(thrustDirectionVector.toString());
-		// LocalOrbitalFrame localLVLH = new LocalOrbitalFrame(s.getFrame(),
-		// LOFType.LVLH, s.getOrbit(), "LVLH");
-		// PVCoordinates pVSatLVLH = s.getFrame().getTransformTo(localLVLH,
-		// s.getDate())
-		// .transformPVCoordinates(s.getPVCoordinates());
-		// PVCoordinates thrustDirectionLVLH = new
-		// PVCoordinates(pVSatLVLH.getPosition(), thrustDirectionVector);
-		// PVCoordinates thrustDirectionInertial =
-		// localLVLH.getTransformTo(s.getFrame(), s.getDate())
-		// .transformPVCoordinates(thrustDirectionLVLH);
-		// Vector3D velocityNormal =
-		// thrustDirectionInertial.getVelocity();//.normalize();
-		// PVCoordinates test = s.getFrame().getTransformTo(localLVLH,
-		// s.getDate())
-		// .transformPVCoordinates(thrustDirectionInertial);
-		// System.out.println(test.getVelocity().toString());
-		// System.out.println(velocityNormal.toString());
-		System.out.println();
-		// thrust = thrust * signValue;
-		// thrust = thrust * -1;
-		// velocityNormal = velocityNormal.scalarMultiply(thrusterNumber *
-		// thrust);
-		// mainStates[3] = velocityNormal.getX();// / (this.outputStepSize / 6);
-		// mainStates[4] = velocityNormal.getY();// / (this.outputStepSize / 6);
-		// mainStates[5] = velocityNormal.getZ();// / (this.outputStepSize / 6);
-		// thrustDirectionVector =
-		// thrustDirectionVector.scalarMultiply(thrusterNumber * thrust);
-		// get velocity direction:
-		Vector3D velocity_norm = s.getPVCoordinates(FramesFactory.getEME2000()).getVelocity().normalize();
-		// create vector in opposite direction of velocity with magnitude of instantaneous acceleration of thrusters:
-		velocity_norm = velocity_norm.scalarMultiply(-0.001);//apply thrust in oposite dirn to flight
+		Vector3D velocity_norm = s.getAttitude().getRotation().applyInverseTo(thrustDirectionVector);
 		mainStates[3] = velocity_norm.getX();
 		mainStates[4] = velocity_norm.getY();
 		mainStates[5] = velocity_norm.getZ();
-		
-		System.out.println("Attitude:" + s.getAttitude().getRotation().toString());
-		System.out.println("Acceleration:" + s.getPVCoordinates().getAcceleration().toString());
-		System.out.println(thrustDirectionVector.toString());
-		//mainStates[3] = thrustDirectionVector.getX();	
-		//mainStates[4] = thrustDirectionVector.getY();
-		//mainStates[5] = thrustDirectionVector.getZ();
-		//mainStates[5] = 0.1;
 		mainStates[6] = massLoss;
 		return mainStates;
 	}
@@ -269,14 +212,8 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		if (this.type.equals("experimental")) {
 			if (this.fire) {
 				NanoFEEP nanoFeep = new NanoFEEP(new Vector3D(0, 0), new Vector3D(0, 0));
-				// Times 1000 should be removed afterward, this is only for
-				// testing.
-				// double massLoss =
-				// nanoFeep.getFlowRate(Math.abs(this.thrust));
-				// System.out.println("MassLoss:" + massLoss);
-				return this.calculateThrustEffects(s, this.getThrust(), this.getThrustNum(), this.massLoss,
-						getThrustDirection());
-				// return null;
+				return this.calculateThrustEffects(s, this.getThrust(), this.getThrustNum(),
+						this.getThrustNum() * nanoFeep.getFlowRate(this.getThrust()), getThrustDirection());
 			}
 		}
 		if (this.type.equals("unlimited")) {
@@ -303,18 +240,38 @@ public class NetSatThrustEquations implements AdditionalEquations {
 		return null;
 	}
 
-	private double[] getThrustDirection() {
+	/**
+	 * Returns the thrust directions
+	 * 
+	 * @return
+	 */
+	public double[] getThrustDirection() {
 		return this.thrustDirection;
 	}
 
+	/**
+	 * Set the thrust directions
+	 * 
+	 * @param thrustDirection
+	 */
 	public void setThrustDirection(double[] thrustDirection) {
 		this.thrustDirection = thrustDirection;
 	}
 
+	/**
+	 * Returns the velocity vector.
+	 * 
+	 * @return
+	 */
 	public double[] getVeloctiyVector() {
 		return this.velocityVector;
 	}
 
+	/**
+	 * Sets the velocity vector
+	 * 
+	 * @param velocityVector
+	 */
 	public void setVelocityVector(double[] velocityVector) {
 		this.velocityVector = velocityVector;
 	}
