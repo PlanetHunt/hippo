@@ -69,7 +69,7 @@ switch typeOfSimulation
         
         oed = oe;
         oedm = oem;
-        oeError(:,end+1) = oedm(:,end)-oecm(:,end);
+        oeError(:,end+1) = calcOeError(oedm(:,end),oecm(:,end));
 %         oeError(6,end) = 0;
 %         oeError(7,end) = 0; %dont correct mean anomaly errors
     case 'propogateDeputyFormationFlight' %run this option after you have done a full propogateChief
@@ -77,8 +77,8 @@ switch typeOfSimulation
         oedm = oem;
         stepIndex = size(oedm,2);
         oecmMatchedTime(stepIndex,:) = interp1(chiefTimeVectorNum,oecm',datenum(current_time),'pchip');
-        oeError(:,end+1) = oedm(:,end)-oecmMatchedTime(stepIndex,:)';
-%         
+        oeError(:,end+1) = calcOeError(oedm(:,end),oecmMatchedTime(stepIndex,:)');
+% chiefTimeVectorNum = datenum(timeVector); global chiefTimeVectorNum         
 %         oeError(3,end) = 0; %dont correct i errors
 %         oeError(4,end) = 0; %AoP error = 0
 %         oeError(5,end) = 0; %RAAN error = 0
@@ -343,9 +343,9 @@ netThrustVector(end+1) = sqrt(sum(abs(thrustVector(:,end)).^2,1));
 if(last_step_flag == 1)
     elapsedTime = toc(timerVal)
     oecmMatchedTime = oecmMatchedTime';
-    %plotBasicOe;
+    plotBasicOe;
     %plotMeanOeErrors;
-    plotCommandsToOrekit;
+    %plotCommandsToOrekit;
     %plotDebug;
     %plotThrustSchedulerOutput;
     %plotControllerOutput;

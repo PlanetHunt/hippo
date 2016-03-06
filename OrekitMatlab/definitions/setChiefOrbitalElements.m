@@ -29,12 +29,12 @@ switch chiefNr
         true_anomaly = meanAnomToTrueAnom(chiefMeanOE(2), chiefMeanOE(7) );
         chiefMeanOE(6) = true_anomaly;
     case 6
-        oecBase = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
-        oecBase(6) = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
-        
-         delta = [-63.38115; 5.6267e-05; -8.7266e-06; 5.6267e-03; -4.8267e-04; 0; 0];
-        chiefMeanOE = oecBase+delta;
-       
+%         oecBase = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
+%         oecBase(6) = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
+%         
+%         delta = [-63.38115; 5.6267e-05; -8.7266e-06; 5.6267e-03; -4.8267e-04; 0; 0];
+%         chiefMeanOE = oecBase+delta;
+        chiefMeanOE = [7554936.61885000;0.0500562670000000;0.837749314357278;0.180159625199433;0.348583180398866;2.17827223098421;2.09439510239320];
         
         
         date = [2014, 01, 01, 00, 00, 00.000];
