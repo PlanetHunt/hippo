@@ -33,19 +33,19 @@ n = sqrt(mu/a^3); %mean motion of deputy
 %h = n*a^2*eta; %magnitude of angular momentum vector
 %r = a*(1-e^2)/(1+e*cos(true_anomaly)); %scalar orbit radius
 
-if(d_a<tolerances(1))
+if(abs(d_a)<tolerances(1))
     d_a = 0;
 end
-if(d_e<tolerances(2))
+if(abs(d_e)<tolerances(2))
     d_e = 0;
 end
-if(d_omega<tolerances(4))
+if(abs(d_omega)<tolerances(4))
     d_omega = 0;
 end
-if(d_raan<tolerances(5))
+if(abs(d_raan)<tolerances(5))
     d_raan = 0;
 end
-if(d_M<tolerances(7))
+if(abs(d_M)<tolerances(7))
     d_M = 0;
 end
 
@@ -60,7 +60,7 @@ delta_v_x = -(n*a/4)*(((1+e)^2/eta)*(d_omega + d_raan*cos(i))+d_M); %(16)
 
 
 %delta_v_y_APOGEE = (n*a*eta/4)*(d_a/a-d_e/(1-e))
-dV_vector_Perigee = [0*-delta_v_x; -delta_v_y; 0];
+dV_vector_Perigee = [-delta_v_x; -delta_v_y; 0];
 end
 
 

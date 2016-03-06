@@ -27,10 +27,10 @@ d_i = oeerror(3);
 d_raan = oeerror(5);
 %d_true_anomaly = oeerror(6);
 %d_M = oeerror(7);
-if(d_i<tolerances(3))
+if(abs(d_i)<tolerances(3))
     d_i = 0;
 end
-if(d_raan<tolerances(5))
+if(abs(d_raan)<tolerances(5))
     d_raan = 0;
 end
 

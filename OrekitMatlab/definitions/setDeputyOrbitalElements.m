@@ -56,16 +56,16 @@ switch i
         mean_anomaly = deputy(6);
         date = [2014, 01, 01, 00, 00, 00.000];
     case 6 % Shaubs deputy - from his paper
-        oecBase = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
-        oecBase(6) = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
-        
-         delta = [-63.38115; 5.6267e-05; -8.7266e-06; 5.6267e-03; -4.8267e-04; 0; 0];
-        oec_temp = oecBase+delta;
-        oecm_temp  = convertOscOeToMeanOe( oec_temp );
-        oed_delta = [-100+0.649;0;deg2rad(0.05);0;deg2rad(-0.01);0;0];
-        oed_temp=oec_temp+oed_delta;
-        oedm_temp = convertOscOeToMeanOe( oed_temp );
-        
+%         oecBase = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
+%         oecBase(6) = meanAnomToTrueAnom(oecBase(2), oecBase(7) );
+%         
+%          delta = [-63.38115; 5.6267e-05; -8.7266e-06; 5.6267e-03; -4.8267e-04; 0; 0];
+%         oec_temp = oecBase+delta;
+%         oecm_temp  = convertOscOeToMeanOe( oec_temp );
+%         oed_delta = [-100+0.649;0;deg2rad(0.05);0;deg2rad(-0.01);0;0];
+%         oed_temp=oec_temp+oed_delta;
+%         oedm_temp = convertOscOeToMeanOe( oed_temp );
+         oed_temp = [7554837.26050148;0.0500573549706241;0.838621978983275;0.180138599523167;0.348408647473666;2.17829277589629;2.09441679972112];
         
         
         ta = oed_temp(6);
