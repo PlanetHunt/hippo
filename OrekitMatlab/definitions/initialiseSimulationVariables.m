@@ -118,6 +118,7 @@ end
 %%
 %thruster operating point
 Isp = 2000;%s
+%Isp=getISPNanoFEEP( 5 );
 equivalentISP = Isp;
 equivalentThrust = 0.1;% numThrusters*thrust;
 numberOfThrusters = 1;
