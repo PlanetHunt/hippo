@@ -28,7 +28,7 @@ public class ConstantValues {
 		this.earthRaduis = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
 		this.earthFlattening = Constants.WGS84_EARTH_FLATTENING;
 		this.gravityProvider = GravityFieldFactory.getNormalizedProvider(10, 10);
-		this.mu = gravityProvider.getMu();
+		this.mu = GravityFieldFactory.getNormalizedProvider(2, 0).getMu();
 		this.eci = FramesFactory.getEME2000();
 		this.oae = new OneAxisEllipsoid(this.earthRaduis, this.earthFlattening, this.eci);
 		this.sun = CelestialBodyFactory.getSun();

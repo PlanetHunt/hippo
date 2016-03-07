@@ -7,6 +7,8 @@ import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.frames.FramesFactory;
+import org.orekit.utils.IERSConventions;
 
 public class NetSatForceModelFactory {
 
@@ -23,12 +25,13 @@ public class NetSatForceModelFactory {
 	public NetSatForceModelFactory(final ConstantValues constants) throws OrekitException {
 		this.constants = constants;
 		this.dragForce = new DragForce(
-				new HarrisPriester(this.constants.getSun(), new OneAxisEllipsoid(this.constants.getEarthRadius(),
-						this.constants.getEarthFlattening(), this.constants.getEci())),
+				new HarrisPriester(this.constants.getSun(),
+						new OneAxisEllipsoid(this.constants.getEarthRadius(), this.constants.getEarthFlattening(),
+								FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
 				new SphericalSpacecraft(0.01, 2.2, 0, 0));
 
-		this.holmesFeatherstone = new HolmesFeatherstoneAttractionModel(this.constants.getEci(),
-				this.constants.getGravityProvider());
+		this.holmesFeatherstone = new HolmesFeatherstoneAttractionModel(
+				FramesFactory.getITRF(IERSConventions.IERS_2010, true), this.constants.getGravityProvider());
 
 	}
 
