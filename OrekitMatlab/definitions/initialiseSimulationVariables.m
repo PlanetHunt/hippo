@@ -9,7 +9,7 @@ global req j2 g thrustDurationLimit;
 
 % global position_tolerance min_step max_step duration step_size choiceofProp;
 %global ii %loop variable
-global oed oec oedm oecm oeError;%orbital elements of deputy and chief arrays (also mean eles)
+global oed oec oedm oecm oeError oeErrorController;%orbital elements of deputy and chief arrays (also mean eles)
 global inAZone inBZone inCZone inDZone fireThruster;
 global dVA dVB dVC dVD;
 
@@ -17,7 +17,7 @@ global AThrustVector BThrustVector CThrustVector DThrustVector thrustVector;
 global tABoostStartCommand tBBoostStartCommand tCBoostStartCommand tDBoostStartCommand;
 global tABoostEndCommand tBBoostEndCommand tCBoostEndCommand tDBoostEndCommand;
 %setMu(mu);
-
+global desiredOffset;
 global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
 thrustWindowStart = datetime(0001,01,01,000,00,00);
 thrustWindowEnd = datetime(0001,01,01,000,00,00);
@@ -38,6 +38,7 @@ netThrustVector = 0;
 thrustVector = [0;0;0];
 mu = muValue;
 oeError = [0; 0; 0; 0; 0; 0; 0]; %maybe should calculate this properly for the starting conditions, dont forget to use mean elements
+oeErrorController= [0; 0; 0; 0; 0; 0; 0];
 timeVector = datetime(0001,01,01,000,00,00);
 tABoostStartCommand = datetime(0001,12,01,000,00,00);
 tBBoostStartCommand = datetime(0001,12,01,000,00,00);
@@ -70,13 +71,15 @@ pos = [0;0;0];
 vel = [0;0;0];
 mass = 0;
 global tolerances;
-tolerances = [1.2; 0.0000000006; deg2rad(0.006); 0; 0; 0; 0]; %a e i omega raan ta ma
+tolerances = [1e-3; 1e-7; deg2rad(1e-7); deg2rad(1e-7); deg2rad(1e-7); deg2rad(1e-7); deg2rad(1e-7)]; %a e i omega raan ta ma
+desiredOffset = [0;0;0;0;0;0;0];
 %% change here to propogate the chief first
 global oe oem;
 %initialise propogated OE
 oe = zeros(7,1);
 oem = zeros(7,1);
-
+global eventCounter;
+eventCounter = 2; %this will ensure that the first event schedualed is a C event (theta_c)
 %typeOfSimulation = 'propogateChief'; %note- should probably use a fixed
 %typeOfSimulation = 'propogateDeputy';
 %typeOfSimulation = 'propogateDeputyStationKeep';
@@ -86,15 +89,15 @@ switch typeOfSimulation
         %oec = setChiefOrbitalElements(2); %Chief OE from Schaubs paper =2
         
         %% OE Chief OSC
-        [oec,startingDate] = setChiefOrbitalElements(6);
-        oec=oec';
+        [oec,startingDate] = setChiefOrbitalElements(8);
+        %oec=oec';
         oecm = [0;0;0;0;0;0;0];
         StartingOE = [oec(1:5)',oec(7)]; %label the chief as deputy. (orekit will propogate the deputy only)
 
     case 'propogateDeputy'
         %%
-        [oed,startingDate] = setDeputyOrbitalElements(mu,6);
-        oed=oed';
+        [oed,startingDate] = setDeputyOrbitalElements(mu,8);
+        %oed=oed';
         oedm = [0;0;0;0;0;0;0];
         StartingOE = [oed(1:5)',oed(7)]; %label the chief as deputy. (orekit will propogate the deputy only)
 
@@ -109,27 +112,33 @@ switch typeOfSimulation
         oecm = convertOscOeToMeanOe(oec);
         
     case 'propogateDeputyFormationFlight' %use the same fixed time step that was used to propogate the chief
-       [oed,startingDate] = setDeputyOrbitalElements(mu,6);
-        oed=oed';
+       [oed,startingDate] = setDeputyOrbitalElements(mu,8);
+        %oed=oed';
         oedm = [0;0;0;0;0;0;0];
         StartingOE = [oed(1:5)',oed(7)]; %label the chief as deputy. (orekit will propogate the deputy only)   
         importChief();
+        %desiredOffset = [-1.92995; 0.000576727; deg2rad(0.006); 0; 0; 0; 0];%use this for re-creating schaubs paper
         %chief OEs should already exist in workspace, since we already ran propogateChief
 end
 %%
 %thruster operating point
-Isp = 2000;%s
-%Isp=getISPNanoFEEP( 5 );
-equivalentISP = Isp;
-equivalentThrust = 0.1;% numThrusters*thrust;
+%numberOfThrusters = 4;
 numberOfThrusters = 1;
 numThrusters = numberOfThrusters;
-thrust = 0.1; %N per thruster
+thrust = 19e-6; %N per thruster
+%thrust = 0.08; %N per thruster
+%Isp = 7000;%s
+Isp=getISPNanoFEEP( 19 );
+equivalentISP = Isp;
+%equivalentThrust = 0.1;% 
+equivalentThrust = numThrusters*thrust;
+
 thrustVal = thrust; %this is the copy of the variable returned to orekit (cant send a global variable)
 thrustDurationLimit = 180; %seconds
 %mu = 3.986004415000000e+14;
-emptyMass = 0.7;
+
 startingMass = 1; %assume initial mass of sc is 1kg + the fuel of one thruster
+emptyMass = startingMass-(4*0.25*10^-3);
 global nextWindowStart nextWindowEnd nextWindowThrustDirection nextWindowType addToThrustCommandQue flagSentForNextWindow;
 nextWindowStart = datetime(0001,01,01,000,00,00);
 nextWindowEnd = datetime(0001,01,01,000,00,00);
@@ -146,3 +155,5 @@ latitudeArgument = 0;
 isValidationFlag = 0; % enable apside and true latitude detection (disables time detector)
 isForceModelsActive = 1; %drag and stuff on
 propogationType = 1; %1 - adaptive step 0-runge kutta fixed step
+global theta_critical_check;
+theta_critical_check = 0;

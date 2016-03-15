@@ -51,15 +51,13 @@ end
 
 %% thrust 1 (A) - perigee
 
-%radial impulse delta_v_r_p 
 %sprintf('perigee Vx. n%d e%d eta%d d_omega%d d_raan%d i%d d_M%d',n,e,eta,d_omega,d_raan,i,d_M);
 delta_v_x = -(n*a/4)*(((1+e)^2/eta)*(d_omega + d_raan*cos(i))+d_M); %(16)
-% delta_v_x = 0.2276;
+
 %along track impulse delta_v_AT_p
 delta_v_y = (n*a*eta/4)*(d_a/a+d_e/(1+e)); %(24)
 
-
-%delta_v_y_APOGEE = (n*a*eta/4)*(d_a/a-d_e/(1-e))
+%dV_vector_Perigee = [-delta_v_x; -delta_v_y; 0]; %old fix
 dV_vector_Perigee = [-delta_v_x; -delta_v_y; 0];
 end
 

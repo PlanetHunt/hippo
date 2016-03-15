@@ -1,4 +1,4 @@
-function [ chiefMeanOE,date ] = setChiefOrbitalElements(chiefNr)
+function [ oscOe,date ] = setChiefOrbitalElements(chiefNr)
 
 switch chiefNr
     case 1 % hin cube 4/12/2013 11:00:00
@@ -38,6 +38,14 @@ switch chiefNr
         
         
         date = [2014, 01, 01, 00, 00, 00.000];
+    case 7 % hin cube 4/12/2013 11:00:00 osc OE
+        chiefMeanOE =[7020518.55375672;0.00607122530109426;1.70791029724478;2.53173538820599;0.881064339677126;1.20632866524041;1.19500225567207];
+        date = [2013, 12, 04, 11, 00, 00.000];
+    case 8
+        %shaubs chief fixed
+        [oscOe,MeanOE] = calcInitialOscOeFromMeanOe ([7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)])
+        date = [2014, 01, 01, 00, 00, 00.000];
 end
- chiefMeanOE=chiefMeanOE';
+ %chiefMeanOE=chiefMeanOE';
+ oscOe;
 end

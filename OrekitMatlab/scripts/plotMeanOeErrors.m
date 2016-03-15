@@ -1,7 +1,7 @@
 %plot basic mean orbit elements
 %% plotting
-oeError(3,:) = rad2deg(oeError(3,:));%i
-oeError(4,:) = rad2deg(oeError(4,:));%w
+% oeError(3,:) = rad2deg(oeError(3,:));%i
+% oeError(4,:) = rad2deg(oeError(4,:));%w
 % oeError(5,:) = rad2deg(oeError(5,:));%RAAN
 % oeError(6,:) = rad2deg(oeError(6,:));%TA
 % oeError(7,:) = rad2deg(oeError(7,:));%MA

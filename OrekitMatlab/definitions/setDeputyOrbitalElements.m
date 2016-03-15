@@ -1,4 +1,4 @@
-function [deputy,date] = setDeputyOrbitalElements(mu,i)
+function [oscOe,date] = setDeputyOrbitalElements(mu,i)
 
 
 switch i
@@ -78,6 +78,30 @@ switch i
         raan = oed_temp(5);
         mean_anomaly = oed_temp(7);
         date = [2014, 01, 01, 00, 00, 00.000];
-end
+    case 7%funcube osc oe
+       % oed_temp=[7020492.56869758;0.00600753766430607;1.70792666738925;2.53382401139927;0.881483544385747;1.20936626744369;1.19814540094713];
+        
+        chiefMeanOE = [7017102.334; 0.006535; 97.858*pi/180; 145.60397*pi/180; 50.48597*pi/180; 0; 67.871*pi/180];
+        delta = [-136.166;	-6.90E-05;	deg2rad(0.001);	deg2rad(-0.001);	deg2rad(0.024);	0;	deg2rad(0.342)];
+        [oed_temp,~] = calcInitialOscOeFromMeanOe (chiefMeanOE+delta);
+        
+        ta = oed_temp(6);
+        a = oed_temp(1);
+        e = oed_temp(2);
+        in = oed_temp(3);
+        omega = oed_temp(4);
+        raan = oed_temp(5);
+        mean_anomaly = oed_temp(7);
+        date = [2013, 12, 04, 11, 00, 00.000];
+    case 8
+        %shaubs deputy fixed
+        delta = [-100; 0; 0.05*pi/180; 0; -0.01*pi/180; 0; 0];
+        targetMeanOe = [7555000;0.0500000000000000;deg2rad(48);deg2rad(10);deg2rad(20);0;deg2rad(120)];
+        [oscOe,MeanOE] = calcInitialOscOeFromMeanOe (targetMeanOe+delta)
+        date = [2014, 01, 01, 00, 00, 00.000];
+        
+end       
+        
 
-deputy = [a,e,in,omega,raan,ta,mean_anomaly];
+%deputy = [a,e,in,omega,raan,ta,mean_anomaly];
+end

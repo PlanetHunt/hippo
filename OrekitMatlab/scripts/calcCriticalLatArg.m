@@ -25,6 +25,7 @@ theta_crit = atan2(d_raan*sin(i),d_i);
 if(theta_crit<0)
     theta_crit = pi+theta_crit;
 end
+
 %theta_crit
 %theta_crit_degrees=rad2deg(theta_crit)
 end

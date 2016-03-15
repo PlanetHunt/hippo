@@ -53,10 +53,12 @@ if(abs(d_M)<tolerances(7))
     d_M = 0;
 end
 delta_v_x = (n*a/4)*(((1-e)^2/eta)*(d_omega + d_raan*cos(i))+d_M); %(17)
+
 %delta_v_x = -0.1928;
 %along track impulse delta_v_AT_a
 delta_v_y = (n*a*eta/4)*(d_a/a-d_e/(1-e)); %(25)
 
+%dV_vector_Apogee = [delta_v_x; -delta_v_y; 0]; old fix
 dV_vector_Apogee = [delta_v_x; -delta_v_y; 0];
 end
 

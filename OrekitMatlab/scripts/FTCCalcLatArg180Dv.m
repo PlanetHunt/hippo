@@ -1,6 +1,6 @@
 function [ dV_vector_LatArg ] = FTCCalcLatArg180Dv( oeDeputy, oeerror )
 %FTCCalcLatArgZeroDv calculates the thrust (delta V) required at the point
-%where the argument of lattitude = 0
+%where the argument of lattitude = the critical value theta_c
 %   Based on the four thrust controller (FTC) described in Hans-Peter
 %   Schaub's paper "Impulsive Feeback Control to Establish Specific Mean Orbit
 %   Elements of SC Formations"
@@ -16,17 +16,10 @@ a = oeDeputy(1);
 e = oeDeputy(2);
 i = oeDeputy(3);
 omega = oeDeputy(4);
-%raan = oeDeputy(5);
 true_anomaly = oeDeputy(6);
-%M = oeDeputy(7);
-
-%d_a = oeerror(1);
-%d_e = oeerror(2);
 d_i = oeerror(3);
-%d_omega = oeerror(4);
 d_raan = oeerror(5);
-%d_true_anomaly = oeerror(6);
-%d_M = oeerror(7);
+
 if(abs(d_i)<tolerances(3))
     d_i = 0;
 end
@@ -41,7 +34,7 @@ n = sqrt(mu/a^3); %mean motion of deputy
 h = n*a^2*eta; %magnitude of angular momentum vector
 r = a*(1-e^2)/(1+e*cos(true_anomaly)); %scalar orbit radius
 
-%% thrust 3 (D) - true latitude = 0
+%% thrust 3 (D) - true latitude = theta c
 %delta_vz = d_raan * ((h*sin(i)/(r*sin(true_latitude))));
 % delta_v_z = d_i*h/(r*cos(true_latitude)) %(6)
 delta_v_z = (h/r)*sqrt(d_i^2+d_raan^2*(sin(i))^2)*sign(d_i);
