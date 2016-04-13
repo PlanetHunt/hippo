@@ -142,19 +142,32 @@ public class Corrections {
 	}
 
 	/**
-	 * Calculates the semiMajorAxis correction from the given initial values.
+	 * Calculates the new semiMajorAxis  from the given initial values.
 	 * Automatically takes care of short or long period corrections. Equation 3
 	 * from the paper.
 	 * 
 	 * @return {@link Double}
 	 */
-	public double calculateSemiMajorAxisCorrection() {
+	public double calculateSemiMajorAxis() {
 
 		return this.initSemiMajorAxis
 				* (1 + this.getGammaTwo() * ((3 * FastMath.pow(FastMath.cos(this.initInclination), 2) - 1)
 						* (FastMath.pow(this.aR, 3) - FastMath.pow(this.eta, -3))
 						+ 3 * (1 - FastMath.pow(FastMath.cos(this.initInclination), 2)) * FastMath.pow(this.aR, 3)
 								* FastMath.cos(2 * this.initArgumentOfPerigee + 2 * this.initTrueAnomaly)));
+	}
+
+	
+	/**
+	 * Calculates the new Eccentricity from given initial values.
+	 * Automatically take cares of short and long period corrections. Equation 4
+	 * from the paper.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double calculateEccentricity() {
+		
+		return 0.0;
 	}
 
 }
