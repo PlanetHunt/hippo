@@ -27,10 +27,14 @@ public class Corrections {
 	private final double gammaTwo;
 	private final double eta;
 	private final double aR;
+	private double gammaTwoPrim;
+	private double ePrimCosM;
+	private double ePrimSinM;
+	private double initMeanAnomaly;
 
 	public Corrections(final double initSemiMajorAxis, final double initInclination, final double initEccentrictiy,
 			final double initRAAN, final double initArgumentOfPerigee, final double initTrueAnomlay,
-			final boolean shortPeriod, final boolean meanToOsc) {
+			final double initMeanAnomaly, final boolean shortPeriod, final boolean meanToOsc) {
 		this.initSemiMajorAxis = initSemiMajorAxis;
 		this.initInclination = initInclination;
 		this.initEccentricity = initEccentrictiy;
@@ -39,6 +43,9 @@ public class Corrections {
 		this.initTrueAnomaly = initTrueAnomlay;
 		this.shortPeriod = shortPeriod;
 		this.meanToOsc = meanToOsc;
+		this.initMeanAnomaly = initMeanAnomaly;
+		this.ePrimCosM = 0;
+		this.ePrimSinM = 0;
 		/* Equation one and Two */
 		if (!meanToOsc) {
 			this.gammaTwo = -1 * Constants.EGM96_EARTH_C20 / 2.0
@@ -49,6 +56,7 @@ public class Corrections {
 		}
 		this.eta = FastMath.sqrt(1 - FastMath.pow(initEccentrictiy, 2));
 		this.aR = (1 + initEccentrictiy * FastMath.cos(initTrueAnomlay)) / FastMath.pow(this.eta, 2);
+		this.gammaTwoPrim = this.gammaTwo / FastMath.pow(this.eta, 4);
 	}
 
 	/**
@@ -142,7 +150,7 @@ public class Corrections {
 	}
 
 	/**
-	 * Calculates the new semiMajorAxis  from the given initial values.
+	 * Calculates the new semiMajorAxis from the given initial values.
 	 * Automatically takes care of short or long period corrections. Equation 3
 	 * from the paper.
 	 * 
@@ -157,17 +165,94 @@ public class Corrections {
 								* FastMath.cos(2 * this.initArgumentOfPerigee + 2 * this.initTrueAnomaly)));
 	}
 
-	
 	/**
-	 * Calculates the new Eccentricity from given initial values.
-	 * Automatically take cares of short and long period corrections. Equation 4
-	 * from the paper.
+	 * Calculate the short period corrections to the eccentricity. Equation 6 in
+	 * the paper.
+	 * 
+	 * @return {@link Double}
+	 */
+	public double calculateEccentrcityShortPeriod() {
+		double eSP1 = ((3 * FastMath.pow(FastMath.cos(this.initInclination), 2) - 1) / (FastMath.pow(this.eta, 6)))
+				* (this.initEccentricity * this.eta + (this.initEccentricity / (1 + this.eta))
+						+ 3 * FastMath.cos(this.initTrueAnomaly)
+						+ 3 * this.initEccentricity * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 2)
+						+ FastMath.pow(this.initEccentricity, 2) * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 3));
+
+		double eSP2 = 3 * (1 - FastMath.pow(FastMath.cos(this.initInclination), 2) / FastMath.pow(this.eta, 6))
+				* (this.initEccentricity + 3 * FastMath.cos(this.initTrueAnomaly)
+						+ 3 * this.initEccentricity * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 2)
+						+ FastMath.pow(this.initEccentricity, 2) * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 3))
+				* FastMath.cos(2 * this.initArgumentOfPerigee + 2 * this.initTrueAnomaly);
+
+		double eSP3 = (1 - FastMath.pow(FastMath.cos(this.initInclination), 2))
+				* (3 * FastMath.cos(2 * this.initArgumentOfPerigee + this.initTrueAnomaly)
+						+ FastMath.cos(this.initArgumentOfPerigee + 3 * this.initTrueAnomaly));
+
+		double eSP = (FastMath.pow(this.eta, 2) / 2)
+				* (this.gammaTwo * eSP1 + this.gammaTwo * eSP2 - this.gammaTwoPrim * eSP3);
+		return eSP;
+	}
+
+	/**
+	 * Calculates the short period corrections the mean anomaly. Equation 9 in
+	 * the Paper.
+	 * 
+	 * @return
+	 */
+	public double calculateMeanAnomalyShortPeriod() {
+		double mSP = (-1
+				* (this.gammaTwoPrim
+						* FastMath.pow(this.eta, 3))
+				/ (4 * this.initEccentricity)) * (2
+						* (3 * FastMath.pow(FastMath.cos(this.initInclination), 2)
+								- 1)
+						* ((FastMath.pow(this.aR * this.eta, 2) + this.aR + 1)
+								* FastMath
+										.sin(this.initTrueAnomaly)
+								+ 3 * (1 - FastMath.pow(FastMath.cos(this.initInclination),
+										2) * ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
+												* FastMath
+														.sin(2 * this.initArgumentOfPerigee + this.initTrueAnomaly)
+										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3) * FastMath
+												.sin(2 * this.initArgumentOfPerigee + 3 * this.initTrueAnomaly)))));
+		return mSP;
+	}
+
+	/**
+	 * Calculate the relation between the eccentricity and the mean anomaly
+	 * Equation 9
+	 */
+	public void calculateEM() {
+		this.ePrimCosM = (this.initEccentricity + this.calculateEccentrcityShortPeriod())
+				* FastMath.cos(this.initMeanAnomaly)
+				- this.initEccentricity * (this.calculateMeanAnomalyShortPeriod()) * FastMath.sin(this.initMeanAnomaly);
+		this.ePrimSinM = (this.initEccentricity + this.calculateEccentrcityShortPeriod())
+				* FastMath.sin(this.initMeanAnomaly)
+				- this.initEccentricity * (this.calculateMeanAnomalyShortPeriod()) * FastMath.cos(this.initMeanAnomaly);
+	}
+
+	/**
+	 * Calculates new eccentricity. Equation 10
 	 * 
 	 * @return {@link Double}
 	 */
 	public double calculateEccentricity() {
-		
-		return 0.0;
+		if (this.ePrimCosM == 0 || this.ePrimSinM == 0) {
+			this.calculateEM();
+		}
+		double e = FastMath.sqrt(FastMath.pow(this.ePrimCosM, 2) + FastMath.pow(this.ePrimSinM, 2));
+		return e;
+	}
+
+	/**
+	 * Calculates the new mean anomaly. Equation 10
+	 */
+	public double calculateMeanAnomaly() {
+		if (this.ePrimCosM == 0 || this.ePrimSinM == 0) {
+			this.calculateEM();
+		}
+		double mA = FastMath.atan(this.ePrimSinM / this.ePrimCosM);
+		return mA;
 	}
 
 }
