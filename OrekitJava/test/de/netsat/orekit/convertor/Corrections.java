@@ -12,56 +12,77 @@ import org.orekit.utils.Constants;
  * is also the same method used in STK for Osculating to mean transformation.
  * 
  * @author Pouyan Azari
- *
+ * @license MIT
  */
 public class Corrections {
 
-	private final double initSemiMajorAxis;
-	private final double initInclination;
-	private final double initEccentricity;
-	private final double iniRAAN;
-	private final double initArgumentOfPerigee;
-	private final double initTrueAnomaly;
+	private final double sma;
+	private final double inc;
+	private final double ecc;
+	private final double raan;
+	private final double aop;
+	private final double tano;
 	private final boolean shortPeriod;
 	private final boolean meanToOsc;
 	private final double gammaTwo;
 	private final double eta;
 	private final double aR;
+	private final double mano;
 	private double gammaTwoPrim;
 	private double ePrimCosM;
 	private double ePrimSinM;
-	private double initMeanAnomaly;
+	private double omegaISin;
+	private double omegaICos;
 
+	/**
+	 * The constructor class Equations 1 & 2
+	 * 
+	 * @tag checked
+	 * @param initSemiMajorAxis
+	 * @param initInclination
+	 * @param initEccentrictiy
+	 * @param initRAAN
+	 * @param initArgumentOfPerigee
+	 * @param initTrueAnomlay
+	 * @param initMeanAnomaly
+	 * @param shortPeriod
+	 * @param meanToOsc
+	 */
 	public Corrections(final double initSemiMajorAxis, final double initInclination, final double initEccentrictiy,
 			final double initRAAN, final double initArgumentOfPerigee, final double initTrueAnomlay,
 			final double initMeanAnomaly, final boolean shortPeriod, final boolean meanToOsc) {
-		this.initSemiMajorAxis = initSemiMajorAxis;
-		this.initInclination = initInclination;
-		this.initEccentricity = initEccentrictiy;
-		this.iniRAAN = initRAAN;
-		this.initArgumentOfPerigee = initArgumentOfPerigee;
-		this.initTrueAnomaly = initTrueAnomlay;
+		this.sma = initSemiMajorAxis;
+		this.inc = initInclination;
+		this.ecc = initEccentrictiy;
+		this.raan = initRAAN;
+		this.aop = initArgumentOfPerigee;
+		this.tano = initTrueAnomlay;
+		this.mano = initMeanAnomaly;
 		this.shortPeriod = shortPeriod;
 		this.meanToOsc = meanToOsc;
-		this.initMeanAnomaly = initMeanAnomaly;
+		/* Placeholder for the parameters to be set in next steps */
 		this.ePrimCosM = 0;
 		this.ePrimSinM = 0;
-		/* Equation one and Two */
+		this.omegaICos = 0;
+		this.omegaISin = 0;
+		/* Equation 1 */
 		if (!meanToOsc) {
 			this.gammaTwo = -1 * Constants.EGM96_EARTH_C20 / 2.0
-					* FastMath.pow((Constants.EGM96_EARTH_EQUATORIAL_RADIUS / initSemiMajorAxis), 2);
+					* FastMath.pow((Constants.EGM96_EARTH_EQUATORIAL_RADIUS / this.sma), 2);
 		} else {
 			this.gammaTwo = (Constants.EGM96_EARTH_C20 / 2.0)
-					* FastMath.pow((Constants.EGM96_EARTH_EQUATORIAL_RADIUS / initSemiMajorAxis), 2);
+					* FastMath.pow((Constants.EGM96_EARTH_EQUATORIAL_RADIUS / this.sma), 2);
 		}
-		this.eta = FastMath.sqrt(1 - FastMath.pow(initEccentrictiy, 2));
-		this.aR = (1 + initEccentrictiy * FastMath.cos(initTrueAnomlay)) / FastMath.pow(this.eta, 2);
+		/* Equation 2 */
+		this.eta = FastMath.sqrt(1 - FastMath.pow(this.ecc, 2));
+		this.aR = (1 + this.ecc * FastMath.cos(this.tano)) / FastMath.pow(this.eta, 2);
 		this.gammaTwoPrim = this.gammaTwo / FastMath.pow(this.eta, 4);
 	}
 
 	/**
 	 * Returns the eta
 	 * 
+	 * @tag checked
 	 * @return
 	 */
 	public double getEta() {
@@ -92,7 +113,7 @@ public class Corrections {
 	 * @return the initSemiMajorAxis
 	 */
 	public double getInitSemiMajorAxis() {
-		return initSemiMajorAxis;
+		return sma;
 	}
 
 	/**
@@ -101,7 +122,7 @@ public class Corrections {
 	 * @return the initInclination
 	 */
 	public double getInitInclination() {
-		return initInclination;
+		return inc;
 	}
 
 	/**
@@ -110,7 +131,7 @@ public class Corrections {
 	 * @return the initEccentricity
 	 */
 	public double getInitEccentricity() {
-		return initEccentricity;
+		return ecc;
 	}
 
 	/**
@@ -118,8 +139,8 @@ public class Corrections {
 	 * 
 	 * @return the iniRAAN
 	 */
-	public double getIniRAAN() {
-		return iniRAAN;
+	public double getInitRAAN() {
+		return raan;
 	}
 
 	/**
@@ -128,7 +149,7 @@ public class Corrections {
 	 * @return the initArgumentOfPerigee
 	 */
 	public double getInitArgumentOfPerigee() {
-		return initArgumentOfPerigee;
+		return aop;
 	}
 
 	/**
@@ -137,7 +158,7 @@ public class Corrections {
 	 * @return the initTrueAnomaly
 	 */
 	public double getInitTrueAnomaly() {
-		return initTrueAnomaly;
+		return tano;
 	}
 
 	/**
@@ -150,43 +171,41 @@ public class Corrections {
 	}
 
 	/**
-	 * Calculates the new semiMajorAxis from the given initial values.
-	 * Automatically takes care of short or long period corrections. Equation 3
-	 * from the paper.
+	 * Calculates the new semiMajorAxis from the given initial values. Equation
+	 * 3
 	 * 
-	 * @return {@link Double}
+	 * @tag checked
+	 * @return semiMajorAxis
 	 */
 	public double calculateSemiMajorAxis() {
 
-		return this.initSemiMajorAxis
-				* (1 + this.getGammaTwo() * ((3 * FastMath.pow(FastMath.cos(this.initInclination), 2) - 1)
-						* (FastMath.pow(this.aR, 3) - FastMath.pow(this.eta, -3))
-						+ 3 * (1 - FastMath.pow(FastMath.cos(this.initInclination), 2)) * FastMath.pow(this.aR, 3)
-								* FastMath.cos(2 * this.initArgumentOfPerigee + 2 * this.initTrueAnomaly)));
+		double newSma = this.sma * (1 + this.gammaTwo * ((3 * FastMath.pow(FastMath.cos(this.inc), 2) - 1)
+				* (FastMath.pow(this.aR, 3) - FastMath.pow(this.eta, -3))
+				+ 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2)) * FastMath.pow(this.aR, 3)
+						* FastMath.cos(2 * this.aop + 2 * this.tano)));
+		return newSma;
 	}
 
 	/**
 	 * Calculate the short period corrections to the eccentricity. Equation 6 in
 	 * the paper.
 	 * 
+	 * @tag checked
 	 * @return {@link Double}
 	 */
 	public double calculateEccentrcityShortPeriod() {
-		double eSP1 = ((3 * FastMath.pow(FastMath.cos(this.initInclination), 2) - 1) / (FastMath.pow(this.eta, 6)))
-				* (this.initEccentricity * this.eta + (this.initEccentricity / (1 + this.eta))
-						+ 3 * FastMath.cos(this.initTrueAnomaly)
-						+ 3 * this.initEccentricity * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 2)
-						+ FastMath.pow(this.initEccentricity, 2) * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 3));
+		double eSP1 = ((3 * FastMath.pow(FastMath.cos(this.inc), 2) - 1) / (FastMath.pow(this.eta, 6)))
+				* ((this.ecc * this.eta) + (this.ecc / (1 + this.eta)) + 3 * FastMath.cos(this.tano)
+						+ 3 * this.ecc * FastMath.pow(FastMath.cos(this.tano), 2)
+						+ FastMath.pow(this.ecc, 2) * FastMath.pow(FastMath.cos(this.tano), 3));
 
-		double eSP2 = 3 * (1 - FastMath.pow(FastMath.cos(this.initInclination), 2) / FastMath.pow(this.eta, 6))
-				* (this.initEccentricity + 3 * FastMath.cos(this.initTrueAnomaly)
-						+ 3 * this.initEccentricity * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 2)
-						+ FastMath.pow(this.initEccentricity, 2) * FastMath.pow(FastMath.cos(this.initTrueAnomaly), 3))
-				* FastMath.cos(2 * this.initArgumentOfPerigee + 2 * this.initTrueAnomaly);
+		double eSP2 = 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2) / FastMath.pow(this.eta, 6))
+				* (this.ecc + 3 * FastMath.cos(this.tano) + 3 * this.ecc * FastMath.pow(FastMath.cos(this.tano), 2)
+						+ FastMath.pow(this.ecc, 2) * FastMath.pow(FastMath.cos(this.tano), 3))
+				* FastMath.cos(2 * this.aop + 2 * this.tano);
 
-		double eSP3 = (1 - FastMath.pow(FastMath.cos(this.initInclination), 2))
-				* (3 * FastMath.cos(2 * this.initArgumentOfPerigee + this.initTrueAnomaly)
-						+ FastMath.cos(this.initArgumentOfPerigee + 3 * this.initTrueAnomaly));
+		double eSP3 = (1 - FastMath.pow(FastMath.cos(this.inc), 2))
+				* (3 * FastMath.cos(2 * this.aop + this.tano) + FastMath.cos(this.aop + 3 * this.tano));
 
 		double eSP = (FastMath.pow(this.eta, 2) / 2)
 				* (this.gammaTwo * eSP1 + this.gammaTwo * eSP2 - this.gammaTwoPrim * eSP3);
@@ -194,47 +213,55 @@ public class Corrections {
 	}
 
 	/**
-	 * Calculates the short period corrections the mean anomaly. Equation 9 in
-	 * the Paper.
+	 * Calculate the short period correction to inclination Equation 7
 	 * 
 	 * @return
 	 */
+	public double calculateInclinationShortPeriod() {
+		double inclinationSP = 0.5 * this.gammaTwoPrim * FastMath.cos(this.inc)
+				* (3 * FastMath.cos(2 * this.aop + 2 * this.tano)
+						+ 3 * this.ecc * FastMath.cos(2 * this.aop + this.tano)
+						+ this.ecc * FastMath.cos(2 * this.aop + 3 * this.tano));
+		return inclinationSP;
+	}
+
+	/**
+	 * Calculates the short period corrections the mean anomaly. Equation 9 in
+	 * the Paper.
+	 * 
+	 * @tag checked
+	 * @return
+	 */
 	public double calculateMeanAnomalyShortPeriod() {
-		double mSP = (-1
-				* (this.gammaTwoPrim
-						* FastMath.pow(this.eta, 3))
-				/ (4 * this.initEccentricity)) * (2
-						* (3 * FastMath.pow(FastMath.cos(this.initInclination), 2)
-								- 1)
-						* ((FastMath.pow(this.aR * this.eta, 2) + this.aR + 1)
-								* FastMath
-										.sin(this.initTrueAnomaly)
-								+ 3 * (1 - FastMath.pow(FastMath.cos(this.initInclination),
-										2) * ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
-												* FastMath
-														.sin(2 * this.initArgumentOfPerigee + this.initTrueAnomaly)
-										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3) * FastMath
-												.sin(2 * this.initArgumentOfPerigee + 3 * this.initTrueAnomaly)))));
+		double mSP = (-1 * (this.gammaTwoPrim * FastMath.pow(this.eta, 3)) / (4 * this.ecc))
+				* (2 * (3 * FastMath.pow(FastMath.cos(this.inc), 2) - 1)
+						* (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1) * FastMath.sin(this.tano)
+						+ 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2))
+								* ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
+										* FastMath.sin(2 * this.aop + this.tano)
+										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3)
+												* FastMath.sin(2 * this.aop + 3 * this.tano)));
 		return mSP;
 	}
 
 	/**
 	 * Calculate the relation between the eccentricity and the mean anomaly
 	 * Equation 9
+	 * 
+	 * @tag checked
 	 */
 	public void calculateEM() {
-		this.ePrimCosM = (this.initEccentricity + this.calculateEccentrcityShortPeriod())
-				* FastMath.cos(this.initMeanAnomaly)
-				- this.initEccentricity * (this.calculateMeanAnomalyShortPeriod()) * FastMath.sin(this.initMeanAnomaly);
-		this.ePrimSinM = (this.initEccentricity + this.calculateEccentrcityShortPeriod())
-				* FastMath.sin(this.initMeanAnomaly)
-				- this.initEccentricity * (this.calculateMeanAnomalyShortPeriod()) * FastMath.cos(this.initMeanAnomaly);
+		this.ePrimCosM = (this.ecc + this.calculateEccentrcityShortPeriod()) * FastMath.cos(this.mano)
+				- this.ecc * (this.calculateMeanAnomalyShortPeriod()) * FastMath.sin(this.mano);
+		this.ePrimSinM = (this.ecc + this.calculateEccentrcityShortPeriod()) * FastMath.sin(this.mano)
+				- this.ecc * (this.calculateMeanAnomalyShortPeriod()) * FastMath.cos(this.mano);
 	}
 
 	/**
 	 * Calculates new eccentricity. Equation 10
 	 * 
-	 * @return {@link Double}
+	 * @tag checked
+	 * @return
 	 */
 	public double calculateEccentricity() {
 		if (this.ePrimCosM == 0 || this.ePrimSinM == 0) {
@@ -246,6 +273,9 @@ public class Corrections {
 
 	/**
 	 * Calculates the new mean anomaly. Equation 10
+	 * 
+	 * @tag checked
+	 * @retrun
 	 */
 	public double calculateMeanAnomaly() {
 		if (this.ePrimCosM == 0 || this.ePrimSinM == 0) {
@@ -253,6 +283,106 @@ public class Corrections {
 		}
 		double mA = FastMath.atan(this.ePrimSinM / this.ePrimCosM);
 		return mA;
+	}
+
+	/**
+	 * Calculate the short period corrections to the RAAN. Equation 12
+	 * 
+	 * @tag checked
+	 * @return
+	 */
+	public double calculateRAANShortPeriod() {
+		double rAANSP = -1 * ((this.gammaTwoPrim * FastMath.cos(this.inc)) / (2))
+				* (6 * (this.tano - this.mano + this.ecc * FastMath.sin(this.tano))
+						- 3 * FastMath.sin(2 * this.aop + 2 * this.tano)
+						- 3 * this.ecc * FastMath.sin(2 * this.aop + this.tano)
+						- this.ecc * FastMath.sin(2 * this.aop + 3 * this.tano));
+		return rAANSP;
+	}
+
+	/**
+	 * Calculate the intermediate values for the relation between RAAN and
+	 * Inclination Equation 13
+	 * 
+	 * @tag checked
+	 */
+	public void calculateOmegaI() {
+		this.omegaISin = (FastMath.sin(this.inc / 2)
+				+ 0.5 * FastMath.cos(this.inc / 2) * this.calculateInclinationShortPeriod()) * FastMath.sin(this.raan)
+				+ FastMath.sin(this.inc / 2) * this.calculateRAANShortPeriod() * FastMath.cos(this.raan);
+
+		this.omegaICos = (FastMath.sin(this.inc / 2)
+				+ 0.5 * FastMath.cos(this.inc / 2) * this.calculateInclinationShortPeriod()) * FastMath.cos(this.raan)
+				- FastMath.sin(this.inc / 2) * this.calculateRAANShortPeriod() * FastMath.sin(this.raan);
+
+	}
+
+	/**
+	 * Calculate the new inclination Equation 14
+	 * 
+	 * @tag checked
+	 * @return
+	 */
+	public double calculateInclination() {
+		if (this.omegaISin == 0 || this.omegaICos == 0) {
+			this.calculateOmegaI();
+		}
+		double newInclination = 2
+				* FastMath.asin(FastMath.sqrt(FastMath.pow(this.omegaISin, 2) + FastMath.pow(this.omegaICos, 2)));
+		return newInclination;
+	}
+
+	/**
+	 * Calculate the new RAAN Equation 14
+	 * 
+	 * @tag checked
+	 * @return
+	 */
+	public double calculateRAAN() {
+		if (this.omegaISin == 0 || this.omegaICos == 0) {
+			this.calculateOmegaI();
+		}
+		double newRAAN = FastMath.atan(this.omegaISin / this.omegaICos);
+		return newRAAN;
+	}
+
+	/**
+	 * Calculate the short period corrections to the argument of perigee
+	 * Equation 17 & 18 & 19
+	 * 
+	 * @tag checked
+	 * @return
+	 */
+	public double calculateArguemntOfPerigeeShortPeriod() {
+		double omegaSP1 = (this.gammaTwoPrim * FastMath.pow(this.eta, 2)) / (4 * this.ecc)
+				* (2 * (3 * FastMath.pow(FastMath.cos(this.inc), 2) - 1)
+						* (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1) * FastMath.sin(this.tano)
+						+ 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2))
+								* ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
+										* FastMath.sin(2 * this.aop + this.tano)
+										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3)
+												* FastMath.sin(2 * this.aop + 3 * this.tano)));
+
+		double omegaSP2 = (this.gammaTwoPrim / 4) * (6 * (5 * FastMath.pow(FastMath.cos(this.inc), 2) - 1)
+				* (this.tano - this.mano + this.ecc + FastMath.sin(this.tano))
+				+ (3 - 5 * FastMath.pow(FastMath.cos(this.inc), 2)) * (3 * FastMath.sin(2 * this.aop + 2 * this.tano))
+				+ (3 * this.ecc + FastMath.sin(2 * this.aop + this.tano)
+						+ this.ecc * FastMath.sin(2 * this.aop + 3 * this.tano)));
+
+		return omegaSP1 + omegaSP2;
+	}
+
+	/**
+	 * Calculates the new Argument of Perigee Equation 20 to 22
+	 * 
+	 * @tag checked
+	 * @return
+	 */
+	public double calculateArguemntOfPerigee() {
+		double transformedAnomalies = this.mano + this.calculateMeanAnomalyShortPeriod() + this.aop
+				+ this.calculateArguemntOfPerigeeShortPeriod() + this.raan + this.calculateRAANShortPeriod();
+		return transformedAnomalies - this.calculateMeanAnomaly() - calculateRAAN();
+
 	}
 
 }
