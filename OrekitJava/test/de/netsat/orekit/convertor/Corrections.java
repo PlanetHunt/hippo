@@ -1,6 +1,7 @@
 package de.netsat.orekit.convertor;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.utils.Constants;
 
 /**
@@ -33,6 +34,7 @@ public class Corrections {
 	private double ePrimSinM;
 	private double omegaISin;
 	private double omegaICos;
+	private boolean longPeriod;
 
 	/**
 	 * The constructor class Equations 1 & 2
@@ -46,11 +48,13 @@ public class Corrections {
 	 * @param initTrueAnomlay
 	 * @param initMeanAnomaly
 	 * @param shortPeriod
+	 * @param longPeriod
 	 * @param meanToOsc
 	 */
 	public Corrections(final double initSemiMajorAxis, final double initInclination, final double initEccentrictiy,
 			final double initRAAN, final double initArgumentOfPerigee, final double initTrueAnomlay,
-			final double initMeanAnomaly, final boolean shortPeriod, final boolean meanToOsc) {
+			final double initMeanAnomaly, final boolean shortPeriod, final boolean longPeriod,
+			final boolean meanToOsc) {
 		this.sma = initSemiMajorAxis;
 		this.inc = initInclination;
 		this.ecc = initEccentrictiy;
@@ -59,6 +63,7 @@ public class Corrections {
 		this.tano = initTrueAnomlay;
 		this.mano = initMeanAnomaly;
 		this.shortPeriod = shortPeriod;
+		this.longPeriod = longPeriod;
 		this.meanToOsc = meanToOsc;
 		/* Placeholder for the parameters to be set in next steps */
 		this.ePrimCosM = 0;
@@ -135,7 +140,7 @@ public class Corrections {
 	}
 
 	/**
-	 * Returns the initial right ascension of ascending node
+	 * Returns the initial right ascension of ascending node longPeriod
 	 * 
 	 * @return the iniRAAN
 	 */
@@ -187,7 +192,7 @@ public class Corrections {
 	}
 
 	/**
-	 * Calculate the short period corrections to the eccentricity. Equation 6 in
+	 * Calculate the short period corrections to the eccentricity. Equation 5 in
 	 * the paper.
 	 * 
 	 * @tag checked
@@ -210,6 +215,42 @@ public class Corrections {
 		double eSP = (FastMath.pow(this.eta, 2) / 2)
 				* (this.gammaTwo * eSP1 + this.gammaTwo * eSP2 - this.gammaTwoPrim * eSP3);
 		return eSP;
+	}
+
+	/**
+	 * Calculate the long term correction to the eccentricity. Equation 6
+	 * 
+	 * @return
+	 */
+	public double calculateEccentricityLongPeriod() {
+		double eLP = ((this.gammaTwoPrim * this.ecc * FastMath.pow(this.eta, 2) * FastMath.cos(2 * this.aop)) / (8))
+				* (1 - 11 * FastMath.pow(FastMath.cos(this.inc), 2) - 40 * (FastMath.pow(FastMath.cos(this.inc), 4))
+						/ (1 - 5 * FastMath.pow(FastMath.cos(this.inc), 2)));
+		return eLP;
+	}
+
+	/**
+	 * Calculate the long term correction to inclination Equation 6
+	 * 
+	 * @return
+	 */
+	public double calculateInclinationLongPerid() {
+		double iLP = (-(this.ecc) / (FastMath.pow(this.eta, 2) * FastMath.tan(this.inc)))
+				* this.calculateEccentricityLongPeriod();
+		return iLP;
+	}
+
+	/**
+	 * Calculate the long term corrections to the Mean Anomaly, Equation 9
+	 * 
+	 * @return
+	 */
+	public double calculateMeanAnomalyLongPeriod() {
+		double mLP = (this.gammaTwoPrim * FastMath.pow(this.eta, 3))
+				/ (8) * (1 - 11 * FastMath.pow(FastMath.cos(this.inc), 2) - 40
+						* (FastMath.pow(FastMath.cos(this.inc), 4)) / (1 - 5 * FastMath.pow(FastMath.cos(this.inc), 2)))
+				* FastMath.sin(2 * this.aop);
+		return mLP;
 	}
 
 	/**
@@ -238,9 +279,8 @@ public class Corrections {
 						* (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1) * FastMath.sin(this.tano)
 						+ 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2))
 								* ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
-										* FastMath.sin(2 * this.aop + this.tano)
-										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3)
-												* FastMath.sin(2 * this.aop + 3 * this.tano)));
+										* FastMath.sin(2 * this.aop + this.tano) + (FastMath.pow(this.aR * this.eta, 2)
+												+ this.aR + 1 / 3) * FastMath.sin(2 * this.aop + 3 * this.tano)));
 		return mSP;
 	}
 
@@ -251,10 +291,14 @@ public class Corrections {
 	 * @tag checked
 	 */
 	public void calculateEM() {
-		this.ePrimCosM = (this.ecc + this.calculateEccentrcityShortPeriod()) * FastMath.cos(this.mano)
-				- this.ecc * (this.calculateMeanAnomalyShortPeriod()) * FastMath.sin(this.mano);
-		this.ePrimSinM = (this.ecc + this.calculateEccentrcityShortPeriod()) * FastMath.sin(this.mano)
-				- this.ecc * (this.calculateMeanAnomalyShortPeriod()) * FastMath.cos(this.mano);
+		this.ePrimCosM = (this.ecc + this.calculateEccentrcityShortPeriod() + this.calculateEccentricityLongPeriod())
+				* FastMath.cos(this.mano)
+				- this.ecc * (this.calculateMeanAnomalyShortPeriod() + this.calculateMeanAnomalyLongPeriod())
+						* FastMath.sin(this.mano);
+		this.ePrimSinM = (this.ecc + this.calculateEccentrcityShortPeriod() + this.calculateEccentricityLongPeriod())
+				* FastMath.sin(this.mano)
+				- this.ecc * (this.calculateMeanAnomalyShortPeriod() + this.calculateMeanAnomalyLongPeriod())
+						* FastMath.cos(this.mano);
 	}
 
 	/**
@@ -275,13 +319,13 @@ public class Corrections {
 	 * Calculates the new mean anomaly. Equation 10
 	 * 
 	 * @tag checked
-	 * @retrun
+	 * @return
 	 */
 	public double calculateMeanAnomaly() {
 		if (this.ePrimCosM == 0 || this.ePrimSinM == 0) {
 			this.calculateEM();
 		}
-		double mA = FastMath.atan(this.ePrimSinM / this.ePrimCosM);
+		double mA = FastMath.atan2(this.ePrimSinM, this.ePrimCosM);
 		return mA;
 	}
 
@@ -342,7 +386,7 @@ public class Corrections {
 		if (this.omegaISin == 0 || this.omegaICos == 0) {
 			this.calculateOmegaI();
 		}
-		double newRAAN = FastMath.atan(this.omegaISin / this.omegaICos);
+		double newRAAN = FastMath.atan2(this.omegaISin, this.omegaICos);
 		return newRAAN;
 	}
 
@@ -381,8 +425,26 @@ public class Corrections {
 	public double calculateArguemntOfPerigee() {
 		double transformedAnomalies = this.mano + this.calculateMeanAnomalyShortPeriod() + this.aop
 				+ this.calculateArguemntOfPerigeeShortPeriod() + this.raan + this.calculateRAANShortPeriod();
-		return transformedAnomalies - this.calculateMeanAnomaly() - calculateRAAN();
+		double inBetween = transformedAnomalies - this.calculateMeanAnomaly() - calculateRAAN();
+		return inBetween;
 
+	}
+
+	/**
+	 * Calculates all the orbital element needed. sma, ecc, inc, aop, raa, man
+	 * => 0,1,2,3,4,5
+	 * 
+	 * @return
+	 */
+	public double[] caculateAll() {
+		double[] result = new double[6];
+		result[0] = calculateSemiMajorAxis();
+		result[1] = calculateEccentricity();
+		result[2] = calculateInclination();
+		result[3] = MathUtils.normalizeAngle(calculateArguemntOfPerigee(), FastMath.PI);
+		result[4] = calculateRAAN();
+		result[5] = calculateMeanAnomaly();
+		return result;
 	}
 
 }

@@ -27,7 +27,7 @@ public class NetSatConfiguration {
 	 * followed by a new ZIP creation. Everything is done automatically, so 
 	 * you only need to adjust the maximum age here.
 	 */
-	public static final int MAXIMUM_AGE_DAYS = 90;
+	public static final int MAXIMUM_AGE_DAYS = 365;
 	private static boolean initialized = false;
 	
 	/** 

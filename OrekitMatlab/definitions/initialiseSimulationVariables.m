@@ -72,15 +72,16 @@ mass = 0;
 global tolerances;
 tolerances = [1.2; 0.0000000006; deg2rad(0.006); 0; 0; 0; 0]; %a e i omega raan ta ma
 %% change here to propogate the chief first
-global oe oem;
+global oe oem oemOrekit;
 %initialise propogated OE
 oe = zeros(7,1);
 oem = zeros(7,1);
+oemOrekit = zeros(6,1);
 
-%typeOfSimulation = 'propogateChief'; %note- should probably use a fixed
+typeOfSimulation = 'propogateChief'; %note- should probably use a fixed
 %typeOfSimulation = 'propogateDeputy';
 %typeOfSimulation = 'propogateDeputyStationKeep';
-typeOfSimulation = 'propogateDeputyFormationFlight'; %make sure a chief has been propogated fires
+%typeOfSimulation = 'propogateDeputyFormationFlight'; %make sure a chief has been propogated fires
 switch typeOfSimulation
     case 'propogateChief'
         %oec = setChiefOrbitalElements(2); %Chief OE from Schaubs paper =2

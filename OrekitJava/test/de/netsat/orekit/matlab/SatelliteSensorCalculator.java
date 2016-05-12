@@ -15,6 +15,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import de.netsat.orekit.convertor.Corrections;
 import de.netsat.orekit.matlab.eventhandler.ApsideDetectionHandler;
 import de.netsat.orekit.matlab.eventhandler.LatitudeArgumentDetectionHandler;
 
@@ -52,6 +53,7 @@ public class SatelliteSensorCalculator {
 	private double meanAnomaly;
 	private double mass;
 	private Vector3D acceleration;
+	private double[] meanOrbitalElements;
 
 	/**
 	 * The Constructor method. The order here is important as some are
@@ -193,7 +195,23 @@ public class SatelliteSensorCalculator {
 		case "CURRENT_MASS":
 			this.setCurrentMass();
 			break;
+		case "MEAN_ORBITAL_ELEMENTS":
+			this.setOrbitalElements();
+			this.setMeanOrbitalElements();
+			break;
 		}
+	}
+
+	private void setMeanOrbitalElements() {
+		double[] orbitalElements = this.getOrbitalElements();
+		Corrections correct = new Corrections(orbitalElements[0], orbitalElements[2], orbitalElements[1],
+				orbitalElements[4], orbitalElements[3], orbitalElements[5], orbitalElements[6], true, true, true);
+		this.meanOrbitalElements = correct.caculateAll();
+
+	}
+
+	public double[] getMeanOrbitalElements() {
+		return this.meanOrbitalElements;
 	}
 
 	private void setAcceleration() {

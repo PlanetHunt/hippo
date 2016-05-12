@@ -5,7 +5,8 @@ public enum SensorDataType {
 	VELOCITY("velocity", "dd", "getVelocityVectorAsArray"), //set
 	POSITION("position", "dd", "getPositionVectorAsArray"), //set
 	MAGNETIC_FIELD("magnetic_field", "dd", "getMagneticFieldAsArray"), //set
-	ORBITAL_ELEMENTS("orbital_elements", "dd", "getOrbitalElements"), 
+	ORBITAL_ELEMENTS("orbital_elements", "dd", "getOrbitalElements"),
+	MEAN_ORBITAL_ELEMENTS("mean_orbital_elements", "dd", "getMeanOrbitalElements"),
 	TIMESTAMP("timestamp", "dd", "getTimeStampAsArray"), 
 	TIMESTAMP_UNIX("timestamp","d", "getTimestamp"), 
 	MU("mu", "d", "getMu"), 

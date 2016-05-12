@@ -71,7 +71,7 @@ public class MagenticFieldTest {
 
 		/* Set the data types to be set to Matlab */
 		final SensorDataType[] options = { SensorDataType.ORBITAL_ELEMENTS, SensorDataType.TIMESTAMP,
-				SensorDataType.CURRENT_MASS };
+				SensorDataType.CURRENT_MASS, SensorDataType.MEAN_ORBITAL_ELEMENTS };
 
 		/* Set the Matlab functions that should run */
 		final MatlabFunctionType[] matlabFunctions = { MatlabFunctionType.MATLAB_STEP_HANDLER };
