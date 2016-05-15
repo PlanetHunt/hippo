@@ -1,6 +1,6 @@
 package de.netsat.orekit.matlab;
 
-import de.netsat.orekit.convertor.Corrections;
+import de.netsat.orekit.convertor.OsculatingToMeanAlfriend;
 
 /*
 INPUT
@@ -46,7 +46,7 @@ public class CorrectionTest {
 		/* True Anomaly */
 		double tan = 2.412999727692819;
 
-		Corrections correct = new Corrections(sma, inc, ecc, raa, aop, tan, man, true, true, true);
+		OsculatingToMeanAlfriend correct = new OsculatingToMeanAlfriend(sma, inc, ecc, raa, aop, tan, man, true, true, true);
 		double[] result = correct.caculateAll();
 		for (int i = 0; i < result.length; i++) {
 			System.out.println(result[i]);

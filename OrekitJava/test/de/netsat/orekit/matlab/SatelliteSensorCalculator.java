@@ -15,7 +15,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import de.netsat.orekit.convertor.Corrections;
+import de.netsat.orekit.convertor.OsculatingToMeanAlfriend;
 import de.netsat.orekit.matlab.eventhandler.ApsideDetectionHandler;
 import de.netsat.orekit.matlab.eventhandler.LatitudeArgumentDetectionHandler;
 
@@ -204,7 +204,7 @@ public class SatelliteSensorCalculator {
 
 	private void setMeanOrbitalElements() {
 		double[] orbitalElements = this.getOrbitalElements();
-		Corrections correct = new Corrections(orbitalElements[0], orbitalElements[2], orbitalElements[1],
+		OsculatingToMeanAlfriend correct = new OsculatingToMeanAlfriend(orbitalElements[0], orbitalElements[2], orbitalElements[1],
 				orbitalElements[4], orbitalElements[3], orbitalElements[5], orbitalElements[6], true, true, true);
 		this.meanOrbitalElements = correct.caculateAll();
 

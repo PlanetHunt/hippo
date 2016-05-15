@@ -15,7 +15,7 @@ import org.orekit.utils.Constants;
  * @author Pouyan Azari
  * @license MIT
  */
-public class Corrections {
+public class OsculatingToMeanAlfriend {
 
 	private final double sma;
 	private final double inc;
@@ -51,7 +51,7 @@ public class Corrections {
 	 * @param longPeriod
 	 * @param meanToOsc
 	 */
-	public Corrections(final double initSemiMajorAxis, final double initInclination, final double initEccentrictiy,
+	public OsculatingToMeanAlfriend(final double initSemiMajorAxis, final double initInclination, final double initEccentrictiy,
 			final double initRAAN, final double initArgumentOfPerigee, final double initTrueAnomlay,
 			final double initMeanAnomaly, final boolean shortPeriod, final boolean longPeriod,
 			final boolean meanToOsc) {
