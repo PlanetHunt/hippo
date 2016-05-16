@@ -95,7 +95,7 @@ if (eos < 0.01)
     zm = zos;
     etam = etaos;
 
-    for n = 1:1:5
+    %for n = 1:1:5
         asp = 3 * j2 * req * req / am * (bb * c2l + (1 - 3.5 * bb) ...
             * zm * cl + (1 - 2.5 * bb) * etam * sl + 3.5 * bb ...
             * (zm * c3l + etam * s3l));
@@ -146,7 +146,7 @@ if (eos < 0.01)
             * etam * c2l + 17/4 * bb * (zm * s4l - etam * c4l));
 
         etam = etaos - etasp;
-    end
+    %end
 
     em = sqrt(etam^2 + zm^2);
 
@@ -174,7 +174,7 @@ else
 
     hm = pm/(1+em*cos(tam));
 
-    for n = 1:1:5
+    %for n = 1:1:5
         asp = 3*j2*req*req/am*((am/hm)^3*(aa+bb*cos(2*um)) ...
             -aa*(1-em^2)^(-1.5));
 
@@ -235,7 +235,7 @@ else
         [ea, tam] = kepler1(mam, em);
 
         um = mod(apm + tam, 2.0 * pi);
-    end
+    %end
 end
 
 oemean(1) = am;

@@ -233,7 +233,7 @@ public class SatelliteSensorCalculator {
 		double[] orbitalElements = this.getOrbitalElements();
 		OsculatingToMeanAlfriend correct = new OsculatingToMeanAlfriend(orbitalElements[0], orbitalElements[2],
 				orbitalElements[1], orbitalElements[4], orbitalElements[3], orbitalElements[5], orbitalElements[6],
-				true, true, true);
+				true, true, false);
 		this.meanOrbitalElements = correct.caculateAll();
 
 	}

@@ -1,5 +1,5 @@
 % function [ addEventToOrekitDateTimeDetectorFlag, eventThrustDirection, eventThrustWindowStart, eventThrustWindowEnd ] = matlabStepHandler( orbital_elements, position, velocity, acceleration, timestamp, current_mass, last_step_flag )
-function [ returnMatrix ] = matlabStepHandler( orbital_elements, mean_orbital_elements, mean_orbital_elements_eckstein, timestamp, current_mass, last_step_flag )
+function [ returnMatrix ] = matlabStepHandler( orbital_elements, mean_orbital_elements, timestamp, current_mass, last_step_flag )
 global timerVal;
 %MATLABSTEPHANDLER function to be called at every time step
 %  1 event_A     perigee
@@ -26,7 +26,7 @@ global netThrustVector
 global oecmMatchedTime chiefTimeVectorNum;
 global eventTypes addEventToOrekitDateTimeDetector thrustDirection thrustWindowStart thrustWindowEnd;
 global typeOfSimulation;
-global oe oem oemOrekit oemEck;
+global oe oem oemOrekit;
 global apsideCounter;
 global tolerances;
 current_time = datetime(timestamp);
@@ -46,7 +46,6 @@ mass = [mass; current_mass];
     meanOE = convertOscOeToMeanOe( orbital_elements ); %orbital_elements';%
     oem = [oem, meanOE];
     oemOrekit = [oemOrekit, mean_orbital_elements'];
-    oemEck = [oemEck , mean_orbital_elements_eckstein'];
     oscOE = orbital_elements';
     oe = [oe, oscOE];
 %  end

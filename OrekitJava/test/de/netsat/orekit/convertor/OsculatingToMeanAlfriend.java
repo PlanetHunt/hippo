@@ -35,6 +35,7 @@ public class OsculatingToMeanAlfriend {
 	private double omegaISin;
 	private double omegaICos;
 	private boolean longPeriod;
+	private double eano;
 
 	/**
 	 * The constructor class Equations 1 & 2
@@ -51,17 +52,20 @@ public class OsculatingToMeanAlfriend {
 	 * @param longPeriod
 	 * @param meanToOsc
 	 */
-	public OsculatingToMeanAlfriend(final double initSemiMajorAxis, final double initInclination, final double initEccentrictiy,
-			final double initRAAN, final double initArgumentOfPerigee, final double initTrueAnomlay,
-			final double initMeanAnomaly, final boolean shortPeriod, final boolean longPeriod,
-			final boolean meanToOsc) {
+	public OsculatingToMeanAlfriend(final double initSemiMajorAxis, final double initInclination,
+			final double initEccentrictiy, final double initRAAN, final double initArgumentOfPerigee,
+			final double initTrueAnomlay, final double initMeanAnomaly, final boolean shortPeriod,
+			final boolean longPeriod, final boolean meanToOsc) {
 		this.sma = initSemiMajorAxis;
 		this.inc = initInclination;
 		this.ecc = initEccentrictiy;
 		this.raan = initRAAN;
 		this.aop = initArgumentOfPerigee;
 		this.tano = initTrueAnomlay;
-		this.mano = initMeanAnomaly;
+		// this.mano = initMeanAnomaly;
+		this.eano = FastMath.atan2(FastMath.sqrt(1 - FastMath.pow(this.ecc, 2)) * FastMath.sin(this.tano),
+				this.ecc + FastMath.cos(this.tano));
+		this.mano = eano - this.ecc * FastMath.sin(this.eano);
 		this.shortPeriod = shortPeriod;
 		this.longPeriod = longPeriod;
 		this.meanToOsc = meanToOsc;
@@ -72,10 +76,10 @@ public class OsculatingToMeanAlfriend {
 		this.omegaISin = 0;
 		/* Equation 1 */
 		if (!meanToOsc) {
-			this.gammaTwo = -1 * Constants.EGM96_EARTH_C20 / 2.0
+			this.gammaTwo = Constants.EGM96_EARTH_C20 / 2.0
 					* FastMath.pow((Constants.EGM96_EARTH_EQUATORIAL_RADIUS / this.sma), 2);
 		} else {
-			this.gammaTwo = (Constants.EGM96_EARTH_C20 / 2.0)
+			this.gammaTwo = -1 * (Constants.EGM96_EARTH_C20 / 2.0)
 					* FastMath.pow((Constants.EGM96_EARTH_EQUATORIAL_RADIUS / this.sma), 2);
 		}
 		/* Equation 2 */
@@ -210,7 +214,7 @@ public class OsculatingToMeanAlfriend {
 				* FastMath.cos(2 * this.aop + 2 * this.tano);
 
 		double eSP3 = (1 - FastMath.pow(FastMath.cos(this.inc), 2))
-				* (3 * FastMath.cos(2 * this.aop + this.tano) + FastMath.cos(this.aop + 3 * this.tano));
+				* (3 * FastMath.cos(2 * this.aop + this.tano) + FastMath.cos(2 * this.aop + 3 * this.tano));
 
 		double eSP = (FastMath.pow(this.eta, 2) / 2)
 				* (this.gammaTwo * eSP1 + this.gammaTwo * eSP2 - this.gammaTwoPrim * eSP3);
@@ -279,8 +283,9 @@ public class OsculatingToMeanAlfriend {
 						* (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1) * FastMath.sin(this.tano)
 						+ 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2))
 								* ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
-										* FastMath.sin(2 * this.aop + this.tano) + (FastMath.pow(this.aR * this.eta, 2)
-												+ this.aR + 1 / 3) * FastMath.sin(2 * this.aop + 3 * this.tano)));
+										* FastMath.sin(2 * this.aop + this.tano)
+										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3)
+												* FastMath.sin(2 * this.aop + 3 * this.tano)));
 		return mSP;
 	}
 
@@ -297,7 +302,7 @@ public class OsculatingToMeanAlfriend {
 						* FastMath.sin(this.mano);
 		this.ePrimSinM = (this.ecc + this.calculateEccentrcityShortPeriod() + this.calculateEccentricityLongPeriod())
 				* FastMath.sin(this.mano)
-				- this.ecc * (this.calculateMeanAnomalyShortPeriod() + this.calculateMeanAnomalyLongPeriod())
+				+ this.ecc * (this.calculateMeanAnomalyShortPeriod() + this.calculateMeanAnomalyLongPeriod())
 						* FastMath.cos(this.mano);
 	}
 
