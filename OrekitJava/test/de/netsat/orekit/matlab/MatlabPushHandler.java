@@ -76,9 +76,12 @@ public abstract class MatlabPushHandler {
 	public void evaluateOptions(SpacecraftState state)
 			throws OrekitException, MatlabInvocationException, NoSuchMethodException, SecurityException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		this.spc = new SatelliteSensorCalculator(state, this.options, this.eventCal);
+		try {
+			this.spc = new SatelliteSensorCalculator(state, this.options, this.eventCal);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		this.spc.setTimeStampedPVCoordinates();
-		/* Setting the data to Matlab */
 		for (SensorDataType s : this.options) {
 			MatlabData mld = null;
 			if (this.atOnce) {

@@ -7,6 +7,7 @@ public enum SensorDataType {
 	MAGNETIC_FIELD("magnetic_field", "dd", "getMagneticFieldAsArray"), //set
 	ORBITAL_ELEMENTS("orbital_elements", "dd", "getOrbitalElements"),
 	MEAN_ORBITAL_ELEMENTS("mean_orbital_elements", "dd", "getMeanOrbitalElements"),
+	MEAN_ORBITAL_ELEMENTS_ECKSTEIN("mean_orbital_elements_eckstein", "dd", "getMeanOrbitalElementsEckstein"),
 	TIMESTAMP("timestamp", "dd", "getTimeStampAsArray"), 
 	TIMESTAMP_UNIX("timestamp","d", "getTimestamp"), 
 	MU("mu", "d", "getMu"), 

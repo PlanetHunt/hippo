@@ -8,6 +8,7 @@ import org.orekit.models.earth.GeoMagneticElements;
 import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ApsideDetector;
@@ -16,6 +17,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import de.netsat.orekit.convertor.OsculatingToMeanAlfriend;
+import de.netsat.orekit.convertor.OsculatingToMeanEckstein;
 import de.netsat.orekit.matlab.eventhandler.ApsideDetectionHandler;
 import de.netsat.orekit.matlab.eventhandler.LatitudeArgumentDetectionHandler;
 
@@ -54,6 +56,7 @@ public class SatelliteSensorCalculator {
 	private double mass;
 	private Vector3D acceleration;
 	private double[] meanOrbitalElements;
+	private double[] meanOrbitalElementsEckstein;
 
 	/**
 	 * The Constructor method. The order here is important as some are
@@ -63,10 +66,10 @@ public class SatelliteSensorCalculator {
 	 *       fly
 	 * @param state
 	 * @param eventCal
-	 * @throws OrekitException
+	 * @throws Exception
 	 */
 	public SatelliteSensorCalculator(SpacecraftState state, SensorDataType[] options, EventCalculator eventCal)
-			throws OrekitException {
+			throws Exception {
 		this.state = state;
 		this.options = options;
 		this.eventCal = eventCal;
@@ -83,9 +86,9 @@ public class SatelliteSensorCalculator {
 	 * Maps the Setters with the name of the SensorDataType A very simple
 	 * Dependency Injection.
 	 * 
-	 * @throws OrekitException
+	 * @throws Exception
 	 */
-	public void setSensorDataType(String name) throws OrekitException {
+	public void setSensorDataType(String name) throws Exception {
 		switch (name) {
 		case "SUN":
 			this.setDate();
@@ -199,17 +202,54 @@ public class SatelliteSensorCalculator {
 			this.setOrbitalElements();
 			this.setMeanOrbitalElements();
 			break;
+		case "MEAN_ORBITAL_ELEMENTS_ECKSTEIN":
+			this.setOrbitalElementsEckstein();
+			break;
 		}
 	}
 
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	private void setOrbitalElementsEckstein() throws Exception {
+		OsculatingToMeanEckstein oscm = new OsculatingToMeanEckstein(this.state, OrbitType.CIRCULAR);
+		double[] meanElements = new double[6];
+		SpacecraftState stateNew = oscm.calculateMeanElement();
+		KeplerianOrbit orb = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(stateNew.getOrbit());
+		meanElements[0] = orb.getA();
+		meanElements[1] = orb.getE();
+		meanElements[2] = orb.getI();
+		meanElements[3] = orb.getPerigeeArgument();
+		meanElements[4] = orb.getRightAscensionOfAscendingNode();
+		meanElements[5] = orb.getTrueAnomaly();
+		this.meanOrbitalElementsEckstein = meanElements;
+	}
+
+	/**
+	 * 
+	 */
 	private void setMeanOrbitalElements() {
 		double[] orbitalElements = this.getOrbitalElements();
-		OsculatingToMeanAlfriend correct = new OsculatingToMeanAlfriend(orbitalElements[0], orbitalElements[2], orbitalElements[1],
-				orbitalElements[4], orbitalElements[3], orbitalElements[5], orbitalElements[6], true, true, true);
+		OsculatingToMeanAlfriend correct = new OsculatingToMeanAlfriend(orbitalElements[0], orbitalElements[2],
+				orbitalElements[1], orbitalElements[4], orbitalElements[3], orbitalElements[5], orbitalElements[6],
+				true, true, true);
 		this.meanOrbitalElements = correct.caculateAll();
 
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public double[] getMeanOrbitalElementsEckstein() {
+		return this.meanOrbitalElementsEckstein;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
 	public double[] getMeanOrbitalElements() {
 		return this.meanOrbitalElements;
 	}

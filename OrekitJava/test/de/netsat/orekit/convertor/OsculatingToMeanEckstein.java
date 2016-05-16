@@ -4,6 +4,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -11,6 +12,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 /**
  * This is another implementation for the Osculating to mean algorithm. It uses
@@ -46,7 +48,7 @@ public class OsculatingToMeanEckstein {
 		this.setSpacecraftState(s);
 		this.threshold = threshold;
 		if (orbitType == OrbitType.CIRCULAR) {
-			CircularOrbit orbit = (CircularOrbit) s.getOrbit();
+			CircularOrbit orbit = (CircularOrbit) orbitType.convertType(this.s.getOrbit());
 			this.sma = orbit.getA();
 			this.h = orbit.getCircularEx();
 			this.l = orbit.getCircularEy();
@@ -54,7 +56,7 @@ public class OsculatingToMeanEckstein {
 			this.lambda = orbit.getAlphaM();
 			this.inc = orbit.getI();
 		} else if (orbitType == OrbitType.KEPLERIAN) {
-			KeplerianOrbit orbit = (KeplerianOrbit) s.getOrbit();
+			KeplerianOrbit orbit = (KeplerianOrbit) orbitType.convertType(this.s.getOrbit());
 			this.sma = orbit.getA();
 			this.h = orbit.getE() * FastMath.cos(orbit.getPerigeeArgument());
 			this.l = orbit.getE() * FastMath.sin(orbit.getPerigeeArgument());
@@ -77,7 +79,7 @@ public class OsculatingToMeanEckstein {
 	 * @throws Exception
 	 */
 	public OsculatingToMeanEckstein(SpacecraftState s, OrbitType orbitType) throws Exception {
-		this(s, orbitType, 0.0001);
+		this(s, orbitType, 0.01);
 	}
 
 	/**
@@ -138,7 +140,7 @@ public class OsculatingToMeanEckstein {
 						+ (2 - 1.5 * FastMath.pow(this.beta, 2)) * this.h * FastMath.sin(2 * this.lambda)
 						+ (7 / 12) * FastMath.pow(this.beta, 2) * FastMath.cos(3 * this.lambda)
 						+ (17 / 8) * FastMath.pow(this.beta, 2)
-								* (l * FastMath.sin(4 * this.lambda) + h * FastMath.cos(4 * this.lambda)));
+								* (l * FastMath.cos(4 * this.lambda) + h * FastMath.sin(4 * this.lambda)));
 		return dl;
 	}
 
@@ -181,8 +183,7 @@ public class OsculatingToMeanEckstein {
 	 * @return
 	 */
 	public double calculateRAANDerivative() {
-		double drAAN = -1 * (3 * this.sma) / (2 * this.lambdaPrim) * this.g2
-				* FastMath.sqrt(1 - FastMath.pow(this.beta, 2))
+		double drAAN = -1 * 3 / (2 * this.lambdaPrim) * this.g2 * FastMath.sqrt(1 - FastMath.pow(this.beta, 2))
 				* ((7 / 2) * this.l * FastMath.sin(this.lambda) - 2.5 * this.h * FastMath.cos(this.lambda)
 						- 0.5 * FastMath.sin(2 * this.lambda) - (7 / 6) * this.l * FastMath.sin(3 * this.lambda)
 						+ (7 / 6) * this.h * FastMath.cos(3 * this.lambda));
@@ -196,7 +197,7 @@ public class OsculatingToMeanEckstein {
 	 * @return
 	 */
 	public double calculateLambdaDerivative() {
-		double dlambda = -1 * (3 * this.sma) / (2 * this.lambdaPrim) * this.g2
+		double dlambda = -1 * 3 / (2 * this.lambdaPrim) * this.g2
 				* ((10 - (119 / 8) * FastMath.pow(this.beta, 2)) * this.l * FastMath.sin(this.lambda)
 						+ ((85 / 8) * FastMath.pow(this.beta, 2) - 9) * this.h * FastMath.cos(this.lambda)
 						+ (2 * FastMath.pow(this.beta, 2)) * FastMath.sin(2 * this.lambda)
@@ -227,7 +228,7 @@ public class OsculatingToMeanEckstein {
 		double mu = GravityFieldFactory.getNormalizedProvider(2, 0).getMu();
 		Orbit circularOrbit = new CircularOrbit(a, ex, ey, i, raan, alpha, PositionAngle.MEAN, this.s.getFrame(),
 				this.s.getDate(), mu);
-		SpacecraftState state = new SpacecraftState(circularOrbit);
+		SpacecraftState state = new SpacecraftState(circularOrbit, this.s.getAttitude(), this.s.getMass());
 		return state;
 	}
 
@@ -244,8 +245,8 @@ public class OsculatingToMeanEckstein {
 		Vector3D posNew = newState.getPVCoordinates().getPosition();
 		Vector3D pos = this.s.getPVCoordinates().getPosition();
 		Vector3D vel = this.s.getPVCoordinates().getVelocity();
-		posVel[0] = vel.add(velNew.negate());
-		posVel[1] = pos.add(posNew.negate());
+		posVel[0] = pos.add(posNew.negate());
+		posVel[1] = vel.add(velNew.negate());
 		return posVel;
 	}
 
@@ -258,15 +259,33 @@ public class OsculatingToMeanEckstein {
 		double max = 0;
 		for (double i : pos.toArray()) {
 			if (FastMath.abs(i) > FastMath.abs(max)) {
-				i = max;
+				max = i;
 			}
 		}
 		for (double i : vel.toArray()) {
 			if (FastMath.abs(i) > FastMath.abs(max)) {
-				i = max;
+				max = i;
 			}
 		}
 		return max;
+	}
+
+	/**
+	 * calculate the new state.
+	 * 
+	 * @throws OrekitException
+	 */
+	public SpacecraftState calculateNewState(SpacecraftState oldState, Vector3D[] posVel) throws OrekitException {
+		CartesianOrbit cartesion = (CartesianOrbit) OrbitType.CARTESIAN.convertType(oldState.getOrbit());
+		PVCoordinates pv = cartesion.getPVCoordinates();
+		Vector3D newPos = pv.getPosition().add(posVel[0]);
+		Vector3D newVel = pv.getVelocity().add(posVel[1]);
+		PVCoordinates pvNew = new PVCoordinates(newPos, newVel, pv.getAcceleration());
+		double mu = GravityFieldFactory.getNormalizedProvider(2, 0).getMu();
+		CircularOrbit orbit = new CircularOrbit(pvNew, oldState.getFrame(), oldState.getDate(), mu);
+		SpacecraftState s = new SpacecraftState(orbit, oldState.getAttitude(), oldState.getMass());
+		return s;
+
 	}
 
 	/**
@@ -277,23 +296,27 @@ public class OsculatingToMeanEckstein {
 	 * @throws OrekitException
 	 */
 	public SpacecraftState calculateMeanElement() throws OrekitException {
-		SpacecraftState s = this.stateCalculator();
-		Vector3D[] posVelDiffVec = compareWithIntialState(s);
+		SpacecraftState osc = this.stateCalculator();
+		Vector3D[] posVelDiffVec = compareWithIntialState(osc);
 		double posVelDiff = this.getMaxPVDiff(posVelDiffVec);
-		while (posVelDiff > this.threshold) {
-			CircularOrbit co = (CircularOrbit) s.getOrbit();
+		SpacecraftState oscOld = this.s;
+		osc = this.calculateNewState(oscOld, posVelDiffVec);
+		while (FastMath.abs(posVelDiff) > this.threshold) {
+			oscOld = osc;
+			CircularOrbit co = (CircularOrbit) oscOld.getOrbit();
 			this.setSma(co.getA());
 			this.setH(co.getCircularEx());
 			this.setL(co.getEquinoctialEy());
 			this.setInc(co.getI());
 			this.setRaan(co.getRightAscensionOfAscendingNode());
-			this.setLambda(co.getAlpha(PositionAngle.MEAN));
+			this.setLambda(co.getAlphaM());
 			this.calculateHelpingFucntions();
-			s = this.stateCalculator();
-			posVelDiffVec = compareWithIntialState(s);
+			osc = this.stateCalculator();
+			posVelDiffVec = compareWithIntialState(osc);
 			posVelDiff = this.getMaxPVDiff(posVelDiffVec);
+			osc = this.calculateNewState(oscOld, posVelDiffVec);
 		}
-		return s;
+		return oscOld;
 	}
 
 	/**
