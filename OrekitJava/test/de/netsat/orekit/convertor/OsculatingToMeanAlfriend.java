@@ -227,9 +227,9 @@ public class OsculatingToMeanAlfriend {
 	 * @return
 	 */
 	public double calculateEccentricityLongPeriod() {
-		double eLP = ((this.gammaTwoPrim * this.ecc * FastMath.pow(this.eta, 2) * FastMath.cos(2 * this.aop)) / (8))
-				* (1 - 11 * FastMath.pow(FastMath.cos(this.inc), 2) - 40 * (FastMath.pow(FastMath.cos(this.inc), 4))
-						/ (1 - 5 * FastMath.pow(FastMath.cos(this.inc), 2)));
+		double eLP = ((this.gammaTwoPrim * this.ecc * FastMath.pow(this.eta, 2) * FastMath.cos(2 * this.aop)) / 8) * (1
+				- 11 * FastMath.pow(FastMath.cos(this.inc), 2)
+				- 40 * (FastMath.pow(FastMath.cos(this.inc), 4)) / (1 - 5 * FastMath.pow(FastMath.cos(this.inc), 2)));
 		return eLP;
 	}
 
@@ -239,7 +239,7 @@ public class OsculatingToMeanAlfriend {
 	 * @return
 	 */
 	public double calculateInclinationLongPerid() {
-		double iLP = (-(this.ecc) / (FastMath.pow(this.eta, 2) * FastMath.tan(this.inc)))
+		double iLP = (-1 * (this.ecc) / (FastMath.pow(this.eta, 2) * FastMath.tan(this.inc)))
 				* this.calculateEccentricityLongPeriod();
 		return iLP;
 	}
@@ -258,12 +258,16 @@ public class OsculatingToMeanAlfriend {
 	}
 
 	/**
-	 * Calculate the short period correction to inclination Equation 7
+	 * Calculate the short period correction to inclination Equation 7 The
+	 * Equation in the paper has an error (The sqrt(1-cos^2(i) is missing) See
+	 * the book Analytical mechanics by Schaub, At Appendix G the right
+	 * formulation is there.
 	 * 
 	 * @return
 	 */
 	public double calculateInclinationShortPeriod() {
 		double inclinationSP = 0.5 * this.gammaTwoPrim * FastMath.cos(this.inc)
+				* (FastMath.sqrt(1 - (FastMath.pow(FastMath.cos(this.inc), 2))))
 				* (3 * FastMath.cos(2 * this.aop + 2 * this.tano)
 						+ 3 * this.ecc * FastMath.cos(2 * this.aop + this.tano)
 						+ this.ecc * FastMath.cos(2 * this.aop + 3 * this.tano));
@@ -283,9 +287,8 @@ public class OsculatingToMeanAlfriend {
 						* (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1) * FastMath.sin(this.tano)
 						+ 3 * (1 - FastMath.pow(FastMath.cos(this.inc), 2))
 								* ((-1 * FastMath.pow(this.aR * this.eta, 2) - this.aR + 1)
-										* FastMath.sin(2 * this.aop + this.tano)
-										+ (FastMath.pow(this.aR * this.eta, 2) + this.aR + 1 / 3)
-												* FastMath.sin(2 * this.aop + 3 * this.tano)));
+										* FastMath.sin(2 * this.aop + this.tano) + (FastMath.pow(this.aR * this.eta, 2)
+												+ this.aR + 1 / 3) * FastMath.sin(2 * this.aop + 3 * this.tano)));
 		return mSP;
 	}
 
@@ -341,12 +344,26 @@ public class OsculatingToMeanAlfriend {
 	 * @return
 	 */
 	public double calculateRAANShortPeriod() {
-		double rAANSP = -1 * ((this.gammaTwoPrim * FastMath.cos(this.inc)) / (2))
+		double rAANSP = -1 * ((this.gammaTwoPrim * FastMath.cos(this.inc)) / 2)
 				* (6 * (this.tano - this.mano + this.ecc * FastMath.sin(this.tano))
 						- 3 * FastMath.sin(2 * this.aop + 2 * this.tano)
 						- 3 * this.ecc * FastMath.sin(2 * this.aop + this.tano)
 						- this.ecc * FastMath.sin(2 * this.aop + 3 * this.tano));
 		return rAANSP;
+	}
+
+	/**
+	 * Calculate the Long period correction to the RAAn Equation 11
+	 * 
+	 * @return
+	 */
+	public double calculateRAANLongPeriod() {
+		double rAANLP = -1 * (this.gammaTwoPrim * FastMath.pow(this.ecc, 2) * FastMath.cos(this.inc) / 8) * (11
+				+ (80 * FastMath.pow(FastMath.cos(this.inc), 2) / (1 - 5 * FastMath.pow(FastMath.cos(this.inc), 2)))
+				+ (200 * FastMath.pow(FastMath.cos(this.inc), 4)
+						/ FastMath.pow(1 - 5 * FastMath.pow(FastMath.cos(this.inc), 2), 2)))
+				* FastMath.sin(2 * this.aop);
+		return rAANLP;
 	}
 
 	/**
@@ -356,18 +373,22 @@ public class OsculatingToMeanAlfriend {
 	 * @tag checked
 	 */
 	public void calculateOmegaI() {
-		this.omegaISin = (FastMath.sin(this.inc / 2)
-				+ 0.5 * FastMath.cos(this.inc / 2) * this.calculateInclinationShortPeriod()) * FastMath.sin(this.raan)
-				+ FastMath.sin(this.inc / 2) * this.calculateRAANShortPeriod() * FastMath.cos(this.raan);
+		this.omegaISin = (FastMath.sin(this.inc / 2) + 0.5 * FastMath.cos(this.inc / 2)
+				* (this.calculateInclinationShortPeriod() + this.calculateInclinationLongPerid()))
+				* FastMath.sin(this.raan)
+				+ FastMath.sin(this.inc / 2) * (this.calculateRAANShortPeriod() + this.calculateRAANLongPeriod())
+						* FastMath.cos(this.raan);
 
-		this.omegaICos = (FastMath.sin(this.inc / 2)
-				+ 0.5 * FastMath.cos(this.inc / 2) * this.calculateInclinationShortPeriod()) * FastMath.cos(this.raan)
-				- FastMath.sin(this.inc / 2) * this.calculateRAANShortPeriod() * FastMath.sin(this.raan);
+		this.omegaICos = (FastMath.sin(this.inc / 2) + 0.5 * FastMath.cos(this.inc / 2)
+				* (this.calculateInclinationShortPeriod() + this.calculateInclinationLongPerid()))
+				* FastMath.cos(this.raan)
+				- FastMath.sin(this.inc / 2) * (this.calculateRAANShortPeriod() + this.calculateRAANLongPeriod())
+						* FastMath.sin(this.raan);
 
 	}
 
 	/**
-	 * Calculate the new inclination Equation 14
+	 * Calculate the new inclination Equation 14 arg0
 	 * 
 	 * @tag checked
 	 * @return
